@@ -29,6 +29,7 @@ import java.util.List;
 public class AddressController {
     IAddressService addressService;
 
+
     @GetMapping(ApiPath.ADDRESS_ALL)
     ApiResponse<List<AddressResponse>> getAllAddresses() {
         return ApiResponse.<List<AddressResponse>>builder()
