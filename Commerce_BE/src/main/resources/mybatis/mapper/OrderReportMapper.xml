@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.MyShop_API.mybatis.mapper.OrderReportMapper">
+    <select id="summarizeByStatus" resultType="com.example.MyShop_API.mybatis.dto.OrderSummary">
+        SELECT order_status, COUNT(*) AS total_orders, COALESCE(SUM(total_amount), 0) AS total_revenue
+        FROM orders
+        <where>
+            <if test="fromDate != null">order_date &gt;= #{fromDate}</if>
+            <if test="toDate != null">AND order_date &lt;= #{toDate}</if>
+        </where>
+        GROUP BY order_status
+        ORDER BY order_status
+    </select>
+</mapper>

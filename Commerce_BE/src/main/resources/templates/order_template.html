@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html
+        lang="vi"
+        xmlns="http://www.w3.org/1999/xhtml"
+        xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Shopee Express Shipping Label</title>
+    <style>
+        body {
+            font-family: "DejaVu Sans", sans-serif;
+            background: #f5f5f5;
+            padding: 10mm;
+        }
+
+        .label {
+            width: 100mm;
+            /* cố định khổ giấy */
+            background: white;
+            border: 0.3mm solid #000;
+            font-size: 9pt;
+            margin: 0 auto; /* căn giữa ngang */
+        }
+
+        /* Header */
+        .header {
+            display: table;
+            width: 100%;
+            border-bottom: 0.3mm solid #000;
+        }
+
+        .logo-section,
+        .codes-section {
+            display: table-cell;
+            vertical-align: top;
+            padding: 2mm;
+        }
+
+        .logo-section {
+            width: 40%;
+            border-right: 0.3mm solid #000;
+        }
+
+        .codes-section {
+            width: 60%;
+        }
+
+        /* barcode */
+        .img-barcode {
+            width: 100%;
+            height: auto;
+            padding-bottom: 1mm;
+        }
+
+        /* Address */
+        .address-section {
+            display: table;
+            width: 100%;
+            border-bottom: 0.3mm solid #000;
+        }
+
+        .from-section,
+        .to-section {
+            display: table-cell;
+            width: 50%;
+            padding: 2mm;
+        }
+
+        .from-section {
+            border-right: 0.3mm solid #000;
+        }
+
+        /* Tracking code */
+        .tracking-code {
+            text-align: center;
+            font-size: 14pt;
+            font-weight: bold;
+            padding: 3mm;
+            border-bottom: 0.3mm solid #000;
+            letter-spacing: 1pt;
+        }
+
+        /* Content */
+        .content-section {
+            display: table;
+            width: 100%;
+            border-bottom: 0.3mm solid #000;
+        }
+
+        .product-section,
+        .qr-section {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .product-section {
+            width: 65%;
+            border-right: 0.3mm solid #000;
+        }
+
+        .qr-section {
+            width: 35%;
+            text-align: center;
+        }
+
+        /* Footer */
+        .footer {
+            background: #ee4d2d;
+            color: white;
+            text-align: center;
+            padding: 2mm;
+            font-size: 8pt;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+<div class="label">
+    <div class="header">
+        <div class="logo-section">
+            <div class="shopee-logo" style="font-size: 16px; color: #ee4d2d;">MyShop</div>
+            <div class="shopee-express" style="font-size: 16px; color: #ee4d2d;">MyShopXPRESS</div>
+        </div>
+        <div class="codes-section">
+            <div class="code-row">
+                <span class="code-label"><strong>Mã vận đơn:</strong> </span>
+                <span th:text="${barCode}"></span>
+            </div>
+            <div class="code-row">
+                <span class="code-label"><strong>Mã đơn hàng:</strong></span>
+                <span th:text="${order.orderId}"></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="address-section">
+        <div class="from-section">
+            <div class="section-title">
+                <strong>Từ:</strong>
+            </div>
+            <div style="margin-top: 4px">
+                <strong>Trendy Fashion VNSP</strong><br/>
+                31 Nguyệt Quế 20, Vinhomes Harmony, Phường Phúc Đồng, Quận Long
+                Biên, Hà Nội, Phường Phúc Đồng, Quận Long Biên, Hà Nội<br/>
+                <strong>SĐT:</strong> 84830774
+            </div>
+        </div>
+        <div class="to-section">
+            <div class="section-title-orange"><strong>Đến:</strong>
+                <span th:text="'(' + ${deliveryAddress.getDeliveryNote()}+ ')'"></span>
+            </div>
+            <div style="margin-top: 4px">
+                <div>
+                    <strong>Người nhận: </strong>
+                    <span th:text=" ${deliveryAddress.getRecipientName()}"></span>
+                </div>
+                <div>
+                    <strong>SDT: </strong>
+                    <span th:text=" ${deliveryAddress.getRecipientPhone()}"></span>
+                </div>
+                <div>
+                    <strong>Địa chỉ:</strong>
+                    <span th:text="${deliveryAddress.street}"></span>,
+                    <span th:text="${deliveryAddress.ward}"></span>,
+                    <span th:text="${deliveryAddress.district}"></span>,
+                    <span th:text="${deliveryAddress.province}"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tracking-code" th:text="${randomOrder}"></div>
+
+    <div class="content-section">
+        <div class="product-section">
+            <div class="product-header">
+                <span th:text="'Nội dung hàng (Tổng SL sản phẩm: '+ ${sizeOrderItem} + ')'"></span>
+            </div>
+            <!--            <div class="product-item">1. Áo thời trang nữ - Đỏ, , SL: 1</div>-->
+            <div th:each="oi,index: ${orderItems}">
+                <span th:text="${index.count + '. '+oi.getProduct().getProductName() +' , SL:'+ oi.getQuantity()}"></span>
+            </div>
+        </div>
+        <div class="qr-section">
+            <div class="qr-code">
+                <img
+                        alt="QR Code"
+                        src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&amp;data=SPXVN02385693557B"
+                        style="padding: 2px"
+                />
+            </div>
+            <div class="date-section">
+                <div class="date-label">Ngày đặt hàng:</div>
+                <div class="date-value" th:text="${order.getOrderDate()}"></div>
+            </div>
+        </div>
+    </div>
+
+
+    <table style="width: 100%; border-collapse: collapse; border: 1px #000">
+        <tr>
+            <!-- Khối tiền thu -->
+            <td
+                    style="
+              width: 50%;
+              vertical-align: top;
+              border: 1px #000;
+              padding: 10px;
+            "
+            >
+                <div class="payment-section" style="text-align: center;">
+                    <div class="cod-section">
+                        <div class="cod-label">Tiền thu Người nhận:</div>
+                        <div class="cod-amount" style="padding-top: 15px; font-size: 17px ;">
+                            <strong th:text="${#numbers.formatInteger(order.getTotalAmount(), 3, 'COMMA')} + ' VND'"></strong>
+                        </div>
+                    </div>
+                </div>
+            </td>
+
+            <!-- Khối thông tin -->
+            <td
+                    style="
+              width: 50%;
+              vertical-align: top;
+              border: 1px solid #000;
+              padding: 10px;
+            "
+            >
+                <div class="info-section">
+                    <div class="weight-section">
+                        <div class="weight-box">
+                            <div class="weight-value">Khối lượng tối đa: 21g</div>
+                        </div>
+
+                        <div class="signature-box" style="height: 100px; border: 1px dashed #000"
+                        >
+                            <div class="signature-section" style="text-align: center;">
+                                <strong>Chữ ký người nhận</strong><br/>
+                                <span>Xác nhận hàng nguyên vẹn, không móp/méo, bể/vỡ</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <div class="delivery-note" style="border: 1px solid #000;">
+        <strong>Chỉ dẫn giao hàng:</strong> Không đồng kiểm; Chuyển hoàn sau 3
+        lần phát; Lưu kho tối đa 5 ngày
+    </div>
+
+    <div class="footer">
+        Tuyển dụng Tài xế/Điều phối kho SPX - Thu nhập 8-20 triệu - Gọi 1900
+        6885
+    </div>
+</div>
+</body>
+</html>

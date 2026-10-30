@@ -1,0 +1,213 @@
+body {
+    font-family: "DejaVu Sans", sans-serif;
+    background: #f5f5f5;
+    padding: 10mm;
+    display: flex;
+    justify-content: center;
+}
+
+.label {
+    width: 100mm;
+    /* cố định khổ giấy */
+    background: white;
+    border: 0.3mm solid #000;
+    font-size: 9pt;
+}
+
+/* Header */
+.header {
+    display: table;
+    width: 100%;
+    border-bottom: 0.3mm solid #000;
+}
+
+.logo-section,
+.codes-section {
+    display: table-cell;
+    vertical-align: top;
+    padding: 2mm;
+}
+
+.logo-section {
+    width: 40%;
+    border-right: 0.3mm solid #000;
+}
+
+.codes-section {
+    width: 60%;
+}
+
+/* barcode */
+.img-barcode {
+    width: 100%;
+    height: auto;
+    padding-bottom: 1mm;
+}
+
+/* Address */
+.address-section {
+    display: table;
+    width: 100%;
+    border-bottom: 0.3mm solid #000;
+}
+
+.from-section,
+.to-section {
+    display: table-cell;
+    width: 50%;
+    padding: 2mm;
+}
+
+.from-section {
+    border-right: 0.3mm solid #000;
+}
+
+/* Tracking code */
+.tracking-code {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: bold;
+    padding: 3mm;
+    border-bottom: 0.3mm solid #000;
+    letter-spacing: 1pt;
+}
+
+/* Content */
+.content-section {
+    display: table;
+    width: 100%;
+    border-bottom: 0.3mm solid #000;
+}
+
+.product-section,
+.qr-section {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.product-section {
+    width: 65%;
+    border-right: 0.3mm solid #000;
+}
+
+.qr-section {
+    width: 35%;
+    text-align: center;
+}
+
+/* Footer */
+.footer {
+    background: #ee4d2d;
+    color: white;
+    text-align: center;
+    padding: 2mm;
+    font-size: 8pt;
+    font-weight: bold;
+}
+
+body {
+    font-family: "DejaVu Sans", sans-serif;
+    background: #f5f5f5;
+    padding: 10mm;
+    display: flex;
+    justify-content: center;
+}
+
+.label {
+    width: 100mm;
+    /* cố định khổ giấy */
+    background: white;
+    border: 0.3mm solid #000;
+    font-size: 9pt;
+}
+
+/* Header */
+.header {
+    display: table;
+    width: 100%;
+    border-bottom: 0.3mm solid #000;
+}
+
+.logo-section,
+.codes-section {
+    display: table-cell;
+    vertical-align: top;
+    padding: 2mm;
+}
+
+.logo-section {
+    width: 40%;
+    border-right: 0.3mm solid #000;
+}
+
+.codes-section {
+    width: 60%;
+}
+
+/* barcode */
+.img-barcode {
+    width: 100%;
+    height: auto;
+    padding-bottom: 1mm;
+}
+
+/* Address */
+.address-section {
+    display: table;
+    width: 100%;
+    border-bottom: 0.3mm solid #000;
+}
+
+.from-section,
+.to-section {
+    display: table-cell;
+    width: 50%;
+    padding: 2mm;
+}
+
+.from-section {
+    border-right: 0.3mm solid #000;
+}
+
+/* Tracking code */
+.tracking-code {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: bold;
+    padding: 3mm;
+    border-bottom: 0.3mm solid #000;
+    letter-spacing: 1pt;
+}
+
+/* Content */
+.content-section {
+    display: table;
+    width: 100%;
+    border-bottom: 0.3mm solid #000;
+}
+
+.product-section,
+.qr-section {
+    display: table-cell;
+    vertical-align: top;
+}
+
+.product-section {
+    width: 65%;
+    border-right: 0.3mm solid #000;
+}
+
+.qr-section {
+    width: 35%;
+    text-align: center;
+}
+
+/* Footer */
+.footer {
+    background: #ee4d2d;
+    color: white;
+    text-align: center;
+    padding: 2mm;
+    font-size: 8pt;
+    font-weight: bold;
+}
