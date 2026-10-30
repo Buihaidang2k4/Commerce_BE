@@ -1,14 +1,22 @@
 package com.example.MyShop_API.mapper;
 
-import com.example.MyShop_API.dto.response.CartItemResponse;
-import com.example.MyShop_API.entity.CartItem;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import com.example.MyShop_API.entity.*;
+import com.example.MyShop_API.dto.request.*;
+import com.example.MyShop_API.dto.response.*;
+import com.example.MyShop_API.service.model.ModelLookup;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 
-@Mapper(componentModel = "spring")
-public interface CartItemMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public abstract class CartItemMapper {
+    @Autowired protected ModelLookup models;
 
-    @Mapping(source = "product.productId", target = "productId")
-    @Mapping(source = "product.productName", target = "productName")
-    CartItemResponse toResponse(CartItem cartItem);
+    public abstract CartItemResponse toResponse(CartItem item);
+
+    @AfterMapping
+    protected void fill(CartItem item, @MappingTarget CartItemResponse response) {
+        var product = models.product(item.getProductId());
+        response.setProductName(product == null ? null : product.getProductName());
+    }
 }

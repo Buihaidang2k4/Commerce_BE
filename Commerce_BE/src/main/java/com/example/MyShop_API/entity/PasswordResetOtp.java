@@ -2,51 +2,29 @@ package com.example.MyShop_API.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "password_reset_otp", indexes = {@Index(name = "idx_password_reset_otp_user_id", columnList = "user_id")})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "password_reset_otp")
 public class PasswordResetOtp {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, updatable = false)
-    User user;
-
-    @Column(nullable = false, length = 6)
-    String otp;
-
-    @Column(nullable = false)
-    LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    LocalDateTime expiredAt;
-
-    @Column(nullable = false)
-    boolean used = false;
-
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiredAt);
-    }
-
-    @PrePersist
-    public void setExpired() {
-        if (this.expiredAt == null) {
-            this.expiredAt = this.createdAt.plusMinutes(5);
-        }
-    }
-
-    public boolean isValid() {
-        return !used && !isExpired();
-    }
+    private Long id;
+    private Long userId;
+    private String otp;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime expiredAt;
+    @Builder.Default
+    private boolean used = false;
+    public boolean isExpired() { return expiredAt == null || LocalDateTime.now().isAfter(expiredAt); }
+    public boolean isValid() { return !used && !isExpired(); }
+    @PrePersist public void initializeExpiry() { if (createdAt == null) createdAt = LocalDateTime.now(); if (expiredAt == null) expiredAt = createdAt.plusMinutes(5); }
 }

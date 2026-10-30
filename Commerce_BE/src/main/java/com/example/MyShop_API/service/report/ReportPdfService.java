@@ -27,6 +27,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ReportPdfService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
 
     TemplateEngine templateEngine;
     OrderRepository orderRepository;
@@ -44,9 +45,9 @@ public class ReportPdfService {
         // random mã đơn hàng HC-51-03-GV13
         String randomOrder = RadomCodeTemplate.generateCode();
         // Địa chỉ
-        OrderDeliveryAddress deliveryAddress = order.getDeliveryAddress();
+        OrderDeliveryAddress deliveryAddress = models.deliveryAddress(order.getOrderId());
         // Nội dung đơn hàng
-        Set<OrderItem> orderItems = order.getOrderItems();
+        java.util.List<OrderItem> orderItems = models.orderItems(order.getOrderId());
         int sizeOrderItem = orderItems.size();
 
         Context context = new Context();

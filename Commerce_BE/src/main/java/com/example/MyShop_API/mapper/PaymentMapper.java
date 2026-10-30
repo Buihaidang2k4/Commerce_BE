@@ -12,7 +12,6 @@ public interface PaymentMapper {
 
     PaymentResponse toResponse(Payment payment);
 
-    @Mapping(source = "order.orderId", target = "orderId")
     PaymentDto toDto(Payment payment);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

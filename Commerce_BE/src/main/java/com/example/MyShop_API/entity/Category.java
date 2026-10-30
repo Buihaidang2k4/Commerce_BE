@@ -1,34 +1,28 @@
 package com.example.MyShop_API.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDate;
-import java.util.List;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
-@Data
+@Table(name = "categories", indexes = {@Index(name = "idx_categories_parent_id", columnList = "parent_id"), @Index(name = "idx_categories_slug", columnList = "slug")})
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "categories")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long categoryId;
+    private Long categoryId;
+    private Long parentId;
+    private String categoryName;
+    private String slug;
+    @Column(columnDefinition = "TEXT")
+    private String description;
+    private LocalDate createAt;
+    private LocalDate updateAt;
 
-    @NotBlank
-    String categoryName;
-    String description;
-    LocalDate createAt;
-    LocalDate updateAt;
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
-    List<Product> products;
 }

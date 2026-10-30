@@ -1,47 +1,32 @@
 package com.example.MyShop_API.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
-import java.util.Set;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "user", indexes = {@Index(name = "idx_user_email", columnList = "email")})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    Long id;
+    private Long id;
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private String password;
+    private String email;
+    @Builder.Default
+    private boolean enabled = true;
+    @Builder.Default
+    private String status = "ACTIVE";
+    private String lockedReason;
+    private LocalDateTime lockedAt;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-
-    @Column(name = "password")
-    String password;
-
-    @Column(unique = true)
-    String email;
-
-    boolean enabled = true;
-    String lockedReason;
-    LocalDateTime lockedAt;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name = "user_role",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_name")
-    )
-    Set<Role> roles;
-
-    @JsonIgnore
-    @OneToOne(mappedBy = "user", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
-    UserProfile profile;
 }

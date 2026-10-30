@@ -1,61 +1,28 @@
 package com.example.MyShop_API.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "carts", indexes = {@Index(name = "idx_carts_profile_id", columnList = "profile_id"), @Index(name = "idx_carts_user_id", columnList = "user_id")})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "carts")
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Cart {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long cartId;
+    private Long cartId;
+    private Long profileId;
+    private Long userId;
+    @Builder.Default
+    @Column(precision = 18, scale = 2)
+    private BigDecimal totalPrice = BigDecimal.ZERO;
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @OneToOne
-    @JsonIgnore
-    @JoinColumn(name = "profile_id")
-    UserProfile profile;
-
-    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL)
-    List<CartItem> cartItems = new ArrayList<>();
-
-    BigDecimal totalPrice = BigDecimal.ZERO;
-
-    public void addItem(CartItem item) {
-        Product product = item.getProduct();
-        item.setUnitPrice(product.getSpecialPrice() != null ?
-                product.getSpecialPrice() : product.getPrice());
-        item.setCart(this);
-        this.cartItems.add(item);
-        updateTotalAmount();
-    }
-
-    public void removeItem(CartItem item) {
-        if (item == null) return;
-        item.setCart(null);
-        this.cartItems.remove(item);
-        updateTotalAmount();
-    }
-
-    public void updateTotalAmount() {
-        this.totalPrice = cartItems.stream().map(item ->
-        {
-            BigDecimal unitPrice = item.getUnitPrice();
-            if (unitPrice == null) {
-                return BigDecimal.ZERO;
-            }
-            return unitPrice.multiply(BigDecimal.valueOf(item.getQuantity()));
-        }).reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
 }

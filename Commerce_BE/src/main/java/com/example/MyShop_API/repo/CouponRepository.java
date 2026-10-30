@@ -31,4 +31,7 @@ public interface CouponRepository extends JpaRepository<Coupon, Long> {
     List<Coupon> findCouponByEnabledTrue();
 
     boolean existsByCode(String code);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("SELECT e FROM Coupon e WHERE e.couponId = :id")
+    java.util.Optional<Coupon> findByIdForUpdate(@org.springframework.data.repository.query.Param("id") Long id);
 }

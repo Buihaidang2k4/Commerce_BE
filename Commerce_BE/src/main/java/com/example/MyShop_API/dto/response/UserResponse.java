@@ -12,7 +12,7 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UserResponse {
-    Integer id;
+    Long id;
     String email;
     boolean enabled = true;
     String lockedReason;

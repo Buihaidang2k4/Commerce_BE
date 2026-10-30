@@ -15,7 +15,9 @@ import java.util.Date;
 import java.util.List;
 
 @Service
+@lombok.RequiredArgsConstructor
 public class ReportExcelService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     @Value("${report.temp-dir-excel}")
     private String tempDir;
 
@@ -41,9 +43,9 @@ public class ReportExcelService {
         for (Order order : orders) {
             Row row = sheet.createRow(rowIdx++);
             row.createCell(0).setCellValue(order.getOrderId());
-            row.createCell(1).setCellValue(order.getDeliveryAddress().getRecipientName());
-            row.createCell(2).setCellValue(order.getOrderItems().stream().map(orderItem -> orderItem.getProduct().getProductName()).findFirst().toString());
-            row.createCell(3).setCellValue(order.getOrderItems().stream().map(orderItem -> orderItem.getQuantity()).findFirst().toString());
+            row.createCell(1).setCellValue(models.deliveryAddress(order.getOrderId()).getRecipientName());
+            row.createCell(2).setCellValue(models.orderItems(order.getOrderId()).stream().map(orderItem -> orderItem.getProductTitle()).findFirst().toString());
+            row.createCell(3).setCellValue(models.orderItems(order.getOrderId()).stream().map(orderItem -> orderItem.getQuantity()).findFirst().toString());
             row.createCell(4).setCellValue(order.getTotalAmount().toString());
 
             Cell cell = row.createCell(5);

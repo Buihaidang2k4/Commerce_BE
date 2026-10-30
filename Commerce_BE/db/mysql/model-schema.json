@@ -1,0 +1,5183 @@
+[
+  {
+    "model": "Address",
+    "table": "addresses",
+    "fields": [
+      {
+        "name": "address_id",
+        "javaName": "addressId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "profile_id",
+        "javaName": "profileId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "full_name",
+        "javaName": "fullName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "phone",
+        "javaName": "phone",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "street",
+        "javaName": "street",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "ward_code",
+        "javaName": "wardCode",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "ward",
+        "javaName": "ward",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "district_id",
+        "javaName": "districtID",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "district",
+        "javaName": "district",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "province_id",
+        "javaName": "provinceID",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "province",
+        "javaName": "province",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "postal_code",
+        "javaName": "postalCode",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "additional_info",
+        "javaName": "additionalInfo",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "is_default",
+        "javaName": "isDefault",
+        "type": "bit(1)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "type",
+        "javaName": "type",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "label",
+        "javaName": "label",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_addresses_profile_id",
+        "column": "profile_id"
+      }
+    ]
+  },
+  {
+    "model": "AiConversation",
+    "table": "ai_conversations",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "title",
+        "javaName": "title",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ai_conversations_user_id",
+        "column": "user_id"
+      }
+    ]
+  },
+  {
+    "model": "AiMessage",
+    "table": "ai_messages",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "conversation_id",
+        "javaName": "conversationId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "role",
+        "javaName": "role",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "content",
+        "javaName": "content",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "retrieval_json",
+        "javaName": "retrievalJson",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "model",
+        "javaName": "model",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "input_tokens",
+        "javaName": "inputTokens",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "output_tokens",
+        "javaName": "outputTokens",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_ai_messages_conversation_id",
+        "column": "conversation_id"
+      }
+    ]
+  },
+  {
+    "model": "AuditLog",
+    "table": "audit_logs",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "actor_id",
+        "javaName": "actorId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "action",
+        "javaName": "action",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "resource",
+        "javaName": "resource",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "resource_id",
+        "javaName": "resourceId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "before_json",
+        "javaName": "beforeJson",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "after_json",
+        "javaName": "afterJson",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "correlation_id",
+        "javaName": "correlationId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "client_ip",
+        "javaName": "clientIp",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_audit_logs_actor_id",
+        "column": "actor_id"
+      },
+      {
+        "name": "idx_audit_logs_resource_id",
+        "column": "resource_id"
+      },
+      {
+        "name": "idx_audit_logs_correlation_id",
+        "column": "correlation_id"
+      }
+    ]
+  },
+  {
+    "model": "CartItem",
+    "table": "cart_items",
+    "fields": [
+      {
+        "name": "cart_item_id",
+        "javaName": "cartItemId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "cart_id",
+        "javaName": "cartId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "quantity",
+        "javaName": "quantity",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "unit_price",
+        "javaName": "unitPrice",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "total_price",
+        "javaName": "totalPrice",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_cart_items_cart_id",
+        "column": "cart_id"
+      },
+      {
+        "name": "idx_cart_items_product_id",
+        "column": "product_id"
+      },
+      {
+        "name": "idx_cart_items_variant_id",
+        "column": "variant_id"
+      }
+    ]
+  },
+  {
+    "model": "Cart",
+    "table": "carts",
+    "fields": [
+      {
+        "name": "cart_id",
+        "javaName": "cartId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "profile_id",
+        "javaName": "profileId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "total_price",
+        "javaName": "totalPrice",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_carts_profile_id",
+        "column": "profile_id"
+      },
+      {
+        "name": "idx_carts_user_id",
+        "column": "user_id"
+      }
+    ]
+  },
+  {
+    "model": "Category",
+    "table": "categories",
+    "fields": [
+      {
+        "name": "category_id",
+        "javaName": "categoryId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "parent_id",
+        "javaName": "parentId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "category_name",
+        "javaName": "categoryName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "slug",
+        "javaName": "slug",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "description",
+        "javaName": "description",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "create_at",
+        "javaName": "createAt",
+        "type": "date",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "update_at",
+        "javaName": "updateAt",
+        "type": "date",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_categories_parent_id",
+        "column": "parent_id"
+      },
+      {
+        "name": "idx_categories_slug",
+        "column": "slug"
+      }
+    ]
+  },
+  {
+    "model": "CheckoutQuote",
+    "table": "checkout_quotes",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "address_id",
+        "javaName": "addressId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "currency",
+        "javaName": "currency",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "subtotal",
+        "javaName": "subtotal",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount_total",
+        "javaName": "discountTotal",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shipping_total",
+        "javaName": "shippingTotal",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "grand_total",
+        "javaName": "grandTotal",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "snapshot_json",
+        "javaName": "snapshotJson",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expires_at",
+        "javaName": "expiresAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_checkout_quotes_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_checkout_quotes_address_id",
+        "column": "address_id"
+      }
+    ]
+  },
+  {
+    "model": "ConsumerInbox",
+    "table": "consumer_inbox",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "event_id",
+        "javaName": "eventId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "consumer_name",
+        "javaName": "consumerName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "processed_at",
+        "javaName": "processedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_consumer_inbox_event_id",
+        "column": "event_id"
+      }
+    ]
+  },
+  {
+    "model": "CouponCategory",
+    "table": "coupon_categories",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "coupon_id",
+        "javaName": "couponId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "category_id",
+        "javaName": "categoryId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_coupon_categories_coupon_id",
+        "column": "coupon_id"
+      },
+      {
+        "name": "idx_coupon_categories_category_id",
+        "column": "category_id"
+      }
+    ]
+  },
+  {
+    "model": "CouponProduct",
+    "table": "coupon_products",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "coupon_id",
+        "javaName": "couponId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_coupon_products_coupon_id",
+        "column": "coupon_id"
+      },
+      {
+        "name": "idx_coupon_products_product_id",
+        "column": "product_id"
+      }
+    ]
+  },
+  {
+    "model": "CouponRedemption",
+    "table": "coupon_redemptions",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "coupon_id",
+        "javaName": "couponId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount_amount",
+        "javaName": "discountAmount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expires_at",
+        "javaName": "expiresAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_coupon_redemptions_coupon_id",
+        "column": "coupon_id"
+      },
+      {
+        "name": "idx_coupon_redemptions_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_coupon_redemptions_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_coupon_redemptions_shop_id",
+        "column": "shop_id"
+      }
+    ]
+  },
+  {
+    "model": "Coupon",
+    "table": "coupons",
+    "fields": [
+      {
+        "name": "coupon_id",
+        "javaName": "couponId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "code",
+        "javaName": "code",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "scope",
+        "javaName": "scope",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount_type",
+        "javaName": "discountType",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount_percent",
+        "javaName": "discountPercent",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount_amount",
+        "javaName": "discountAmount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "max_discount_amount",
+        "javaName": "maxDiscountAmount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "min_order_value",
+        "javaName": "minOrderValue",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "start_date",
+        "javaName": "startDate",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expiry_date",
+        "javaName": "expiryDate",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "enabled",
+        "javaName": "enabled",
+        "type": "bit(1)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "usage_limit",
+        "javaName": "usageLimit",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "used_count",
+        "javaName": "usedCount",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "limit_per_user",
+        "javaName": "limitPerUser",
+        "type": "bit(1)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "max_uses_per_user",
+        "javaName": "maxUsesPerUser",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_coupons_shop_id",
+        "column": "shop_id"
+      },
+      {
+        "name": "idx_coupons_code",
+        "column": "code"
+      }
+    ]
+  },
+  {
+    "model": "Dispute",
+    "table": "disputes",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "seller_order_id",
+        "javaName": "sellerOrderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "return_request_id",
+        "javaName": "returnRequestId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "opened_by_user_id",
+        "javaName": "openedByUserId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "assigned_user_id",
+        "javaName": "assignedUserId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reason",
+        "javaName": "reason",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "resolution",
+        "javaName": "resolution",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_disputes_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_disputes_seller_order_id",
+        "column": "seller_order_id"
+      },
+      {
+        "name": "idx_disputes_return_request_id",
+        "column": "return_request_id"
+      },
+      {
+        "name": "idx_disputes_opened_by_user_id",
+        "column": "opened_by_user_id"
+      },
+      {
+        "name": "idx_disputes_assigned_user_id",
+        "column": "assigned_user_id"
+      }
+    ]
+  },
+  {
+    "model": "FlashSaleCampaign",
+    "table": "flash_sale_campaigns",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "name",
+        "javaName": "name",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "starts_at",
+        "javaName": "startsAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "ends_at",
+        "javaName": "endsAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "payment_ttl_seconds",
+        "javaName": "paymentTtlSeconds",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": []
+  },
+  {
+    "model": "FlashSaleItem",
+    "table": "flash_sale_items",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "campaign_id",
+        "javaName": "campaignId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "sale_price",
+        "javaName": "salePrice",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "quota",
+        "javaName": "quota",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reserved",
+        "javaName": "reserved",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "sold",
+        "javaName": "sold",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "max_per_user",
+        "javaName": "maxPerUser",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_flash_sale_items_campaign_id",
+        "column": "campaign_id"
+      },
+      {
+        "name": "idx_flash_sale_items_variant_id",
+        "column": "variant_id"
+      },
+      {
+        "name": "idx_flash_sale_items_shop_id",
+        "column": "shop_id"
+      }
+    ]
+  },
+  {
+    "model": "FlashSalePurchase",
+    "table": "flash_sale_purchases",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "campaign_id",
+        "javaName": "campaignId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "flash_sale_item_id",
+        "javaName": "flashSaleItemId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "quantity",
+        "javaName": "quantity",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expires_at",
+        "javaName": "expiresAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_flash_sale_purchases_campaign_id",
+        "column": "campaign_id"
+      },
+      {
+        "name": "idx_flash_sale_purchases_flash_sale_item_id",
+        "column": "flash_sale_item_id"
+      },
+      {
+        "name": "idx_flash_sale_purchases_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_flash_sale_purchases_order_id",
+        "column": "order_id"
+      }
+    ]
+  },
+  {
+    "model": "IdempotencyRecord",
+    "table": "idempotency_records",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "operation",
+        "javaName": "operation",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "idempotency_key",
+        "javaName": "idempotencyKey",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "request_hash",
+        "javaName": "requestHash",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "response_status",
+        "javaName": "responseStatus",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "response_body",
+        "javaName": "responseBody",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expires_at",
+        "javaName": "expiresAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_idempotency_records_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_idempotency_records_idempotency_key",
+        "column": "idempotency_key"
+      }
+    ]
+  },
+  {
+    "model": "Image",
+    "table": "image",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "file_name",
+        "javaName": "fileName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "file_type",
+        "javaName": "fileType",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "image",
+        "javaName": "image",
+        "type": "longblob",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "download_url",
+        "javaName": "downloadUrl",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "url",
+        "javaName": "url",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "object_key",
+        "javaName": "objectKey",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "sort_order",
+        "javaName": "sortOrder",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_image_product_id",
+        "column": "product_id"
+      },
+      {
+        "name": "idx_image_variant_id",
+        "column": "variant_id"
+      }
+    ]
+  },
+  {
+    "model": "Inventory",
+    "table": "inventory",
+    "fields": [
+      {
+        "name": "inventory_id",
+        "javaName": "inventoryId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "available",
+        "javaName": "available",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reserved",
+        "javaName": "reserved",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_inventory_product_id",
+        "column": "product_id"
+      },
+      {
+        "name": "idx_inventory_variant_id",
+        "column": "variant_id"
+      }
+    ]
+  },
+  {
+    "model": "NotificationTemplate",
+    "table": "notification_templates",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "code",
+        "javaName": "code",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "locale",
+        "javaName": "locale",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "channel",
+        "javaName": "channel",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "subject_template",
+        "javaName": "subjectTemplate",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "body_template",
+        "javaName": "bodyTemplate",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "enabled",
+        "javaName": "enabled",
+        "type": "bit(1)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_notification_templates_code",
+        "column": "code"
+      }
+    ]
+  },
+  {
+    "model": "Notification",
+    "table": "notifications",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "channel",
+        "javaName": "channel",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "template_code",
+        "javaName": "templateCode",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "subject",
+        "javaName": "subject",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "content",
+        "javaName": "content",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "event_id",
+        "javaName": "eventId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "sent_at",
+        "javaName": "sentAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "read_at",
+        "javaName": "readAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_notifications_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_notifications_event_id",
+        "column": "event_id"
+      }
+    ]
+  },
+  {
+    "model": "OrderDeliveryAddress",
+    "table": "order_delivery_addresses",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "recipient_name",
+        "javaName": "recipientName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "recipient_phone",
+        "javaName": "recipientPhone",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "street",
+        "javaName": "street",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "ward",
+        "javaName": "ward",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "district",
+        "javaName": "district",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "province",
+        "javaName": "province",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "postal_code",
+        "javaName": "postalCode",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "delivery_note",
+        "javaName": "deliveryNote",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_order_delivery_addresses_order_id",
+        "column": "order_id"
+      }
+    ]
+  },
+  {
+    "model": "OrderItem",
+    "table": "order_items",
+    "fields": [
+      {
+        "name": "order_item_id",
+        "javaName": "orderItemId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "seller_order_id",
+        "javaName": "sellerOrderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "cart_item_id",
+        "javaName": "cartItemId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "product_title",
+        "javaName": "productTitle",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "sku",
+        "javaName": "sku",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "attributes_snapshot",
+        "javaName": "attributesSnapshot",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "quantity",
+        "javaName": "quantity",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "price",
+        "javaName": "price",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount_amount",
+        "javaName": "discountAmount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_order_items_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_order_items_seller_order_id",
+        "column": "seller_order_id"
+      },
+      {
+        "name": "idx_order_items_product_id",
+        "column": "product_id"
+      },
+      {
+        "name": "idx_order_items_variant_id",
+        "column": "variant_id"
+      },
+      {
+        "name": "idx_order_items_cart_item_id",
+        "column": "cart_item_id"
+      }
+    ]
+  },
+  {
+    "model": "OrderStatusHistory",
+    "table": "order_status_history",
+    "fields": [
+      {
+        "name": "history_id",
+        "javaName": "historyId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "from_status",
+        "javaName": "fromStatus",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_status",
+        "javaName": "orderStatus",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "changed_by_user_id",
+        "javaName": "changedByUserId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reason",
+        "javaName": "reason",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "changed_at",
+        "javaName": "changedAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_order_status_history_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_order_status_history_changed_by_user_id",
+        "column": "changed_by_user_id"
+      }
+    ]
+  },
+  {
+    "model": "Order",
+    "table": "orders",
+    "fields": [
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "profile_id",
+        "javaName": "profileId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "payment_id",
+        "javaName": "paymentId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "coupon_id",
+        "javaName": "couponId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_no",
+        "javaName": "orderNo",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "idempotency_key",
+        "javaName": "idempotencyKey",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "request_hash",
+        "javaName": "requestHash",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "currency",
+        "javaName": "currency",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_date",
+        "javaName": "orderDate",
+        "type": "date",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "subtotal",
+        "javaName": "subtotal",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shipping_fee",
+        "javaName": "shippingFee",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount_amount",
+        "javaName": "discountAmount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "total_amount",
+        "javaName": "totalAmount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_status",
+        "javaName": "orderStatus",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_orders_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_orders_profile_id",
+        "column": "profile_id"
+      },
+      {
+        "name": "idx_orders_payment_id",
+        "column": "payment_id"
+      },
+      {
+        "name": "idx_orders_coupon_id",
+        "column": "coupon_id"
+      },
+      {
+        "name": "idx_orders_idempotency_key",
+        "column": "idempotency_key"
+      }
+    ]
+  },
+  {
+    "model": "OutboxEvent",
+    "table": "outbox_events",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "event_id",
+        "javaName": "eventId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "aggregate_type",
+        "javaName": "aggregateType",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "aggregate_id",
+        "javaName": "aggregateId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "event_type",
+        "javaName": "eventType",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "aggregate_version",
+        "javaName": "aggregateVersion",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "payload",
+        "javaName": "payload",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "correlation_id",
+        "javaName": "correlationId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "occurred_at",
+        "javaName": "occurredAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "published_at",
+        "javaName": "publishedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "attempts",
+        "javaName": "attempts",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "last_error",
+        "javaName": "lastError",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_outbox_events_event_id",
+        "column": "event_id"
+      },
+      {
+        "name": "idx_outbox_events_aggregate_id",
+        "column": "aggregate_id"
+      },
+      {
+        "name": "idx_outbox_events_correlation_id",
+        "column": "correlation_id"
+      }
+    ]
+  },
+  {
+    "model": "PasswordResetOtp",
+    "table": "password_reset_otp",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "otp",
+        "javaName": "otp",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expired_at",
+        "javaName": "expiredAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "used",
+        "javaName": "used",
+        "type": "bit(1)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_password_reset_otp_user_id",
+        "column": "user_id"
+      }
+    ]
+  },
+  {
+    "model": "PaymentTransaction",
+    "table": "payment_transactions",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "payment_id",
+        "javaName": "paymentId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "provider",
+        "javaName": "provider",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "provider_event_id",
+        "javaName": "providerEventId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "provider_ref",
+        "javaName": "providerRef",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "amount",
+        "javaName": "amount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "currency",
+        "javaName": "currency",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "payload_hash",
+        "javaName": "payloadHash",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "received_at",
+        "javaName": "receivedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_payment_transactions_payment_id",
+        "column": "payment_id"
+      },
+      {
+        "name": "idx_payment_transactions_provider_event_id",
+        "column": "provider_event_id"
+      }
+    ]
+  },
+  {
+    "model": "Payment",
+    "table": "payments",
+    "fields": [
+      {
+        "name": "payment_id",
+        "javaName": "paymentId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "provider",
+        "javaName": "provider",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "provider_ref",
+        "javaName": "providerRef",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "payment_method",
+        "javaName": "paymentMethod",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "payment_status",
+        "javaName": "paymentStatus",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "vnp_txn_ref",
+        "javaName": "vnpTxnRef",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "amount",
+        "javaName": "amount",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "currency",
+        "javaName": "currency",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_info",
+        "javaName": "orderInfo",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "bank_code",
+        "javaName": "bankCode",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "response_code",
+        "javaName": "responseCode",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "payment_date",
+        "javaName": "paymentDate",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expired_at",
+        "javaName": "expiredAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "transaction_no",
+        "javaName": "transactionNo",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "card_type",
+        "javaName": "cardType",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_payments_order_id",
+        "column": "order_id"
+      }
+    ]
+  },
+  {
+    "model": "Permission",
+    "table": "permissions",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "code",
+        "javaName": "code",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "resource",
+        "javaName": "resource",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "action",
+        "javaName": "action",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "scope",
+        "javaName": "scope",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "description",
+        "javaName": "description",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_permissions_code",
+        "column": "code"
+      }
+    ]
+  },
+  {
+    "model": "ProductEmbedding",
+    "table": "product_embeddings",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "model",
+        "javaName": "model",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "vector_reference",
+        "javaName": "vectorReference",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "source_hash",
+        "javaName": "sourceHash",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_product_embeddings_product_id",
+        "column": "product_id"
+      },
+      {
+        "name": "idx_product_embeddings_variant_id",
+        "column": "variant_id"
+      }
+    ]
+  },
+  {
+    "model": "ProductVariant",
+    "table": "product_variants",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "sku",
+        "javaName": "sku",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "attributes_json",
+        "javaName": "attributesJson",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "price",
+        "javaName": "price",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "special_price",
+        "javaName": "specialPrice",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "currency",
+        "javaName": "currency",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_product_variants_product_id",
+        "column": "product_id"
+      }
+    ]
+  },
+  {
+    "model": "Product",
+    "table": "products",
+    "fields": [
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "category_id",
+        "javaName": "categoryId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "product_name",
+        "javaName": "productName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "description",
+        "javaName": "description",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "price",
+        "javaName": "price",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "special_price",
+        "javaName": "specialPrice",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount",
+        "javaName": "discount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "bio",
+        "javaName": "bio",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "slug",
+        "javaName": "slug",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "height",
+        "javaName": "height",
+        "type": "double",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "length",
+        "javaName": "length",
+        "type": "double",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "weight",
+        "javaName": "weight",
+        "type": "double",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "width",
+        "javaName": "width",
+        "type": "double",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "origin",
+        "javaName": "origin",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "sold_count",
+        "javaName": "soldCount",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "review_count",
+        "javaName": "reviewCount",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "avg_rating",
+        "javaName": "avgRating",
+        "type": "double",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "create_at",
+        "javaName": "createAt",
+        "type": "date",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "update_at",
+        "javaName": "updateAt",
+        "type": "date",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_products_shop_id",
+        "column": "shop_id"
+      },
+      {
+        "name": "idx_products_category_id",
+        "column": "category_id"
+      },
+      {
+        "name": "idx_products_slug",
+        "column": "slug"
+      }
+    ]
+  },
+  {
+    "model": "RefreshToken",
+    "table": "refresh_tokens",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "token_hash",
+        "javaName": "tokenHash",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "family_id",
+        "javaName": "familyId",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expires_at",
+        "javaName": "expiresAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "revoked_at",
+        "javaName": "revokedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "replaced_by_token_id",
+        "javaName": "replacedByTokenId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_refresh_tokens_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_refresh_tokens_family_id",
+        "column": "family_id"
+      },
+      {
+        "name": "idx_refresh_tokens_replaced_by_token_id",
+        "column": "replaced_by_token_id"
+      }
+    ]
+  },
+  {
+    "model": "Refund",
+    "table": "refunds",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "payment_id",
+        "javaName": "paymentId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "return_request_id",
+        "javaName": "returnRequestId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "amount",
+        "javaName": "amount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "currency",
+        "javaName": "currency",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reason",
+        "javaName": "reason",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "idempotency_key",
+        "javaName": "idempotencyKey",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "actor_id",
+        "javaName": "actorId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_refunds_payment_id",
+        "column": "payment_id"
+      },
+      {
+        "name": "idx_refunds_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_refunds_return_request_id",
+        "column": "return_request_id"
+      },
+      {
+        "name": "idx_refunds_idempotency_key",
+        "column": "idempotency_key"
+      },
+      {
+        "name": "idx_refunds_actor_id",
+        "column": "actor_id"
+      }
+    ]
+  },
+  {
+    "model": "ReturnItem",
+    "table": "return_items",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "return_request_id",
+        "javaName": "returnRequestId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_item_id",
+        "javaName": "orderItemId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "quantity",
+        "javaName": "quantity",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reason",
+        "javaName": "reason",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "requested_refund_amount",
+        "javaName": "requestedRefundAmount",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_return_items_return_request_id",
+        "column": "return_request_id"
+      },
+      {
+        "name": "idx_return_items_order_item_id",
+        "column": "order_item_id"
+      }
+    ]
+  },
+  {
+    "model": "ReturnRequest",
+    "table": "return_requests",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reason",
+        "javaName": "reason",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reviewed_by_user_id",
+        "javaName": "reviewedByUserId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reviewed_at",
+        "javaName": "reviewedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_return_requests_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_return_requests_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_return_requests_shop_id",
+        "column": "shop_id"
+      },
+      {
+        "name": "idx_return_requests_reviewed_by_user_id",
+        "column": "reviewed_by_user_id"
+      }
+    ]
+  },
+  {
+    "model": "Review",
+    "table": "reviews",
+    "fields": [
+      {
+        "name": "review_id",
+        "javaName": "reviewId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "profile_id",
+        "javaName": "profileId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_item_id",
+        "javaName": "orderItemId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "customer_name",
+        "javaName": "customerName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "rating",
+        "javaName": "rating",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "comment",
+        "javaName": "comment",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "deleted",
+        "javaName": "deleted",
+        "type": "bit(1)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_reviews_product_id",
+        "column": "product_id"
+      },
+      {
+        "name": "idx_reviews_profile_id",
+        "column": "profile_id"
+      },
+      {
+        "name": "idx_reviews_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_reviews_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_reviews_order_item_id",
+        "column": "order_item_id"
+      }
+    ]
+  },
+  {
+    "model": "RevokedToken",
+    "table": "revoked_tokens",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "token",
+        "javaName": "token",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "revoked_at",
+        "javaName": "revokedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expires_at",
+        "javaName": "expiresAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": []
+  },
+  {
+    "model": "Role",
+    "table": "role",
+    "fields": [
+      {
+        "name": "role_name",
+        "javaName": "roleName",
+        "type": "varchar(255)",
+        "pk": true,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "description",
+        "javaName": "description",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": []
+  },
+  {
+    "model": "RolePermission",
+    "table": "role_permissions",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "role_name",
+        "javaName": "roleName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "permission_id",
+        "javaName": "permissionId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_role_permissions_permission_id",
+        "column": "permission_id"
+      }
+    ]
+  },
+  {
+    "model": "SearchDocument",
+    "table": "search_documents",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "source_hash",
+        "javaName": "sourceHash",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "content",
+        "javaName": "content",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "indexed_at",
+        "javaName": "indexedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_search_documents_product_id",
+        "column": "product_id"
+      },
+      {
+        "name": "idx_search_documents_variant_id",
+        "column": "variant_id"
+      }
+    ]
+  },
+  {
+    "model": "SellerOrder",
+    "table": "seller_orders",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "subtotal",
+        "javaName": "subtotal",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shipping_fee",
+        "javaName": "shippingFee",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "discount_total",
+        "javaName": "discountTotal",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "grand_total",
+        "javaName": "grandTotal",
+        "type": "decimal(18,2)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_seller_orders_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_seller_orders_shop_id",
+        "column": "shop_id"
+      }
+    ]
+  },
+  {
+    "model": "Shipment",
+    "table": "shipments",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "seller_order_id",
+        "javaName": "sellerOrderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "warehouse_id",
+        "javaName": "warehouseId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "assigned_shipper_id",
+        "javaName": "assignedShipperId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "tracking_no",
+        "javaName": "trackingNo",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "carrier",
+        "javaName": "carrier",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "shipped_at",
+        "javaName": "shippedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "delivered_at",
+        "javaName": "deliveredAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_shipments_seller_order_id",
+        "column": "seller_order_id"
+      },
+      {
+        "name": "idx_shipments_shop_id",
+        "column": "shop_id"
+      },
+      {
+        "name": "idx_shipments_warehouse_id",
+        "column": "warehouse_id"
+      },
+      {
+        "name": "idx_shipments_assigned_shipper_id",
+        "column": "assigned_shipper_id"
+      }
+    ]
+  },
+  {
+    "model": "ShopMember",
+    "table": "shop_members",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "role",
+        "javaName": "role",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_shop_members_shop_id",
+        "column": "shop_id"
+      },
+      {
+        "name": "idx_shop_members_user_id",
+        "column": "user_id"
+      }
+    ]
+  },
+  {
+    "model": "Shop",
+    "table": "shops",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "owner_user_id",
+        "javaName": "ownerUserId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "name",
+        "javaName": "name",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "slug",
+        "javaName": "slug",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "description",
+        "javaName": "description",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "approved_by_user_id",
+        "javaName": "approvedByUserId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "approved_at",
+        "javaName": "approvedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_shops_owner_user_id",
+        "column": "owner_user_id"
+      },
+      {
+        "name": "idx_shops_slug",
+        "column": "slug"
+      },
+      {
+        "name": "idx_shops_approved_by_user_id",
+        "column": "approved_by_user_id"
+      }
+    ]
+  },
+  {
+    "model": "StockMovement",
+    "table": "stock_movements",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "quantity_delta",
+        "javaName": "quantityDelta",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "reason",
+        "javaName": "reason",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "ref_type",
+        "javaName": "refType",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "ref_id",
+        "javaName": "refId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "actor_id",
+        "javaName": "actorId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_stock_movements_variant_id",
+        "column": "variant_id"
+      },
+      {
+        "name": "idx_stock_movements_product_id",
+        "column": "product_id"
+      },
+      {
+        "name": "idx_stock_movements_ref_id",
+        "column": "ref_id"
+      },
+      {
+        "name": "idx_stock_movements_actor_id",
+        "column": "actor_id"
+      }
+    ]
+  },
+  {
+    "model": "StockReservation",
+    "table": "stock_reservations",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "variant_id",
+        "javaName": "variantId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "product_id",
+        "javaName": "productId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "quantity",
+        "javaName": "quantity",
+        "type": "int",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "expires_at",
+        "javaName": "expiresAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "version",
+        "javaName": "version",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": true
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_stock_reservations_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_stock_reservations_variant_id",
+        "column": "variant_id"
+      },
+      {
+        "name": "idx_stock_reservations_product_id",
+        "column": "product_id"
+      }
+    ]
+  },
+  {
+    "model": "SupportTicket",
+    "table": "support_tickets",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "order_id",
+        "javaName": "orderId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "assigned_user_id",
+        "javaName": "assignedUserId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "subject",
+        "javaName": "subject",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "description",
+        "javaName": "description",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "priority",
+        "javaName": "priority",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_support_tickets_user_id",
+        "column": "user_id"
+      },
+      {
+        "name": "idx_support_tickets_order_id",
+        "column": "order_id"
+      },
+      {
+        "name": "idx_support_tickets_assigned_user_id",
+        "column": "assigned_user_id"
+      }
+    ]
+  },
+  {
+    "model": "TrackingEvent",
+    "table": "tracking_events",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "shipment_id",
+        "javaName": "shipmentId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "description",
+        "javaName": "description",
+        "type": "text",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "location",
+        "javaName": "location",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "actor_id",
+        "javaName": "actorId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "occurred_at",
+        "javaName": "occurredAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_tracking_events_shipment_id",
+        "column": "shipment_id"
+      },
+      {
+        "name": "idx_tracking_events_actor_id",
+        "column": "actor_id"
+      }
+    ]
+  },
+  {
+    "model": "User",
+    "table": "user",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "password",
+        "javaName": "password",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "email",
+        "javaName": "email",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "enabled",
+        "javaName": "enabled",
+        "type": "bit(1)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "locked_reason",
+        "javaName": "lockedReason",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "locked_at",
+        "javaName": "lockedAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "datetime(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_email",
+        "column": "email"
+      }
+    ]
+  },
+  {
+    "model": "UserProfile",
+    "table": "user_profile",
+    "fields": [
+      {
+        "name": "profile_id",
+        "javaName": "profileId",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "username",
+        "javaName": "username",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "gender",
+        "javaName": "gender",
+        "type": "bit(1)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "birth_date",
+        "javaName": "birthDate",
+        "type": "date",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "mobile_number",
+        "javaName": "mobileNumber",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_profile_user_id",
+        "column": "user_id"
+      }
+    ]
+  },
+  {
+    "model": "UserRole",
+    "table": "user_role",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "user_id",
+        "javaName": "userId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "role_name",
+        "javaName": "roleName",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_user_role_user_id",
+        "column": "user_id"
+      }
+    ]
+  },
+  {
+    "model": "Warehouse",
+    "table": "warehouses",
+    "fields": [
+      {
+        "name": "id",
+        "javaName": "id",
+        "type": "bigint",
+        "pk": true,
+        "generated": true,
+        "version": false
+      },
+      {
+        "name": "shop_id",
+        "javaName": "shopId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "name",
+        "javaName": "name",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "address_id",
+        "javaName": "addressId",
+        "type": "bigint",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "status",
+        "javaName": "status",
+        "type": "varchar(255)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "created_at",
+        "javaName": "createdAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      },
+      {
+        "name": "updated_at",
+        "javaName": "updatedAt",
+        "type": "timestamp(6)",
+        "pk": false,
+        "generated": false,
+        "version": false
+      }
+    ],
+    "indexes": [
+      {
+        "name": "idx_warehouses_shop_id",
+        "column": "shop_id"
+      },
+      {
+        "name": "idx_warehouses_address_id",
+        "column": "address_id"
+      }
+    ]
+  }
+]

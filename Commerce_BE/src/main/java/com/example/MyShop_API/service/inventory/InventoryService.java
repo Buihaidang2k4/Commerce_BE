@@ -22,20 +22,28 @@ import java.util.List;
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class InventoryService implements IInventoryService {
+    com.example.MyShop_API.repo.ProductRepository productRepository;
     InventoryRepository inventoryRepository;
     InventoryMapper inventoryMapper;
 
     // 1. Khởi tạo tồn kho khi tạo sản phẩm
     @Override
+    @Transactional
     public Inventory initializeInventory(Product product, int initialStock) {
-        Inventory inventory = Inventory.builder().product(product).available(initialStock).reserved(0).build();
+        productRepository.findByIdForUpdate(product.getProductId()).orElseThrow(() -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
+        var existing = inventoryRepository.findByProductId(product.getProductId());
+        if (existing.isPresent()) return existing.get();
+        if (initialStock < 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        Inventory inventory = Inventory.builder().productId(product.getProductId()).available(initialStock).reserved(0).build();
         return inventoryRepository.save(inventory);
     }
 
     // 2. Cập nhật tồn kho (admin)
     @Override
+    @Transactional
     public Inventory updateStock(Long productId, int newAvailable) {
-        Inventory inventory = getInventoryByProductId(productId);
+        if (newAvailable < 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        Inventory inventory = getInventoryWithLock(productId);
         inventory.setUpdatedAt(LocalDateTime.now());
         inventory.setAvailable(newAvailable);
         return inventoryRepository.save(inventory);
@@ -45,9 +53,8 @@ public class InventoryService implements IInventoryService {
     @Transactional
     @Override
     public boolean reserveStock(Long productId, int quantity) {
-        // kiểm tra số lượng hàng có sẵn
-        // Tìm theo cơ chế lock đảm bảo không có 2 người truy cập cùng lúc vào tồn kho
-        Inventory inventory = getInventoryByProductId(productId);
+        if (quantity <= 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        Inventory inventory = getInventoryWithLock(productId);
 
         if (!inventory.canReserve(quantity)) {
             log.warn("Not enough stock for product {} : needed {} : available {}", productId, quantity, inventory.getAvailable());
@@ -66,6 +73,7 @@ public class InventoryService implements IInventoryService {
     @Override
     @Transactional
     public void cancelReservation(Long productId, int quantity) {
+        if (quantity <= 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
         Inventory inventory = getInventoryWithLock(productId);
         if (inventory.getReserved() < quantity) {
             throw new AppException(CommonMessageUtils.NOT_ENOUGH_RESERVED_STOCK);
@@ -80,6 +88,7 @@ public class InventoryService implements IInventoryService {
     @Override
     @Transactional
     public void confirmOrder(Long productId, int quantity) {
+        if (quantity <= 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
         Inventory inventory = getInventoryWithLock(productId);
         if (inventory.getReserved() < quantity) {
             throw new AppException(CommonMessageUtils.NOT_ENOUGH_RESERVED_STOCK);
@@ -93,7 +102,8 @@ public class InventoryService implements IInventoryService {
     @Override
     @Transactional
     public void restock(Long productId, int quantity) {
-        Inventory inventory = getInventoryByProductId(productId);
+        if (quantity <= 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        Inventory inventory = getInventoryWithLock(productId);
 
         if (inventory.getReserved() < quantity)
             throw new AppException(CommonMessageUtils.NOT_ENOUGH_RESERVED_STOCK);
@@ -108,7 +118,7 @@ public class InventoryService implements IInventoryService {
     // 7. Kiểm tra tồn kho trước thanh toán
     @Override
     public boolean checkStock(Long productId, int quantity) {
-        return inventoryRepository.findByProduct_ProductId(productId).map(inv -> inv.canReserve(quantity)).orElse(false);
+        return inventoryRepository.findByProductId(productId).map(inv -> inv.canReserve(quantity)).orElse(false);
     }
 
     @Override
@@ -129,7 +139,7 @@ public class InventoryService implements IInventoryService {
     @Override
     @Transactional(readOnly = true)
     public Inventory getInventoryByProductId(Long productId) {
-        return inventoryRepository.findByProduct_ProductId(productId).orElseThrow(() -> new AppException(CommonMessageUtils.INVENTORY_DOES_NOT_EXIST, productId));
+        return inventoryRepository.findByProductId(productId).orElseThrow(() -> new AppException(CommonMessageUtils.INVENTORY_DOES_NOT_EXIST, productId));
     }
 
     @Override

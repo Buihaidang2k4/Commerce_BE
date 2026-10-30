@@ -13,11 +13,11 @@ import java.util.List;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
     @Query("""
-            SELECT COUNT(r) > 0 
-            FROM Review r 
-            WHERE r.profile.profileId = :profileId 
-              AND r.order.orderId = :orderId 
-              AND r.product.productId = :productId 
+            SELECT COUNT(r) > 0
+            FROM Review r
+            WHERE r.profileId = :profileId
+              AND r.orderId = :orderId
+              AND r.productId = :productId
               AND r.deleted = false
             """)
     boolean existsReviewForOrderAndProduct(
@@ -25,13 +25,13 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("productId") Long productId,
             @Param("orderId") Long orderId);
 
-    Page<Review> findByProductProductIdAndDeletedFalse(Long productId, Pageable pageable);
+    Page<Review> findByProductIdAndDeletedFalse(Long productId, Pageable pageable);
 
     @Query("""
-            SELECT 
+            SELECT
             COALESCE(AVG(r.rating),0) ,
             COUNT(r)
-            FROM Review r WHERE r.product.productId =:productId AND r.deleted = false 
+            FROM Review r WHERE r.productId =:productId AND r.deleted = false
             """)
     Object findRatingStats(@Param("productId") Long productId);
 

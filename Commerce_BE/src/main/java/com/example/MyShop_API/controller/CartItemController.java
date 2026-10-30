@@ -29,6 +29,7 @@ public class CartItemController {
     ICartItemService cartItemService;
     ICartService cartService;
     CartItemMapper cartItemMapper;
+    com.example.MyShop_API.mapper.CartMapper cartMapper;
 
     @GetMapping(ApiPath.CART_ITEM_CART_CART_ID_CART_ITEM_CART_ITEM_ID)
     ResponseEntity<ApiResponse<CartItemResponse>> getCartItem(@PathVariable Long cartId, @PathVariable Long cartItemId) {
@@ -41,14 +42,14 @@ public class CartItemController {
     }
 
     @PostMapping(ApiPath.CART_ITEM_CART_ITEM_ADD_ITEM_TO_CART)
-    ResponseEntity<ApiResponse<Cart>> addItemToCart(@RequestParam(value = "cartId", required = false) Optional<Long> cartId, @RequestParam("productId") Long productId, @RequestParam("quantity") Integer quantity) {
+    ResponseEntity<ApiResponse<com.example.MyShop_API.dto.response.CartResponse>> addItemToCart(@RequestParam(value = "cartId", required = false) Optional<Long> cartId, @RequestParam("productId") Long productId, @RequestParam("quantity") Integer quantity) {
         try {
             // check cartId
             Long checkCartId = cartId.map(id -> cartService.getCartById(id) != null ? id : cartService.initializeNewCart()).orElseGet(() -> cartService.initializeNewCart());
 
             cartItemService.addItemToCart(checkCartId, productId, quantity);
             Cart cart = cartService.getCartById(checkCartId);
-            return ResponseEntity.ok(new ApiResponse(200, "add cartItem success", cart));
+            return ResponseEntity.ok(new ApiResponse(200, "add cartItem success", cartMapper.toResponse(cart)));
         } catch (Exception e) {
             if (e instanceof AppException appException) throw appException;
             throw new IllegalStateException(e);

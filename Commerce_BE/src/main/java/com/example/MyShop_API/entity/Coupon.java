@@ -1,82 +1,49 @@
 package com.example.MyShop_API.entity;
 
-import com.example.MyShop_API.Enum.CouponScope;
-import com.example.MyShop_API.Enum.DiscountType;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "coupons", indexes = {@Index(name = "idx_coupons_shop_id", columnList = "shop_id"), @Index(name = "idx_coupons_code", columnList = "code")})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "coupons", uniqueConstraints = @UniqueConstraint(columnNames = "code"))
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Coupon {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long couponId;
-
-    @Column(unique = true, length = 50, nullable = false)
-    String code;
-
+    private Long couponId;
+    private Long shopId;
+    private String code;
     @Builder.Default
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    CouponScope scope = CouponScope.GLOBAL;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    DiscountType discountType;
-    BigDecimal discountPercent; // 10.00 = 10%
-    BigDecimal discountAmount; // 5000VNĐ
-    BigDecimal maxDiscountAmount; // maximum discount limit
-    BigDecimal minOrderValue; // Minimum conditions for discount
-    LocalDateTime startDate;
-    LocalDateTime expiryDate;
-    boolean enabled = true;
-    Integer usageLimit;
-    Integer usedCount;
-    boolean limitPerUser = true;
-    @Column(name = "max_uses_per_user")
-    Integer maxUsesPerUser = 1;
-
+    private String scope = "GLOBAL";
+    private String discountType;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal discountPercent;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal discountAmount;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal maxDiscountAmount;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal minOrderValue;
+    private LocalDateTime startDate;
+    private LocalDateTime expiryDate;
     @Builder.Default
-    @ManyToMany
-    @JoinTable(
-            name = "coupon_categories",
-            joinColumns = @JoinColumn(name = "coupon_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
-    Set<Category> categories = new HashSet<>();
-
+    private boolean enabled = true;
+    private Integer usageLimit;
     @Builder.Default
-    @ManyToMany
-    @JoinTable(
-            name = "coupon_products",
-            joinColumns = @JoinColumn(name = "coupon_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    Set<Product> products = new HashSet<>();
-
-
+    private Integer usedCount = 0;
+    @Builder.Default
+    private boolean limitPerUser = true;
+    @Builder.Default
+    private Integer maxUsesPerUser = 1;
     public boolean isUsable() {
         LocalDateTime now = LocalDateTime.now();
-        if (!enabled) return false;
-        if (startDate != null && now.isBefore(startDate)) return false;
-        if (expiryDate != null && now.isAfter(expiryDate)) return false;
-        if (usageLimit != null && usedCount >= usageLimit) return false;
-        return true;
+        return enabled && (startDate == null || !now.isBefore(startDate)) && (expiryDate == null || !now.isAfter(expiryDate)) && (usageLimit == null || usedCount < usageLimit);
     }
-
-    public void incrementUsedCount() {
-        this.usedCount++;
-    }
+    public void incrementUsedCount() { usedCount = (usedCount == null ? 0 : usedCount) + 1; }
 }

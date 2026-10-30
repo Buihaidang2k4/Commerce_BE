@@ -52,7 +52,7 @@ public class CartController {
         Page<Cart> carts = cartService.getAllCarts(pageable);
 
         Map<String, Object> res = new HashMap<>();
-        res.put("content", carts.getContent()); // data
+        res.put("content", cartMapper.toResponseList(carts.getContent())); // data
         res.put("currentPage", carts.getNumber());
         res.put("totalItems", carts.getTotalElements());
         res.put("totalPages", carts.getTotalPages());
@@ -63,8 +63,8 @@ public class CartController {
     }
 
     @GetMapping(ApiPath.CART_CART_CARD_ID)
-    ResponseEntity<ApiResponse<Cart>> getCart(@PathVariable Long cardId) {
-        return ResponseEntity.ok(new ApiResponse<>(200, "success", cartService.getCartById(cardId)));
+    ResponseEntity<ApiResponse<CartResponse>> getCart(@PathVariable Long cardId) {
+        return ResponseEntity.ok(new ApiResponse<>(200, "success", cartMapper.toResponse(cartService.getCartById(cardId))));
     }
 
     @GetMapping(ApiPath.CART_CART_USER_PROFILE_PROFILE_ID)
@@ -75,7 +75,7 @@ public class CartController {
 
     @PostMapping(ApiPath.CART_USER_PROFILE_PROFILE_ID_CART_CART_ID_ADD_CART_TO_USER_PROFILE)
     ResponseEntity<ApiResponse> addCartToUserProfile(@PathVariable Long profileId, @PathVariable Long cartId) {
-        return ResponseEntity.ok(new ApiResponse(200, "add cart to user-profile success", cartService.addCartForUserProfile(profileId, cartId)));
+        return ResponseEntity.ok(new ApiResponse(200, "add cart to user-profile success", cartMapper.toResponse(cartService.addCartForUserProfile(profileId, cartId))));
     }
 
     @DeleteMapping(ApiPath.CART_CART_CART_ID_CLEAR)

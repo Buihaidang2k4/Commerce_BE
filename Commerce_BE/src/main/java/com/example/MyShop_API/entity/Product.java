@@ -1,83 +1,52 @@
 package com.example.MyShop_API.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
-@Data
+@Table(name = "products", indexes = {@Index(name = "idx_products_shop_id", columnList = "shop_id"), @Index(name = "idx_products_category_id", columnList = "category_id"), @Index(name = "idx_products_slug", columnList = "slug")})
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "products")
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long productId;
-
-    @Column(unique = true)
-    String productName;
-
+    private Long productId;
+    private Long shopId;
+    private Long categoryId;
+    private String productName;
     @Column(columnDefinition = "TEXT")
-    String description;
-    BigDecimal price;
-    BigDecimal specialPrice;
-    BigDecimal discount;
-
+    private String description;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal price;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal specialPrice;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal discount;
     @Column(columnDefinition = "TEXT")
-    String bio;
+    private String bio;
+    private String slug;
+    private Double height;
+    private Double length;
+    private Double weight;
+    private Double width;
+    private String origin;
+    @Builder.Default
+    private Integer soldCount = 0;
+    @Builder.Default
+    private Integer reviewCount = 0;
+    @Builder.Default
+    private Double avgRating = 0.0;
+    @Builder.Default
+    private String status = "DRAFT";
+    private LocalDate createAt;
+    private LocalDate updateAt;
+    @Version
+    private Long version;
 
-    @Column(unique = true)
-    String slug;
-    Double height;
-    Double length;
-    Double weight;
-    Double width;
-
-    String origin;
-    Integer soldCount;
-    Integer reviewCount;
-    Double avgRating;
-    LocalDate createAt;
-    LocalDate updateAt;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<Image> images;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "category_id")
-    Category category;
-
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.MERGE, CascadeType.PERSIST}, fetch = FetchType.EAGER)
-    @JsonIgnore
-    List<CartItem> cartItems = new ArrayList<>();
-
-    @JsonIgnore
-    @OneToMany(mappedBy = "product", cascade = {CascadeType.MERGE, CascadeType.PERSIST})
-    List<OrderItem> orderItems = new ArrayList<>();
-
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    Inventory inventory;
-
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<Review> reviews = new ArrayList<>();
-
-    public Product(String productName, String description, BigDecimal price, BigDecimal discount, BigDecimal specialPrice, Category category) {
-        this.productName = productName;
-        this.description = description;
-        this.price = price;
-        this.discount = discount;
-        this.specialPrice = specialPrice;
-        this.category = category;
-    }
 }

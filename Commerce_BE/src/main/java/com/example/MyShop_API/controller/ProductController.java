@@ -38,6 +38,7 @@ import static org.springframework.http.HttpStatus.*;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductController {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     IProductService productService;
     ProductMapper productMapper;
 

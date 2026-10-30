@@ -14,11 +14,11 @@ import java.util.Optional;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<Inventory, Long> {
-    Optional<Inventory> findByProduct_ProductId(Long productProductId);
+    Optional<Inventory> findByProductId(Long productProductId);
 
     // Dùng để khóa khi truy vấn vào số lượng tồn kho
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT i FROM Inventory i WHERE i.product.productId =:productId")
+    @Query("SELECT i FROM Inventory i WHERE i.productId =:productId")
     Optional<Inventory> findByProductIdWithLock(Long productId);
 
     // Huy
@@ -51,4 +51,5 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
                 where i.available =:zero
             """)
     List<Inventory> findInventoriesByAvailableOutOfStock(@Param("zero") int zero);
+    void deleteByProductId(Long productId);
 }

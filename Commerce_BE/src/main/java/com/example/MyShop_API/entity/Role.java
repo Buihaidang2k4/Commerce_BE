@@ -2,23 +2,21 @@ package com.example.MyShop_API.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
-import java.util.Set;
-
+@Entity
+@Table(name = "role")
 @Getter
 @Setter
-@Entity
 @Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Role {
-
     @Id
-    String roleName;
-    String description;
+    private String roleName;
+    @Column(columnDefinition = "TEXT")
+    private String description;
 
-    @ManyToMany(mappedBy = "roles")
-    Set<User> users;
 }

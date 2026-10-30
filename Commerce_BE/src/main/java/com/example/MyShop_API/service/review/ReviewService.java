@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.review;
 
-import com.example.MyShop_API.Enum.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatus;
 import com.example.MyShop_API.dto.request.CreateReviewRequest;
 import com.example.MyShop_API.dto.response.ReviewResponse;
 import com.example.MyShop_API.entity.Order;
@@ -51,12 +51,12 @@ public class ReviewService implements IReviewService {
         if (!purchased) throw new AppException(CommonMessageUtils.REVIEW_NOT_PURCHASED);
 
         // 1. Kiểm tra đơn hàng có thuộc về user không
-        if (!order.getProfile().getProfileId().equals(profileId)) {
+        if (!order.getProfileId().equals(profileId)) {
             throw new AppException(CommonMessageUtils.ORDER_NOT_BELONG_TO_USER);
         }
 
         // 2. Kiểm tra đơn đã giao thành công chưa
-        if (order.getOrderStatus() != OrderStatus.DELIVERED) {
+        if (!OrderStatus.DELIVERED.equals(order.getOrderStatus())) {
             throw new AppException(CommonMessageUtils.ORDER_NOT_DELIVERED);
         }
 
@@ -66,7 +66,7 @@ public class ReviewService implements IReviewService {
         if (alreadyReviewed) throw new AppException(CommonMessageUtils.REVIEW_ALREADY_EXISTS_FOR_THIS_ORDER);
 
         String usernameRating = profile.getUsername() != null ? profile.getUsername() : "anonymous" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
-        Review review = Review.builder().product(product).profile(profile).order(order).customerName(usernameRating).rating(request.getRating()).comment(request.getComment()).createdAt(LocalDateTime.now()).build();
+        Review review = Review.builder().productId(product.getProductId()).profileId(profile.getProfileId()).orderId(order.getOrderId()).customerName(usernameRating).rating(request.getRating()).comment(request.getComment()).createdAt(LocalDateTime.now()).build();
 
 
         //  reviewCount & avgRating incremental
@@ -79,7 +79,7 @@ public class ReviewService implements IReviewService {
     @Override
     @Transactional(readOnly = true)
     public Page<ReviewResponse> findByProductId(Long productId, Pageable pageable) {
-        return reviewRepository.findByProductProductIdAndDeletedFalse(productId, pageable).map(reviewMapper::toResponse);
+        return reviewRepository.findByProductIdAndDeletedFalse(productId, pageable).map(reviewMapper::toResponse);
     }
 
     private void calculateRatingStatsOrReviewCount(Product product, int rating) {

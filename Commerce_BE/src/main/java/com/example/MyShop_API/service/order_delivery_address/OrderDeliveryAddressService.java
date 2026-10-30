@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderDeliveryAddressService implements IOrderDeliveryAddressService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     AddressRepository addressRepository;
     OrderDeliveryAddressRepository orderDeliveryAddressRepository;
     OrderRepository orderRepository;
@@ -39,6 +40,7 @@ public class OrderDeliveryAddressService implements IOrderDeliveryAddressService
     public OrderDeliveryAddress createDeliveryAddressFromAddressId(Long addressId, Long profileId, String extraDeliveryNote) {
         Address address = addressRepository.findById(addressId).orElseThrow(() -> new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
 
+        if (!java.util.Objects.equals(address.getProfileId(), profileId)) throw new AppException(CommonMessageUtils.ORDER_ADDRESS_MISMATCH);
         return OrderDeliveryAddress.builder()
                 .createdAt(LocalDateTime.now())
                 .recipientName(address.getFullName())
@@ -59,7 +61,7 @@ public class OrderDeliveryAddressService implements IOrderDeliveryAddressService
     @Override
     public OrderDeliveryAddress updateDeliveryAddressFromAddressId(Long addressId, Order order, String extraDeliveryNote) {
         Address address = addressRepository.findById(addressId).orElseThrow(() -> new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
-        OrderDeliveryAddress deliveryAddress = order.getDeliveryAddress();
+        OrderDeliveryAddress deliveryAddress = models.deliveryAddress(order.getOrderId());
         deliveryAddress.setRecipientName(address.getFullName());
         deliveryAddress.setRecipientPhone(address.getPhone());
         deliveryAddress.setStreet(address.getStreet());

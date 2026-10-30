@@ -34,6 +34,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserService implements IUserService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     UserRepository userRepository;
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
@@ -64,38 +65,19 @@ public class UserService implements IUserService {
 
     @Transactional
     public UserResponse createUser(UserCreationRequest request) {
-        log.info("createUser().........");
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) throw new AppException(CommonMessageUtils.USER_EXISTED);
         User user = userMapper.toEntity(request);
-
-        // convert pass
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setEnabled(true);
-
-        // set role defautlt nếu không có tạo mới
-        HashSet<Role> roles = new HashSet<>();
-        roleRepository.findById(PredefinedRole.USER_ROLE).ifPresentOrElse(roles::add,
-                () -> {
-                    Role defaultRole = Role.builder()
-                            .roleName("USER")
-                            .description("Role User default")
-                            .build();
-                    roleRepository.save(defaultRole);
-                    roles.add(defaultRole);
-                });
-
-        user.setRoles(roles);
-
-        // Tạo profile mặc định
+        user = userRepository.save(user);
+        Role role = roleRepository.findById(PredefinedRole.USER_ROLE).orElseGet(() -> roleRepository.save(Role.builder().roleName(PredefinedRole.USER_ROLE).description("Customer").build()));
+        models.replaceRoles(user.getId(), List.of(role));
         UserProfile profile = profileService.createEmptyUserProfile();
-        profile.setUser(user);
-        user.setProfile(profile);
-
-        try {
-            user = userRepository.save(user);
-        } catch (DataIntegrityViolationException e) {
-            throw new AppException(CommonMessageUtils.USER_EXISTED);
-        }
-
+        profile.setUserId(user.getId());
+        models.getProfiles().save(profile);
+        Cart cart = models.cartForProfile(profile.getProfileId());
+        cart.setUserId(user.getId());
+        models.getCarts().save(cart);
         return userMapper.toResponse(user);
     }
 
@@ -131,7 +113,7 @@ public class UserService implements IUserService {
         userMapper.update(request, findUser);
         var roles = roleRepository.findAllById(request.getRoles());
 
-        findUser.setRoles(new HashSet<>(roles));
+        models.replaceRoles(findUser.getId(), roles);
 
         try {
             findUser = userRepository.save(findUser);
@@ -158,8 +140,8 @@ public class UserService implements IUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
 
-        boolean isAdmin = user.getRoles().stream()
-                .anyMatch(role -> role.getRoleName().equals(com.example.MyShop_API.Enum.Role.ADMIN.name()));
+        boolean isAdmin = models.roles(user.getId()).stream()
+                .anyMatch(role -> role.getRoleName().equals(com.example.MyShop_API.constants.RoleCode.ADMIN));
 
         if (isAdmin)
             throw new AppException(CommonMessageUtils.CANNOT_LOCK_ADMIN);
@@ -204,7 +186,7 @@ public class UserService implements IUserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
 
-        log.info("user = {}", user.getProfile());
+        log.info("user = {}", models.profileForUser(user.getId()));
         UserResponse response = userMapper.toResponse(user);
         log.info("=========== Get Info ===============");
         return response;

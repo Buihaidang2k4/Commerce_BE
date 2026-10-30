@@ -11,7 +11,8 @@ import java.util.List;
 
 @Repository
 public interface ImageRepository extends JpaRepository<Image, Long> {
-    @Query("SELECT i FROM Image i WHERE i.product.productId =:productId ")
+    @Query("SELECT i FROM Image i WHERE i.productId =:productId ")
     List<Image> findImageByProductId(@Param("productId") Long productId);
 
+    void deleteByProductId(Long productId);
 }

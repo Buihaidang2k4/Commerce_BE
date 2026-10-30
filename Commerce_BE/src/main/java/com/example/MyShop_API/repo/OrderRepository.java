@@ -1,6 +1,6 @@
 package com.example.MyShop_API.repo;
 
-import com.example.MyShop_API.Enum.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatus;
 import com.example.MyShop_API.entity.Order;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
@@ -17,28 +17,28 @@ import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    @Query("SELECT o FROM Order o WHERE o.profile.profileId =:profileId")
-    List<Order> findByProfileProfile_id(@Param("profileId") Long profileId);
+    @Query("SELECT o FROM Order o WHERE o.profileId =:profileId")
+    List<Order> findByProfileId(@Param("profileId") Long profileId);
 
-    List<Order> findByOrderStatus(OrderStatus orderStatus);
+    List<Order> findByOrderStatus(String orderStatus);
 
-    int countByProfile_ProfileIdAndCoupon_CouponId(Long profileProfileId, Long couponCouponId);
+    int countByProfileIdAndCouponId(Long profileProfileId, Long couponCouponId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT o FROM Order o WHERE o.id = :id")
+    @Query("SELECT o FROM Order o WHERE o.orderId = :id")
     Optional<Order> findByIdForUpdate(@Param("id") Long id);
 
 
     @Modifying
     @Query("UPDATE Order o SET o.orderStatus=:status WHERE o.orderId=:orderId")
-    void updateStatus(@Param("orderId") Long orderId, @Param("status") OrderStatus status);
+    void updateStatus(@Param("orderId") Long orderId, @Param("status") String status);
 
     @Query("""
             SELECT COUNT(o) > 0
             FROM Order o
-            JOIN o.orderItems oi
-            WHERE o.profile.profileId = :profileId
-              AND oi.product.productId = :productId
+            JOIN OrderItem oi ON oi.orderId = o.orderId
+            WHERE o.profileId = :profileId
+              AND oi.productId = :productId
               AND o.orderId = :orderId
               AND o.orderStatus IN :statuses
             """)
@@ -46,7 +46,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             @Param("profileId") Long profileId,
             @Param("productId") Long productId,
             @Param("orderId") Long orderId,
-            @Param("statuses") List<OrderStatus> statuses);
+            @Param("statuses") List<String> statuses);
 
     // Doanh thu thang
     @Query(value = """
@@ -116,5 +116,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Object[]> getAnnualRevenue(@Param("fromYear") int fromYear,
                                     @Param("toYear") int toYear);
 
-    Page<Order> findByOrderStatus(OrderStatus orderStatus, Pageable pageable);
+    Page<Order> findByOrderStatus(String orderStatus, Pageable pageable);
 }

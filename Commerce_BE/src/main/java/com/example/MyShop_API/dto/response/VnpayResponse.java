@@ -1,7 +1,7 @@
 package com.example.MyShop_API.dto.response;
 
-import com.example.MyShop_API.Enum.PaymentMethod;
-import com.example.MyShop_API.Enum.PaymentStatus;
+import com.example.MyShop_API.constants.PaymentMethod;
+import com.example.MyShop_API.constants.PaymentStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -16,6 +16,6 @@ public class VnpayResponse {
     public String message;
     public String orderCode;
     String orderInfo;
-    PaymentStatus paymentStatus;
-    PaymentMethod paymentMethod;
+    String paymentStatus;
+    String paymentMethod;
 }

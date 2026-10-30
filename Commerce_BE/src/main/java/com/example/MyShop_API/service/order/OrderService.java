@@ -1,8 +1,8 @@
 package com.example.MyShop_API.service.order;
 
-import com.example.MyShop_API.Enum.OrderStatus;
-import com.example.MyShop_API.Enum.PaymentMethod;
-import com.example.MyShop_API.Enum.PaymentStatus;
+import com.example.MyShop_API.constants.OrderStatus;
+import com.example.MyShop_API.constants.PaymentMethod;
+import com.example.MyShop_API.constants.PaymentStatus;
 import com.example.MyShop_API.anotation.AdminOnly;
 import com.example.MyShop_API.dto.request.OrderPlaceListItemRequest;
 import com.example.MyShop_API.dto.request.OrderRequest;
@@ -43,6 +43,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderService implements IOrderService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     OrderRepository orderRepository;
     ICartService cartService;
     ProductRepository productRepository;
@@ -73,20 +74,20 @@ public class OrderService implements IOrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Order> getOrdersByStatus(OrderStatus status) {
+    public List<Order> getOrdersByStatus(String status) {
         return orderRepository.findByOrderStatus(status);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<Order> getOrdersByStatus(OrderStatus status, Pageable pageable) {
+    public Page<Order> getOrdersByStatus(String status, Pageable pageable) {
         return orderRepository.findByOrderStatus(status, pageable);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<Order> getUserOrders(Long profileId) {
-        return orderRepository.findByProfileProfile_id(profileId);
+        return orderRepository.findByProfileId(profileId);
     }
 
     // placeOrder Buy Now -> create orderItem -> Payment
@@ -101,21 +102,21 @@ public class OrderService implements IOrderService {
                 .orElseThrow(() -> new AppException(CommonMessageUtils.PROFILE_NOT_EXISTED));
 
         if (!inventoryService.reserveStock(product.getProductId(), orderRequest.getQuantity())) {
-            throw new AppException(CommonMessageUtils.INVENTORY_NOT_ENOUGH, product.getInventory().getAvailable(), orderRequest.getQuantity());
+            throw new AppException(CommonMessageUtils.INVENTORY_NOT_ENOUGH, models.inventory(product.getProductId()).getAvailable(), orderRequest.getQuantity());
         }
 
-        OrderStatus status = orderRequest.getPaymentMethod() == PaymentMethod.VNPAY
+        String status = PaymentMethod.VNPAY.equals(orderRequest.getPaymentMethod())
                 ? OrderStatus.CREATED
                 : OrderStatus.PENDING;
 
         Order order = Order.builder()
-                .profile(profile)
+                .profileId(profile.getProfileId())
                 .orderDate(LocalDate.now())
                 .orderStatus(status)
                 .build();
 
         OrderItem item = OrderItem.builder()
-                .product(product)
+                .productId(product.getProductId())
                 .quantity(orderRequest.getQuantity())
                 .price(product.getSpecialPrice() != null
                         ? product.getSpecialPrice()
@@ -123,7 +124,11 @@ public class OrderService implements IOrderService {
                 .build();
 
 
-        order.addOrderItem(item);
+        order.setUserId(profile.getUserId());
+        orderRepository.save(order);
+        item.setOrderId(order.getOrderId());
+        item.setProductTitle(product.getProductName());
+        models.getOrderItems().save(item);
 
         calculateTotalAmount(
                 order,
@@ -147,7 +152,7 @@ public class OrderService implements IOrderService {
                 orderRequest.getBankCode()
         );
 
-        order.setPayment(payment);
+        order.setPaymentId(payment.getPaymentId());
 
         orderRepository.save(order);
 
@@ -168,10 +173,12 @@ public class OrderService implements IOrderService {
         // lấy items người dùng đã chọn
         List<CartItem> cartItems = cartItemRepository.lockCartItems(orderRequest.getListItemId());
 
+        Cart selectedCart = models.cartForProfile(profile.getProfileId());
+        if (selectedCart == null || cartItems.size() != orderRequest.getListItemId().stream().distinct().count() || cartItems.stream().anyMatch(item -> !Objects.equals(item.getCartId(), selectedCart.getCartId()))) throw new AppException(CommonMessageUtils.CART_NOT_MATCH);
         if (cartItems.isEmpty())
             throw new AppException(CommonMessageUtils.LIST_CART_ITEMS_EMPTY);
 
-        OrderStatus status = orderRequest.getPaymentMethod() == PaymentMethod.VNPAY
+        String status = PaymentMethod.VNPAY.equals(orderRequest.getPaymentMethod())
                 ? OrderStatus.CREATED
                 : OrderStatus.PENDING;
         // Tạo đơn hàng
@@ -191,7 +198,7 @@ public class OrderService implements IOrderService {
                 orderRequest.getBankCode()
         );
 
-        order.setPayment(payment);
+        order.setPaymentId(payment.getPaymentId());
 
         orderRepository.save(order);
 
@@ -199,7 +206,7 @@ public class OrderService implements IOrderService {
 
         // xoa item sau khi dat
         cartService.removeSelectedItemsFromCartByItemIds(
-                order.getProfile().getCart().getCartId(),
+                models.cartForProfile(order.getProfileId()).getCartId(),
                 orderRequest.getListItemId()
         );
 
@@ -215,9 +222,10 @@ public class OrderService implements IOrderService {
 
         // Đặt hàng
         Cart cart = cartService.getCartByUserProfileId(orderRequest.getProfileId());
-        if (cart.getCartItems().isEmpty()) throw new AppException(CommonMessageUtils.CART_NOT_EXISTED);
+        models.getCarts().findByIdForUpdate(cart.getCartId()).orElseThrow(() -> new AppException(CommonMessageUtils.CART_NOT_EXISTED));
+        if (models.cartItems(cart.getCartId()).isEmpty()) throw new AppException(CommonMessageUtils.CART_NOT_EXISTED);
 
-        OrderStatus status = orderRequest.getPaymentMethod() == PaymentMethod.VNPAY
+        String status = PaymentMethod.VNPAY.equals(orderRequest.getPaymentMethod())
                 ? OrderStatus.CREATED
                 : OrderStatus.PENDING;
 
@@ -225,7 +233,7 @@ public class OrderService implements IOrderService {
         Order order = createOrderFromCart(cart);
         order.setOrderStatus(status);
 
-        calculateTotalAmount(order, orderRequest.getShippingFee(), orderRequest.getCouponCode(), cart.getProfile());
+        calculateTotalAmount(order, orderRequest.getShippingFee(), orderRequest.getCouponCode(), models.profile(cart.getProfileId()));
         Order saveOrder = orderRepository.save(order);
 
         // set address shipping from address profile
@@ -239,14 +247,14 @@ public class OrderService implements IOrderService {
                 orderRequest.getBankCode()
         );
 
-        order.setPayment(payment);
+        order.setPaymentId(payment.getPaymentId());
 
         orderRepository.save(order);
 
         historyService.logStatusChange(order, status, null);
 
         // clear cart
-        cartService.clearCart(cart.getCartId());
+        cartService.removeSelectedItemsFromCartByItemIds(cart.getCartId(), models.cartItems(cart.getCartId()).stream().map(CartItem::getCartItemId).toList());
 
         return orderMapper.toResponse(saveOrder);
     }
@@ -267,17 +275,17 @@ public class OrderService implements IOrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
 
-        Payment payment = paymentRepository.findByOrder_OrderId(orderId)
+        Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
 
         // ========== PAYMENT SUCCESS ==========
-        if (payment.getPaymentStatus() == PaymentStatus.PAID) {
+        if (PaymentStatus.PAID.equals(payment.getPaymentStatus())) {
             order.setOrderStatus(OrderStatus.PENDING);
         }
 
         // ===== PAYMENT FAILED → CHO PHÉP RETRY =====
-        if (payment.getPaymentStatus() == PaymentStatus.FAILED) {
-            if (order.getOrderStatus() != OrderStatus.CREATED) {
+        if (PaymentStatus.FAILED.equals(payment.getPaymentStatus())) {
+            if (!OrderStatus.CREATED.equals(order.getOrderStatus())) {
                 order.setOrderStatus(OrderStatus.CREATED);
                 historyService.logStatusChange(order, OrderStatus.CREATED, null);
             }
@@ -296,16 +304,16 @@ public class OrderService implements IOrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
 
-        if (order.getOrderStatus() == OrderStatus.DELIVERED)
+        if (OrderStatus.DELIVERED.equals(order.getOrderStatus()))
             throw new AppException(CommonMessageUtils.ORDER_ALREADY_DELIVERED);
 
         User admin = userService.findUserByPrincipal(principal);
 
-        if (order.getOrderItems().isEmpty()) throw new AppException(CommonMessageUtils.ORDER_ITEM_EMPTY);
+        if (models.orderItems(order.getOrderId()).isEmpty()) throw new AppException(CommonMessageUtils.ORDER_ITEM_EMPTY);
 
-        for (OrderItem item : order.getOrderItems()) {
+        for (OrderItem item : models.orderItems(order.getOrderId())) {
             inventoryService.confirmOrder(
-                    item.getProduct().getProductId(),
+                    item.getProductId(),
                     item.getQuantity()
             );
         }
@@ -325,24 +333,24 @@ public class OrderService implements IOrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
 
-        if (order.getOrderStatus() == OrderStatus.DELIVERED)
+        if (OrderStatus.DELIVERED.equals(order.getOrderStatus()))
             throw new AppException(CommonMessageUtils.ORDER_ALREADY_DELIVERED);
 
-        Payment payment = Optional.ofNullable(order.getPayment())
+        Payment payment = Optional.ofNullable(models.payment(order.getPaymentId()))
                 .orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
 
-        if (payment.getPaymentMethod() != PaymentMethod.VNPAY)
+        if (!PaymentMethod.VNPAY.equals(payment.getPaymentMethod()))
             throw new AppException(CommonMessageUtils.INVALID_PAYMENT_METHOD);
 
-        if (payment.getPaymentStatus() != PaymentStatus.PAID)
+        if (!PaymentStatus.PAID.equals(payment.getPaymentStatus()))
             throw new AppException(CommonMessageUtils.PAYMENT_NOT_PAID);
 
 
-        if (order.getOrderItems().isEmpty()) throw new AppException(CommonMessageUtils.ORDER_ITEM_EMPTY);
+        if (models.orderItems(order.getOrderId()).isEmpty()) throw new AppException(CommonMessageUtils.ORDER_ITEM_EMPTY);
 
-        for (OrderItem item : order.getOrderItems()) {
+        for (OrderItem item : models.orderItems(order.getOrderId())) {
             inventoryService.confirmOrder(
-                    item.getProduct().getProductId(),
+                    item.getProductId(),
                     item.getQuantity()
             );
         }
@@ -361,19 +369,19 @@ public class OrderService implements IOrderService {
         // Tìm kiếm đơn hàng
         Order order = orderRepository.findByIdForUpdate(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
 
-        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+        if (OrderStatus.CANCELLED.equals(order.getOrderStatus())) {
             throw new AppException(CommonMessageUtils.ORDER_ALREADY_CANCELLED);
         }
 
-        if (order.getOrderStatus() == OrderStatus.DELIVERED) {
+        if (OrderStatus.DELIVERED.equals(order.getOrderStatus())) {
             throw new AppException(CommonMessageUtils.ORDER_CANCEL_FAILED);
         }
 
         // Order was paid/confirm restock
-        if (order.getOrderStatus() == OrderStatus.SHIPPED || order.getOrderStatus() == OrderStatus.PENDING) {
-            order.getOrderItems().forEach(orderItem -> {
+        if (OrderStatus.SHIPPED.equals(order.getOrderStatus()) || OrderStatus.PENDING.equals(order.getOrderStatus())) {
+            models.orderItems(order.getOrderId()).forEach(orderItem -> {
                 // restock
-                inventoryService.restock(orderItem.getProduct().getProductId(), orderItem.getQuantity());
+                inventoryService.restock(orderItem.getProductId(), orderItem.getQuantity());
             });
         }
 
@@ -385,17 +393,18 @@ public class OrderService implements IOrderService {
     // ============= UPDATE STATUS ====================
     @Override
     @Transactional
-    public Order updateOrderStatus(Long orderId, OrderStatus newStatus, User admin) {
+    public Order updateOrderStatus(Long orderId, String newStatus, User admin) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
 
-        OrderStatus currentStatus = order.getOrderStatus();
+        if (newStatus == null || !OrderStatus.VALUES.contains(newStatus)) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        String currentStatus = order.getOrderStatus();
 
         // NGĂN CHẶN CHUYỂN TRẠNG THÁI SAI LUẬT
-        if (currentStatus == OrderStatus.DELIVERED) {
+        if (OrderStatus.DELIVERED.equals(currentStatus)) {
             throw new AppException(CommonMessageUtils.ORDER_STATUS_FINAL);
         }
 
-        if (currentStatus == OrderStatus.CANCELLED) {
+        if (OrderStatus.CANCELLED.equals(currentStatus)) {
             throw new AppException(CommonMessageUtils.ORDER_ALREADY_CANCELLED);
         }
         historyService.logStatusChange(order, newStatus, admin);
@@ -409,9 +418,12 @@ public class OrderService implements IOrderService {
         log.info("deleteOrder().........");
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
 
-        if (order.getOrderStatus() == OrderStatus.DELIVERED || order.getOrderStatus() == OrderStatus.SHIPPED) {
+        if (OrderStatus.DELIVERED.equals(order.getOrderStatus()) || OrderStatus.SHIPPED.equals(order.getOrderStatus())) {
             throw new AppException(CommonMessageUtils.ORDER_CANCEL_FAILED);
         }
+        models.getOrderItems().deleteByOrderId(orderId);
+        models.getDeliveryAddresses().deleteByOrderId(orderId);
+        models.getHistories().deleteByOrderId(orderId);
         orderRepository.delete(order);
     }
 
@@ -421,10 +433,10 @@ public class OrderService implements IOrderService {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
         Address address = addressRepository.findById(addressId).orElseThrow(() -> new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
 
-        if (order.getProfile().getProfileId() != address.getProfile().getProfileId())
+        if (!Objects.equals(order.getProfileId(), address.getProfileId()))
             throw new AppException(CommonMessageUtils.ORDER_ADDRESS_MISMATCH);
 
-        if (order.getOrderStatus() != OrderStatus.PENDING)
+        if (!OrderStatus.PENDING.equals(order.getOrderStatus()))
             throw new AppException(CommonMessageUtils.ORDER_CANNOT_CHANGE_ADDRESS);
 
         deliveryAddressService.updateDeliveryAddressFromAddressId(address.getAddressId(), order, orderNote);
@@ -434,16 +446,19 @@ public class OrderService implements IOrderService {
     // =========== CREATE ORDER FROM CART =============
     private Order createOrderFromCart(Cart cart) {
         Order order = Order.builder()
-                .profile(cart.getProfile())
+                .profileId(cart.getProfileId())
+                .userId(cart.getUserId())
                 .orderDate(LocalDate.now())
                 .orderStatus(OrderStatus.PENDING)
                 .build();
 
-        List<OrderItem> orderItems = cart.getCartItems().stream()
+        orderRepository.save(order);
+        List<OrderItem> orderItems = models.cartItems(cart.getCartId()).stream()
                 .map(ci ->
                         OrderItem.builder()
-                                .order(order)
-                                .product(ci.getProduct()).
+                                .orderId(order.getOrderId())
+                                .productId(ci.getProductId())
+                                .variantId(ci.getVariantId()).
                                 quantity(ci.getQuantity())
                                 .price(ci.getUnitPrice())
                                 .cartItemId(ci.getCartItemId())
@@ -451,38 +466,51 @@ public class OrderService implements IOrderService {
                 )
                 .collect(Collectors.toList());
 
-        order.setOrderItems(new HashSet<>(orderItems));
+        orderItems.forEach(item -> {
+            Product product = models.product(item.getProductId());
+            item.setProductTitle(product.getProductName());
+            item.setPrice(product.getSpecialPrice() != null ? product.getSpecialPrice() : product.getPrice());
+        });
+        models.getOrderItems().saveAll(orderItems);
         return order;
     }
 
     // ========== CREATE ORDER FROM CART ITEMS =======
     private Order createOrderFromCartItem(List<CartItem> cartItems, UserProfile profile) {
         Order order = Order.builder()
-                .profile(profile)
+                .profileId(profile.getProfileId())
                 .orderDate(LocalDate.now())
                 .orderStatus(OrderStatus.PENDING)
                 .build();
 
+        order.setUserId(profile.getUserId());
+        orderRepository.save(order);
         List<OrderItem> orderItems = cartItems.stream()
                 .map(item ->
                         OrderItem.builder()
-                                .order(order)
+                                .orderId(order.getOrderId())
                                 .quantity(item.getQuantity())
-                                .product(item.getProduct())
+                                .productId(item.getProductId())
+                                .variantId(item.getVariantId())
                                 .price(item.getUnitPrice())
                                 .cartItemId(item.getCartItemId())
                                 .build()
                 ).toList();
 
-        order.setOrderItems(new HashSet<>(orderItems));
+        orderItems.forEach(item -> {
+            Product product = models.product(item.getProductId());
+            item.setProductTitle(product.getProductName());
+            item.setPrice(product.getSpecialPrice() != null ? product.getSpecialPrice() : product.getPrice());
+        });
+        models.getOrderItems().saveAll(orderItems);
         return order;
     }
 
     // ============== UPDATE CALCULATE SOLD COUNT ==============
     private void calculateSoldCount(Order order) {
-        order.getOrderItems()
+        models.orderItems(order.getOrderId())
                 .forEach(item -> {
-                    Product product = item.getProduct();
+                    Product product = models.product(item.getProductId());
                     int quantity = item.getQuantity();
                     product.setSoldCount(product.getSoldCount() + quantity);
                     productRepository.save(product);
@@ -492,7 +520,7 @@ public class OrderService implements IOrderService {
     // ============== CALCULATE TOTAL AMOUNT ==================
     private void calculateTotalAmount(Order order, BigDecimal shippingFee, String couponCode, UserProfile profile) {
         // total amount from order
-        BigDecimal itemTotalAmount = order.getOrderItems().stream()
+        BigDecimal itemTotalAmount = models.orderItems(order.getOrderId()).stream()
                 .map(oi -> oi.getPrice().multiply(BigDecimal.valueOf(oi.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -528,9 +556,9 @@ public class OrderService implements IOrderService {
     private void setShippingOrder(Order order, Long addressId, Long profileId, String orderNote) {
         // set address shipping from address profile
         OrderDeliveryAddress deliveryAddress = deliveryAddressService.createDeliveryAddressFromAddressId(addressId, profileId, orderNote);
-        deliveryAddress.setOrder(order);
+        deliveryAddress.setOrderId(order.getOrderId());
         deliveryAddress.setCreatedAt(LocalDateTime.now());
-        order.setDeliveryAddress(deliveryAddress);
+        models.getDeliveryAddresses().save(deliveryAddress);
     }
 
 }

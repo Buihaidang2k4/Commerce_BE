@@ -1,7 +1,7 @@
 package com.example.MyShop_API.dto.request;
 
-import com.example.MyShop_API.Enum.CouponScope;
-import com.example.MyShop_API.Enum.DiscountType;
+import com.example.MyShop_API.constants.CouponScope;
+import com.example.MyShop_API.constants.DiscountType;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -21,10 +21,10 @@ public class CreateCouponRequest {
     String code; // để trống → tự sinh
 
     @NotNull(message = "{validation.scope.discount.not.null}")
-    CouponScope scope;
+    String scope;
 
     @NotNull(message = "{validation.discount.type.is.required}")
-    DiscountType discountType;
+    String discountType;
 
     @DecimalMin(value = "0.0", inclusive = false, message = "{validation.discount.percent.must.be.0}")
     @DecimalMax(value = "100.0", message = "{validation.discount.percent.must.be.100}")

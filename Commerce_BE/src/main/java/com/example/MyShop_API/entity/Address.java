@@ -1,61 +1,43 @@
 package com.example.MyShop_API.entity;
 
-import com.example.MyShop_API.Enum.AddressType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
-import java.util.Objects;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "addresses", indexes = {@Index(name = "idx_addresses_profile_id", columnList = "profile_id")})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "addresses")
 public class Address {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "address_id")
-    Long addressId;
-
-    String fullName;
-    String phone;
-    String street;
-
-    Integer wardCode;
-    String ward;
-    Integer districtID;
-    String district;
-    Integer provinceID;
-    String province;
-
-    String postalCode;
-
-    @Column(name = "additional_info", columnDefinition = "TEXT")
-    String additionalInfo; // note
-
-    @Column(name = "is_default")
-    Boolean isDefault = false;
-
-    @Enumerated(EnumType.STRING)
-    AddressType type = AddressType.HOME;
-    String label;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinColumn(name = "profile_id", nullable = false)
-    UserProfile profile;
-
-    @Column(name = "created_at", updatable = false)
-    LocalDateTime createdAt = LocalDateTime.now();
-
-    @Column(name = "updated_at")
-    LocalDateTime updatedAt = LocalDateTime.now();
+    private Long addressId;
+    private Long profileId;
+    private String fullName;
+    private String phone;
+    private String street;
+    private Integer wardCode;
+    private String ward;
+    private Integer districtID;
+    private String district;
+    private Integer provinceID;
+    private String province;
+    private String postalCode;
+    @Column(columnDefinition = "TEXT")
+    private String additionalInfo;
+    @Builder.Default
+    private Boolean isDefault = false;
+    @Builder.Default
+    private String type = "HOME";
+    private String label;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+    @Builder.Default
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
 }

@@ -25,10 +25,13 @@ public class ProductSpecification {
     }
 
     public static Specification<Product> hasCategoryName(String categoryName) {
-        return (root, query, cb) ->
-                StringUtils.hasText(categoryName)
-                        ? cb.equal(root.get("category").get("categoryName"), categoryName)
-                        : null;
+        return (root, query, cb) -> {
+            if (!StringUtils.hasText(categoryName)) return null;
+            var subquery = query.subquery(Long.class);
+            var category = subquery.from(com.example.MyShop_API.entity.Category.class);
+            subquery.select(category.get("categoryId")).where(cb.equal(category.get("categoryName"), categoryName));
+            return root.get("categoryId").in(subquery);
+        };
     }
 
     public static Specification<Product> priceBetween(BigDecimal min, BigDecimal max) {
@@ -75,12 +78,12 @@ public class ProductSpecification {
         return (root, query, cb) -> {
             if (inStock == null) return null;
 
-            Join<Product, Inventory> inventory =
-                    root.join("inventory", JoinType.LEFT);
-
-            return inStock
+            var subquery = query.subquery(Long.class);
+            var inventory = subquery.from(Inventory.class);
+            subquery.select(inventory.get("productId")).where(inStock
                     ? cb.greaterThan(inventory.get("available"), 0)
-                    : cb.equal(inventory.get("available"), 0);
+                    : cb.equal(inventory.get("available"), 0));
+            return root.get("productId").in(subquery);
         };
     }
 

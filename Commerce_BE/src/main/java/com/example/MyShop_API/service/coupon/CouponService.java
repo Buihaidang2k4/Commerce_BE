@@ -1,7 +1,7 @@
 package com.example.MyShop_API.service.coupon;
 
-import com.example.MyShop_API.Enum.CouponScope;
-import com.example.MyShop_API.Enum.DiscountType;
+import com.example.MyShop_API.constants.CouponScope;
+import com.example.MyShop_API.constants.DiscountType;
 import com.example.MyShop_API.anotation.AdminOnly;
 import com.example.MyShop_API.dto.request.CreateCouponRequest;
 import com.example.MyShop_API.dto.request.UpdateCouponRequest;
@@ -30,13 +30,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import static com.example.MyShop_API.Enum.CouponScope.*;
+import static com.example.MyShop_API.constants.CouponScope.*;
 
 @Service
 @Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class CouponService implements ICouponService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     CouponRepository couponRepository;
     CouponMapper couponMapper;
     OrderRepository orderRepository;
@@ -74,15 +75,16 @@ public class CouponService implements ICouponService {
         } while (couponRepository.existsByCode(code));
         coupon.setCode(code);
 
+        couponRepository.save(coupon);
         // bind scope
         switch (request.getScope()) {
 
-            case GLOBAL -> {
-                coupon.setCategories(null);
-                coupon.setProducts(null);
+            case "GLOBAL" -> {
+                models.replaceCouponCategories(coupon.getCouponId(), List.of());
+                models.replaceCouponProducts(coupon.getCouponId(), List.of());
             }
 
-            case CATEGORY -> {
+            case "CATEGORY" -> {
                 List<Category> categories =
                         categoryRepository.findAllById(request.getCategoryIds());
 
@@ -90,10 +92,10 @@ public class CouponService implements ICouponService {
                     throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
                 }
 
-                coupon.setCategories(new HashSet<>(categories));
+                models.replaceCouponCategories(coupon.getCouponId(), categories);
             }
 
-            case PRODUCT -> {
+            case "PRODUCT" -> {
                 List<Product> products =
                         productRepository.findAllById(request.getProductIds());
 
@@ -101,7 +103,7 @@ public class CouponService implements ICouponService {
                     throw new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED);
                 }
 
-                coupon.setProducts(new HashSet<>(products));
+                models.replaceCouponProducts(coupon.getCouponId(), products);
             }
         }
 
@@ -137,7 +139,7 @@ public class CouponService implements ICouponService {
 
         // Check limit per user
         if (coupon.isLimitPerUser()) {
-            int usedCount = orderRepository.countByProfile_ProfileIdAndCoupon_CouponId(
+            int usedCount = orderRepository.countByProfileIdAndCouponId(
                     profile.getProfileId(), coupon.getCouponId());
 
             if (usedCount >= coupon.getMaxUsesPerUser())
@@ -150,7 +152,7 @@ public class CouponService implements ICouponService {
         BigDecimal discount = calculateDiscount(coupon, orderTotal);
 
         // apply discount
-        order.setCoupon(coupon);
+        order.setCouponId(coupon.getCouponId());
 
         coupon.incrementUsedCount();
         couponRepository.save(coupon);
@@ -248,6 +250,8 @@ public class CouponService implements ICouponService {
             throw new AppException(CommonMessageUtils.CANNOT_DELETE_ACTIVE_COUPON);
         }
 
+        models.replaceCouponCategories(coupon.getCouponId(), List.of());
+        models.replaceCouponProducts(coupon.getCouponId(), List.of());
         couponRepository.delete(coupon);
     }
 
@@ -263,11 +267,11 @@ public class CouponService implements ICouponService {
        ===================================================== */
         switch (request.getDiscountType()) {
 
-            case PERCENTAGE:
+            case "PERCENTAGE":
                 validatePercentageDiscount(request);
                 break;
 
-            case FIXED_AMOUNT:
+            case "FIXED_AMOUNT":
                 validateFixedAmountDiscount(request);
                 break;
 
@@ -305,15 +309,15 @@ public class CouponService implements ICouponService {
        ===================================================== */
         switch (request.getScope()) {
 
-            case GLOBAL:
+            case "GLOBAL":
                 validateGlobalScope(request);
                 break;
 
-            case CATEGORY:
+            case "CATEGORY":
                 validateCategoryScope(request);
                 break;
 
-            case PRODUCT:
+            case "PRODUCT":
                 validateProductScope(request);
                 break;
 
@@ -385,23 +389,23 @@ public class CouponService implements ICouponService {
 
         switch (coupon.getScope()) {
 
-            case GLOBAL:
+            case "GLOBAL":
                 return;
 
-            case CATEGORY:
-                boolean matchCategory = order.getOrderItems().stream()
-                        .map(oi -> oi.getProduct().getCategory())
-                        .anyMatch(coupon.getCategories()::contains);
+            case "CATEGORY":
+                boolean matchCategory = models.orderItems(order.getOrderId()).stream()
+                        .map(oi -> models.category(models.product(oi.getProductId()).getCategoryId()))
+                        .anyMatch(models.couponCategories(coupon.getCouponId())::contains);
 
                 if (!matchCategory) {
                     throw new AppException(CommonMessageUtils.COUPON_CATEGORY_NOT_APPLICABLE);
                 }
                 break;
 
-            case PRODUCT:
-                boolean matchProduct = order.getOrderItems().stream()
-                        .map(oi -> oi.getProduct())
-                        .anyMatch(coupon.getProducts()::contains);
+            case "PRODUCT":
+                boolean matchProduct = models.orderItems(order.getOrderId()).stream()
+                        .map(oi -> models.product(oi.getProductId()))
+                        .anyMatch(models.couponProducts(coupon.getCouponId())::contains);
 
                 if (!matchProduct) {
                     throw new AppException(CommonMessageUtils.COUPON_PRODUCT_NOT_APPLICABLE);
@@ -419,7 +423,7 @@ public class CouponService implements ICouponService {
 
         switch (coupon.getDiscountType()) {
 
-            case PERCENTAGE:
+            case "PERCENTAGE":
                 discount = orderTotal
                         .multiply(coupon.getDiscountPercent())
                         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
@@ -430,7 +434,7 @@ public class CouponService implements ICouponService {
                 }
                 break;
 
-            case FIXED_AMOUNT:
+            case "FIXED_AMOUNT":
                 discount = coupon.getDiscountAmount();
                 break;
 

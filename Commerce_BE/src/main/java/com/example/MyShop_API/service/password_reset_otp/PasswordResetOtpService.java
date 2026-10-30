@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PasswordResetOtpService implements IPasswordResetOtpService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     UserRepository userRepository;
     PasswordResetOtpRepository otpRepository;
     EmailService emailService;
@@ -36,13 +37,13 @@ public class PasswordResetOtpService implements IPasswordResetOtpService {
         User user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(CommonMessageUtils.EMAIL_NOT_FOUND));
 
         // delete oldOTP
-        otpRepository.deleteAllByUser(user);
+        otpRepository.deleteAllByUserId(user.getId());
 
         // gen OTP
         String otp = OTPGeneratorUntil.generateOTP(6);
 
         PasswordResetOtp resetOtp = PasswordResetOtp.builder()
-                .user(user)
+                .userId(user.getId())
                 .otp(otp)
                 .createdAt(LocalDateTime.now())
                 .expiredAt(LocalDateTime.now().plusMinutes(5))
@@ -70,7 +71,7 @@ public class PasswordResetOtpService implements IPasswordResetOtpService {
             throw new AppException(CommonMessageUtils.OTP_EXPIRED);
         }
 
-        User user = otpEntity.getUser();
+        User user = models.user(otpEntity.getUserId());
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
 

@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
-    boolean existsByProductProductId(Long productProductId);
+    boolean existsByProductId(Long productProductId);
 
     // Doanh thu theo san pham
     @Query(value = """
@@ -70,4 +70,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
                                         @Param("month") int month);
 
 
+    List<OrderItem> findByOrderId(Long orderId);
+    void deleteByOrderId(Long orderId);
 }

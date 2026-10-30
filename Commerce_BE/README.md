@@ -72,3 +72,8 @@ Mapper mẫu chưa thay thế logic báo cáo JPA hiện có và chưa thêm end
 
 Kiểm thử không cần database:
 ./mvnw -o -Dtest=OrderServiceTest,CookieOriginFilterTest,AuthRateLimitFilterTest,MessageHandlerUtilsTest,LocalizedErrorResponseTest,OrderReportMapperTest -DforkCount=0 test-compile org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test
+
+## Model độc lập và chuyển schema
+
+Entity đã bỏ toàn bộ JPA association/enum; tham chiếu lưu bằng ID thường. Xem [phân tích model](docs/SMARTCOMMERCE_MODEL_ANALYSIS.md) và [hướng dẫn migration MySQL](db/mysql/README.md). Mặc định schema mode là validate; chạy SQL create/upgrade trước khi khởi động. Không dùng Hibernate update để thay thế bước gỡ constraint cũ.
+Các entity mới là nền cho tính năng trong tài liệu, chưa phải toàn bộ marketplace đã có API/service.

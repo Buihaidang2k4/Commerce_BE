@@ -15,10 +15,10 @@ import java.util.Optional;
 public interface AddressRepository extends JpaRepository<Address, Long> {
 
     @Modifying
-    @Query(value = "UPDATE Address a SET a.isDefault = false WHERE a.profile.profileId = :profileId")
+    @Query(value = "UPDATE Address a SET a.isDefault = false WHERE a.profileId = :profileId")
     void clearDefaultAddressForProfile(@Param("profileId") Long profileId);
 
     Optional<Address> findById(Long addressId);
 
-    List<Address> findByProfile_ProfileId(Long profileProfileId);
+    List<Address> findByProfileId(Long profileProfileId);
 }

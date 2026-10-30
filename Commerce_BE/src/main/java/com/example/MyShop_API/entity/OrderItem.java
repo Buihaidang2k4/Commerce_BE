@@ -1,38 +1,36 @@
 package com.example.MyShop_API.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "order_items", indexes = {@Index(name = "idx_order_items_order_id", columnList = "order_id"), @Index(name = "idx_order_items_seller_order_id", columnList = "seller_order_id"), @Index(name = "idx_order_items_product_id", columnList = "product_id"), @Index(name = "idx_order_items_variant_id", columnList = "variant_id"), @Index(name = "idx_order_items_cart_item_id", columnList = "cart_item_id")})
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "order_items")
 public class OrderItem {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long orderItemId;
-    Integer quantity;
-    BigDecimal price;
+    private Long orderItemId;
+    private Long orderId;
+    private Long sellerOrderId;
+    private Long productId;
+    private Long variantId;
+    private Long cartItemId;
+    private String productTitle;
+    private String sku;
+    @Column(columnDefinition = "TEXT")
+    private String attributesSnapshot;
+    private Integer quantity;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal price;
+    @Builder.Default
+    @Column(precision = 18, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
 
-    // Lưu id cartItem để callback VNPAY có thể xoá
-    Long cartItemId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinColumn(name = "order_id")
-    Order order;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id")
-    Product product;
 }

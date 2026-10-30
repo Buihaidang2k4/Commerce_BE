@@ -2,48 +2,34 @@ package com.example.MyShop_API.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
-@Table(name = "reviews",
-        indexes = {
-                @Index(columnList = "product_id"),
-                @Index(columnList = "order_id"),
-                @Index(columnList = "profile_id")
-        })
+@Table(name = "reviews", indexes = {@Index(name = "idx_reviews_product_id", columnList = "product_id"), @Index(name = "idx_reviews_profile_id", columnList = "profile_id"), @Index(name = "idx_reviews_user_id", columnList = "user_id"), @Index(name = "idx_reviews_order_id", columnList = "order_id"), @Index(name = "idx_reviews_order_item_id", columnList = "order_item_id")})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long reviewId;
+    private Long reviewId;
+    private Long productId;
+    private Long profileId;
+    private Long userId;
+    private Long orderId;
+    private Long orderItemId;
+    private String customerName;
+    private int rating;
+    private String comment;
+    @Builder.Default
+    private String status = "PUBLISHED";
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+    @Builder.Default
+    private boolean deleted = false;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
-    Product product;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "profile_id", nullable = false)
-    UserProfile profile;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false)
-    Order order;
-
-    String customerName;
-    int rating;
-    String comment;
-    LocalDateTime createdAt;
-    boolean deleted = false;
-
-    @PrePersist
-    public void setCreatedAt() {
-        this.createdAt = LocalDateTime.now();
-    }
 }

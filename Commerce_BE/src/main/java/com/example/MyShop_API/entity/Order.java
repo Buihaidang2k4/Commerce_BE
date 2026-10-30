@@ -1,67 +1,47 @@
 package com.example.MyShop_API.entity;
 
-import com.example.MyShop_API.Enum.OrderStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "orders", indexes = {@Index(name = "idx_orders_user_id", columnList = "user_id"), @Index(name = "idx_orders_profile_id", columnList = "profile_id"), @Index(name = "idx_orders_payment_id", columnList = "payment_id"), @Index(name = "idx_orders_coupon_id", columnList = "coupon_id"), @Index(name = "idx_orders_idempotency_key", columnList = "idempotency_key")})
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "orders")
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long orderId;
-    LocalDate orderDate;
-    BigDecimal shippingFee = BigDecimal.ZERO;
-    BigDecimal discountAmount = BigDecimal.ZERO;
-    BigDecimal totalAmount;
-
-    @Enumerated(EnumType.STRING)
-    OrderStatus orderStatus;
-
-    @JsonIgnore
+    private Long orderId;
+    private Long userId;
+    private Long profileId;
+    private Long paymentId;
+    private Long couponId;
+    private String orderNo;
+    private String idempotencyKey;
+    private String requestHash;
     @Builder.Default
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    Set<OrderItem> orderItems = new HashSet<>();
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinColumn(name = "profile_id")
-    UserProfile profile;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JsonIgnore
-    @JoinColumn(name = "payment_id")
-    Payment payment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id", unique = false)
-    Coupon coupon;
-
+    private String currency = "VND";
+    private LocalDate orderDate;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal subtotal;
     @Builder.Default
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<OrderStatusHistory> statusHistory = new ArrayList<>();
+    @Column(precision = 18, scale = 2)
+    private BigDecimal shippingFee = BigDecimal.ZERO;
+    @Builder.Default
+    @Column(precision = 18, scale = 2)
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+    @Column(precision = 18, scale = 2)
+    private BigDecimal totalAmount;
+    private String orderStatus;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime updatedAt;
+    @Version
+    private Long version;
 
-    @OneToOne(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    OrderDeliveryAddress deliveryAddress;
-
-    public void addOrderItem(OrderItem item) {
-        orderItems.add(item);
-        item.setOrder(this);
-    }
 }

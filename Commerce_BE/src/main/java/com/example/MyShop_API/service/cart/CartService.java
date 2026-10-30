@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CartService implements ICartService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
+    com.example.MyShop_API.service.inventory.IInventoryService inventoryService;
     CartRepository cartRepository;
     UserProfileRepository userProfileRepository;
     CartItemRepository cartItemRepository;
@@ -106,10 +108,7 @@ public class CartService implements ICartService {
      */
     @Override
     public Long initializeNewCart() {
-        Cart newCart = new Cart();
-        Long cartId = generatorId.incrementAndGet();
-        newCart.setCartId(cartId);
-        return cartRepository.save(newCart).getCartId();
+        return cartRepository.save(new Cart()).getCartId();
     }
 
     /**
@@ -125,7 +124,7 @@ public class CartService implements ICartService {
                 -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
 
         Cart cart = getCartById(cartId);
-        cart.setProfile(userProfile);
+        cart.setProfileId(userProfile.getProfileId());
         return cartRepository.save(cart);
     }
 
@@ -138,18 +137,15 @@ public class CartService implements ICartService {
     @Transactional
     public void clearCart(Long cartId) {
         Cart cart = getCartById(cartId);
-        cart.setTotalPrice(BigDecimal.ZERO);
+        for (CartItem item : models.cartItems(cartId)) inventoryService.cancelReservation(item.getProductId(), item.getQuantity());
         cartItemRepository.hardDeleteByCartId(cartId);
-        cartItemRepository.flush();
-
-        // Then delete the cart
-        cartRepository.deleteById(cartId);
-        cartRepository.flush();
+        cart.setTotalPrice(BigDecimal.ZERO);
+        cartRepository.save(cart);
     }
 
     @Transactional
     public void recalcTotalPrice(Cart cart) {
-        BigDecimal total = cart.getCartItems().stream()
+        BigDecimal total = models.cartItems(cart.getCartId()).stream()
                 .map(ci -> ci.getTotalPrice() == null ? BigDecimal.ZERO : ci.getTotalPrice())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         cart.setTotalPrice(total);
@@ -167,23 +163,26 @@ public class CartService implements ICartService {
             return;
         }
         Cart cart = cartRepository.findById(cartId).orElseThrow(() -> new AppException(CommonMessageUtils.CART_NOT_EXISTED));
-        cartItemIds.forEach(cartItemRepository::deleteByIdDirect);
-        cart.updateTotalAmount();
+        for (Long id : cartItemIds) {
+            if (cartItemRepository.findByCartItemIdAndCartId(id, cartId).isEmpty()) throw new AppException(CommonMessageUtils.CART_ITEM_NOT_EXISTED);
+            cartItemRepository.deleteByIdDirect(id);
+        }
+        recalcTotalPrice(cart);
         cartRepository.save(cart);
     }
 
     @Override
     @Transactional
     public void removeItemAfterOrder(Order order) {
-        Cart cart = order.getProfile().getCart();
-        List<Long> ids = order.getOrderItems().stream()
+        Cart cart = models.cartForProfile(order.getProfileId());
+        List<Long> ids = models.orderItems(order.getOrderId()).stream()
                 .map(OrderItem::getCartItemId)
                 .filter(Objects::nonNull)
                 .toList();
 
-        cart.getCartItems().removeIf(ci -> ids.contains(ci.getCartItemId()));
+
         cartItemRepository.deleteAllById(ids);
-        cart.updateTotalAmount();
+        recalcTotalPrice(cart);
     }
 
 }

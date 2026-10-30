@@ -1,21 +1,25 @@
 package com.example.MyShop_API.mapper;
 
-import com.example.MyShop_API.dto.request.CartRequest;
-import com.example.MyShop_API.dto.response.CartResponse;
-import com.example.MyShop_API.entity.Cart;
+import com.example.MyShop_API.entity.*;
+import com.example.MyShop_API.dto.request.*;
+import com.example.MyShop_API.dto.response.*;
+import com.example.MyShop_API.service.model.ModelLookup;
 import org.mapstruct.*;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {CartItemMapper.class})
-public interface CartMapper {
-    Cart toEntity(CartRequest cartRequest);
-
-    @Mapping(source = "cartItems", target = "items")
-    CartResponse toResponse(Cart cart);
-
-    List<CartResponse> toResponseList(List<Cart> cartList);
-
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public abstract class CartMapper {
+    @Autowired protected ModelLookup models;
+    @Autowired protected CartItemMapper items;
+    public abstract Cart toEntity(CartRequest request);
+    public abstract CartResponse toResponse(Cart cart);
+    public abstract List<CartResponse> toResponseList(List<Cart> carts);
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void update(CartRequest cartRequest, @MappingTarget Cart cart);
+    public abstract void update(CartRequest request, @MappingTarget Cart cart);
+
+    @AfterMapping
+    protected void fill(Cart cart, @MappingTarget CartResponse response) {
+        response.setItems(models.cartItems(cart.getCartId()).stream().map(items::toResponse).toList());
+    }
 }

@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.order;
 
-import com.example.MyShop_API.Enum.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatus;
 import com.example.MyShop_API.dto.request.OrderPlaceListItemRequest;
 import com.example.MyShop_API.dto.request.OrderRequest;
 import com.example.MyShop_API.dto.request.PlaceOrderFromCartRequest;
@@ -24,9 +24,9 @@ public interface IOrderService {
 
     Order getOrder(Long orderId);
 
-    List<Order> getOrdersByStatus(OrderStatus status);
+    List<Order> getOrdersByStatus(String status);
 
-    Page<Order> getOrdersByStatus(OrderStatus status, Pageable pageable);
+    Page<Order> getOrdersByStatus(String status, Pageable pageable);
 
 
     List<Order> getUserOrders(Long userProfileId);
@@ -45,7 +45,7 @@ public interface IOrderService {
 
     void cancelOrder(Long orderId);
 
-    Order updateOrderStatus(Long orderId, OrderStatus orderStatus, User admin);
+    Order updateOrderStatus(Long orderId, String orderStatus, User admin);
 
     void deleteOrder(Long orderId);
 

@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.order_status_history;
 
-import com.example.MyShop_API.Enum.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatus;
 import com.example.MyShop_API.entity.Order;
 import com.example.MyShop_API.entity.OrderStatusHistory;
 import com.example.MyShop_API.entity.User;
@@ -12,5 +12,5 @@ public interface IOrderStatusHistoryService {
 
     List<OrderStatusHistory> getHistory(Long orderId);
 
-    void logStatusChange(Order order, OrderStatus status, User user);
+    void logStatusChange(Order order, String status, User user);
 }

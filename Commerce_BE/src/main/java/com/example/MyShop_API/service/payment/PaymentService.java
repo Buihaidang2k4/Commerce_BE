@@ -1,8 +1,8 @@
 package com.example.MyShop_API.service.payment;
 
-import com.example.MyShop_API.Enum.OrderStatus;
-import com.example.MyShop_API.Enum.PaymentMethod;
-import com.example.MyShop_API.Enum.PaymentStatus;
+import com.example.MyShop_API.constants.OrderStatus;
+import com.example.MyShop_API.constants.PaymentMethod;
+import com.example.MyShop_API.constants.PaymentStatus;
 import com.example.MyShop_API.config.payment.VnpayConfig;
 import com.example.MyShop_API.dto.request.OrderRequest;
 import com.example.MyShop_API.dto.request.PaymentRequest;
@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentService implements IPaymentService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     VnpayConfig vnpayConfig;
     OrderRepository orderRepository;
     PaymentRepository paymentRepository;
@@ -69,7 +70,7 @@ public class PaymentService implements IPaymentService {
     @Override
     @Transactional(readOnly = true)
     public PaymentDto getPaymentByOrder(Long orderId) {
-        Payment payment = paymentRepository.findByOrder_OrderId(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
+        Payment payment = paymentRepository.findByOrderId(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
         return paymentMapper.toDto(payment);
     }
 
@@ -77,7 +78,7 @@ public class PaymentService implements IPaymentService {
     @Transactional(readOnly = true)
     public Payment getPaymentByOrderId(Long orderId) {
         Payment payment = paymentRepository.
-                findByOrder_OrderId(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
+                findByOrderId(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
         return payment;
     }
 
@@ -89,7 +90,7 @@ public class PaymentService implements IPaymentService {
         );
 
         Payment payment = Payment.builder()
-                .order(order)
+                .orderId(order.getOrderId())
                 .status("PENDING")
                 .paymentDate(LocalDateTime.now())
                 .paymentMethod(PaymentMethod.CASH)
@@ -99,7 +100,7 @@ public class PaymentService implements IPaymentService {
                 .build();
 
         paymentRepository.save(payment);
-        order.setPayment(payment);
+        order.setPaymentId(payment.getPaymentId());
         orderRepository.save(order);
         return true;
     }
@@ -138,7 +139,7 @@ public class PaymentService implements IPaymentService {
             String vnpTxnRef = request.getParameter("vnp_TxnRef");
             Long orderId = Long.parseLong(request.getParameter("vnp_TxnRef"));
             Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
-            Payment payment = paymentRepository.findByOrder_OrderId(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
+            Payment payment = paymentRepository.findByOrderId(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
 
             String transactionNo = request.getParameter("vnp_TransactionNo");
             String orderInfo = request.getParameter("vnp_OrderInfo");
@@ -156,7 +157,7 @@ public class PaymentService implements IPaymentService {
             paymentRepository.save(payment);
 
             // Luu thanh toan vao dơn hang
-            order.setPayment(payment);
+            order.setPaymentId(payment.getPaymentId());
             orderRepository.save(order);
             return new VnpayResponse(
                     "00",
@@ -190,10 +191,10 @@ public class PaymentService implements IPaymentService {
     }
 
     public void confirmCodPayment(Order order) {
-        Payment payment = Optional.ofNullable(order.getPayment())
+        Payment payment = Optional.ofNullable(models.payment(order.getPaymentId()))
                 .orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
 
-        if (payment.getPaymentMethod() != PaymentMethod.CASH) {
+        if (!PaymentMethod.CASH.equals(payment.getPaymentMethod())) {
             throw new AppException(CommonMessageUtils.INVALID_PAYMENT_METHOD);
         }
 
@@ -206,22 +207,23 @@ public class PaymentService implements IPaymentService {
     // =============== create payment  ====================
     public Payment createPayment(
             Order order,
-            PaymentMethod paymentMethod,
+            String paymentMethod,
             long amount,
             String bankCode
     ) {
 
+        if (paymentMethod == null || !PaymentMethod.VALUES.contains(paymentMethod)) throw new AppException(CommonMessageUtils.INVALID_PAYMENT_METHOD);
         if (order.getOrderId() == null) {
             throw new IllegalStateException("Order must be persisted before creating payment");
         }
 
-        PaymentStatus status =
-                paymentMethod == PaymentMethod.VNPAY
+        String status =
+                PaymentMethod.VNPAY.equals(paymentMethod)
                         ? PaymentStatus.INIT
                         : PaymentStatus.UNPAID;
 
         Payment payment = Payment.builder()
-                .order(order)
+                .orderId(order.getOrderId())
                 .paymentMethod(paymentMethod)
                 .paymentStatus(status)
                 .amount(amount)
@@ -232,7 +234,7 @@ public class PaymentService implements IPaymentService {
                                 : null
                 )
                 .expiredAt(
-                        paymentMethod == PaymentMethod.VNPAY
+                        PaymentMethod.VNPAY.equals(paymentMethod)
                                 ? LocalDateTime.now().plusHours(12)
                                 : null
                 )
@@ -252,14 +254,14 @@ public class PaymentService implements IPaymentService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
 
-        Payment payment = paymentRepository.findByOrder_OrderId(orderId)
+        Payment payment = paymentRepository.findByOrderId(orderId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
 
-        if (order.getOrderStatus() == OrderStatus.CANCELLED) {
+        if (OrderStatus.CANCELLED.equals(order.getOrderStatus())) {
             throw new AppException(CommonMessageUtils.ORDER_ALREADY_CANCELLED);
         }
 
-        if (payment.getPaymentStatus() != PaymentStatus.INIT) {
+        if (!PaymentStatus.INIT.equals(payment.getPaymentStatus())) {
             throw new AppException(CommonMessageUtils.PAYMENT_ALREADY_PROCESSED);
         }
 
@@ -267,15 +269,15 @@ public class PaymentService implements IPaymentService {
             throw new AppException(CommonMessageUtils.PAYMENT_EXPIRED);
         }
 
-        if (payment.getPaymentMethod() != PaymentMethod.VNPAY) {
+        if (!PaymentMethod.VNPAY.equals(payment.getPaymentMethod())) {
             throw new AppException(CommonMessageUtils.INVALID_PAYMENT_METHOD);
         }
 
-        if (payment.getPaymentStatus() == PaymentStatus.EXPIRED) {
+        if (PaymentStatus.EXPIRED.equals(payment.getPaymentStatus())) {
             throw new AppException(CommonMessageUtils.PAYMENT_EXPIRED);
         }
 
-        if (payment.getPaymentStatus() == PaymentStatus.PAID) {
+        if (PaymentStatus.PAID.equals(payment.getPaymentStatus())) {
             throw new AppException(CommonMessageUtils.PAYMENT_ALREADY_PROCESSED);
         }
 
@@ -308,11 +310,11 @@ public class PaymentService implements IPaymentService {
 
         for (Payment payment : expiredPayments) {
 
-            Order order = payment.getOrder();
+            Order order = models.order(payment.getOrderId());
 
             // idempotent safety
-            if (payment.getPaymentStatus() == PaymentStatus.EXPIRED ||
-                    order.getOrderStatus() == OrderStatus.CANCELLED) {
+            if (PaymentStatus.EXPIRED.equals(payment.getPaymentStatus()) ||
+                    OrderStatus.CANCELLED.equals(order.getOrderStatus())) {
                 continue;
             }
 
@@ -326,9 +328,9 @@ public class PaymentService implements IPaymentService {
             historyService.logStatusChange(order, OrderStatus.CANCELLED, null);
 
             // ===== RESTOCK INVENTORY =====
-            order.getOrderItems().forEach(item ->
+            models.orderItems(order.getOrderId()).forEach(item ->
                     inventoryService.restock(
-                            item.getProduct().getProductId(),
+                            item.getProductId(),
                             item.getQuantity()
                     )
             );

@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.userprofie;
 
-import com.example.MyShop_API.Enum.Role;
+import com.example.MyShop_API.constants.RoleCode;
 import com.example.MyShop_API.dto.request.UserProfileRequest;
 import com.example.MyShop_API.dto.response.UserProfileResponse;
 import com.example.MyShop_API.entity.Address;
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserProfileService implements IUserProfileService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     UserProfileRepository userProfileRepository;
     UserProfileMapper userProfileMapper;
     UserRepository userRepository;
@@ -46,59 +47,25 @@ public class UserProfileService implements IUserProfileService {
 
     @Transactional
     public UserProfileResponse createOrUpdateProfile(Long userId, UserProfileRequest userProfileRequest) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
-
-        // check role
-        boolean isUser = user.getRoles().stream()
-                .anyMatch(role -> "USER".equals(role.getRoleName()));
-
-        if (!isUser) throw new AppException(CommonMessageUtils.ROLE_NOT_ALLOWED);
-
-        UserProfile userProfile = user.getProfile();
-        if (userProfile == null) {
-            // Nếu user chưa có profile tạo mới
-            userProfile = UserProfile.builder()
-                    .username(userProfileRequest.getUsername())
-                    .mobileNumber(userProfileRequest.getMobileNumber())
-                    .gender(userProfileRequest.getGender())
-                    .birthDate(userProfileRequest.getBirthDate())
-//                    .user(user)
-                    .build();
-
-            // Tạo cart kèm theo
-            Cart cart = new Cart();
-            cart.setProfile(userProfile);
-            userProfile.setCart(cart);
-            user.setProfile(userProfile);
-
-            userProfile = userProfileRepository.save(userProfile);
-        } else {
-            // nếu user đã có profile ->  cập nhật
-            userProfileMapper.UpdateUserProfile(userProfileRequest, userProfile);
-            userProfile = userProfileRepository.save(userProfile);
+        User user = userRepository.findByIdForUpdate(userId).orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
+        if (models.roles(userId).stream().noneMatch(role -> "USER".equals(role.getRoleName()))) throw new AppException(CommonMessageUtils.ROLE_NOT_ALLOWED);
+        UserProfile profile = models.profileForUser(userId);
+        if (profile == null) {
+            profile = createEmptyUserProfile();
+            profile.setUserId(userId);
+            Cart cart = models.cartForProfile(profile.getProfileId());
+            cart.setUserId(userId);
+            models.getCarts().save(cart);
         }
-
-        return userProfileMapper.toResponse(userProfile);
+        userProfileMapper.UpdateUserProfile(userProfileRequest, profile);
+        return userProfileMapper.toResponse(userProfileRepository.save(profile));
     }
 
     @Override
+    @Transactional
     public UserProfile createEmptyUserProfile() {
-        UserProfile userProfile = UserProfile.builder()
-                .username(null)
-                .gender(null)
-                .mobileNumber(null)
-                .birthDate(null)
-                .address(null)
-                .cart(null)
-                .orders(List.of())
-                .build();
-
-        // initializeNewCart
-        Cart newCart = new Cart();
-        newCart.setProfile(userProfile);
-        userProfile.setCart(newCart);
-
-        return userProfileRepository.save(userProfile);
+        UserProfile profile = userProfileRepository.save(new UserProfile());
+        models.getCarts().save(Cart.builder().profileId(profile.getProfileId()).build());
+        return profile;
     }
 }

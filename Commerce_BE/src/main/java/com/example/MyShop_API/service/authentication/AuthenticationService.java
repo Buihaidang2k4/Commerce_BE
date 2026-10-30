@@ -47,6 +47,7 @@ import java.util.*;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService implements IAuthenticationService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     private final static String REFRESH_COOKIES_NAME = "refresh_token";
 
     UserRepository userRepository;
@@ -148,7 +149,8 @@ public class AuthenticationService implements IAuthenticationService {
                     .email(email)
                     .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                     .build();
-            return userMapper.toEntity(userService.createUser(userCreationRequest));
+            userService.createUser(userCreationRequest);
+            return userRepository.findByEmail(email).orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
         });
 
         blacklistService.revokeAllTokensForUser(user.getId(), Duration.ofMillis(REFRESH_TOKEN_DURATION));
@@ -291,8 +293,8 @@ public class AuthenticationService implements IAuthenticationService {
         // Phan cach nhau boi dau cach
         StringJoiner stringJoiner = new StringJoiner(" ");
 
-        if (!CollectionUtils.isEmpty(user.getRoles()))
-            user.getRoles().forEach(role -> stringJoiner.add("ROLE_" + role.getRoleName()));
+        if (!CollectionUtils.isEmpty(models.roles(user.getId())))
+            models.roles(user.getId()).forEach(role -> stringJoiner.add("ROLE_" + role.getRoleName()));
 
 
         return stringJoiner.toString();

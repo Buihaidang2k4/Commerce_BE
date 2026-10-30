@@ -3,7 +3,7 @@ package com.example.MyShop_API.controller;
 import com.example.MyShop_API.constants.ApiPath;
 
 
-import com.example.MyShop_API.Enum.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatus;
 import com.example.MyShop_API.dto.request.OrderPlaceListItemRequest;
 import com.example.MyShop_API.dto.request.PlaceOrderFromCartRequest;
 import com.example.MyShop_API.dto.response.ApiResponse;
@@ -68,7 +68,7 @@ public class OrderController {
     }
 
     @GetMapping(ApiPath.ORDER_STATUS_PAGE)
-    ResponseEntity<ApiResponse<List<OrderResponse>>> getOrderByStatusOrPage(@RequestParam OrderStatus orderStatus,
+    ResponseEntity<ApiResponse<List<OrderResponse>>> getOrderByStatusOrPage(@RequestParam String orderStatus,
                                                                             @RequestParam(defaultValue = "0") int page,
                                                                             @RequestParam(defaultValue = "10") int size,
                                                                             @RequestParam(defaultValue = "orderId") String sortBy,
@@ -91,7 +91,7 @@ public class OrderController {
     }
 
     @GetMapping(ApiPath.ORDER_STATUS)
-    ResponseEntity<ApiResponse<List<OrderResponse>>> getOrderByStatus(@RequestParam OrderStatus orderStatus) {
+    ResponseEntity<ApiResponse<List<OrderResponse>>> getOrderByStatus(@RequestParam String orderStatus) {
         List<OrderResponse> responses = orderMapper.toResponse(orderService.getOrdersByStatus(orderStatus));
         return ResponseEntity.ok(
                 new ApiResponse<>(200, "Get orders by status", responses)
@@ -167,7 +167,7 @@ public class OrderController {
     }
 
     @PutMapping(ApiPath.ORDER_ORDER_UPDATE_STATUS)
-    ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(@RequestParam("orderStatus") OrderStatus orderStatus
+    ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(@RequestParam("orderStatus") String orderStatus
             , @RequestParam("orderId") Long orderId
             , Principal principal
 

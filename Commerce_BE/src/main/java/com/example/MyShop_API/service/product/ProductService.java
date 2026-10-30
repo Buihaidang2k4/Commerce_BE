@@ -34,6 +34,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductService implements IProductService {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     ProductRepository productRepository;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
@@ -55,7 +56,7 @@ public class ProductService implements IProductService {
 
         // mapper
         Product product = productMapper.toEntity(request);
-        product.setCategory(category);
+        product.setCategoryId(category.getCategoryId());
         product.setSpecialPrice(calculateSpecialPrice(request.getPrice(), request.getDiscount()));
         product.setSlug(slug);
         // Lưu khởi tạo id
@@ -78,7 +79,7 @@ public class ProductService implements IProductService {
                 .orElseThrow(() -> new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED));
         if (category == null)
             throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
-        findProduct.setCategory(category);
+        findProduct.setCategoryId(category.getCategoryId());
         findProduct.setUpdateAt(LocalDate.now());
         productMapper.update(request, findProduct);
         // Cập nhật tồn kho
@@ -96,11 +97,11 @@ public class ProductService implements IProductService {
                 () -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED)
         );
 
-        if (orderItemRepository.existsByProductProductId(product.getProductId())) {
+        if (orderItemRepository.existsByProductId(product.getProductId())) {
             throw new AppException(CommonMessageUtils.PRODUCT_HAS_ORDERS);
         }
 
-        cartItemRepository.deleteCartItemByProductProductId(productId);
+        cartItemRepository.deleteByProductId(productId);
         productRepository.deleteById(productId);
     }
 
@@ -141,7 +142,7 @@ public class ProductService implements IProductService {
                     .weight(50.0)
                     .width(100.0)
                     .description("Mô tả sản phẩm " + i)
-                    .category(category)
+                    .categoryId(category.getCategoryId())
                     .price(BigDecimal.valueOf(1000 * i))
                     .specialPrice(BigDecimal.ZERO)
                     .discount(BigDecimal.ZERO)
@@ -154,10 +155,12 @@ public class ProductService implements IProductService {
             // Tạo tồn kho cho sản phẩm
             Inventory inventory = Inventory.builder()
                     .available(100 + i)
-                    .product(product)
+                    .productId(product.getProductId())
                     .build();
 
-            product.setInventory(inventory);
+            productRepository.save(product);
+            inventory.setProductId(product.getProductId());
+            models.getInventories().save(inventory);
 
             products.add(product);
         }

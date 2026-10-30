@@ -67,7 +67,7 @@ public class ImageService implements IImageService {
                         .fileName(file.getOriginalFilename())
                         .fileType(file.getContentType())
                         .image(new SerialBlob(file.getBytes()))
-                        .product(product)
+                        .productId(product.getProductId())
                         .build();
 
                 Image savedImage = imageRepository.saveAndFlush(image);
@@ -92,7 +92,7 @@ public class ImageService implements IImageService {
         for (String url : urls) {
             Image image = Image.builder()
                     .url(url)
-                    .product(product)
+                    .productId(product.getProductId())
                     .build();
             imageRepository.save(image);
         }

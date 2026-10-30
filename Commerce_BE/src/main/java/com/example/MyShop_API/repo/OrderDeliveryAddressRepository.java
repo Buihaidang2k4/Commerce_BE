@@ -10,9 +10,10 @@ public interface OrderDeliveryAddressRepository extends JpaRepository<OrderDeliv
     @Query(
             """
                     SELECT a FROM OrderDeliveryAddress  a
-                    WHERE a.order.orderId =:orderId
+                    WHERE a.orderId =:orderId
                     """
 
     )
     OrderDeliveryAddress findOrderDeliveryAddressByOrderId(@Param("orderId") Long orderId);
+    void deleteByOrderId(Long orderId);
 }

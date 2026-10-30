@@ -1,28 +1,25 @@
 package com.example.MyShop_API.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.time.Instant;
+import lombok.*;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
-@Data
+@Table(name = "revoked_tokens")
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "revoked_tokens")
 public class RevokedToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Lob
-    @Column(columnDefinition = "TEXT", unique = true)
+    @Column(columnDefinition = "TEXT")
     private String token;
-
     private Instant revokedAt;
     private Instant expiresAt;
+
 }

@@ -38,7 +38,7 @@ public class AddressService implements IAddressService {
 
     @Transactional(readOnly = true)
     public List<AddressResponse> getAddressByProfileId(Long profileId) {
-        return addressRepository.findByProfile_ProfileId(profileId).stream().map(addressMapper::toResponse)
+        return addressRepository.findByProfileId(profileId).stream().map(addressMapper::toResponse)
                 .toList();
     }
 
@@ -67,8 +67,8 @@ public class AddressService implements IAddressService {
             }
         }
         // Gan hai chieu
-        address.setProfile(userProfile);
-        userProfile.getAddress().add(address);
+        address.setProfileId(userProfile.getProfileId());
+
 
         // luu
         address = addressRepository.save(address);
@@ -82,10 +82,11 @@ public class AddressService implements IAddressService {
         Address findAddress = addressRepository.findById(addressId).orElseThrow(() ->
                 new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
 
+        if (!java.util.Objects.equals(findAddress.getProfileId(), profileId)) throw new AppException(CommonMessageUtils.FORBIDDEN);
         addressMapper.updateAddress(request, findAddress);
 
         if (request.getIsDefault() != null && request.getIsDefault()) {
-            List<Address> addresses = addressRepository.findByProfile_ProfileId(profileId);
+            List<Address> addresses = addressRepository.findByProfileId(profileId);
             addresses.forEach(addr -> addr.setIsDefault(false));
             findAddress.setIsDefault(true);
         }
@@ -101,7 +102,7 @@ public class AddressService implements IAddressService {
         Address address = addressRepository.findById(addressId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
 
-        if (!address.getProfile().getProfileId().equals(profileId)) {
+        if (!java.util.Objects.equals(address.getProfileId(), profileId)) {
             throw new AppException(CommonMessageUtils.FORBIDDEN);
         }
 

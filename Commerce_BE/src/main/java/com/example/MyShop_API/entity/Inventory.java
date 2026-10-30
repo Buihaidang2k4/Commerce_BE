@@ -2,32 +2,29 @@ package com.example.MyShop_API.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "inventory", indexes = {@Index(name = "idx_inventory_product_id", columnList = "product_id"), @Index(name = "idx_inventory_variant_id", columnList = "variant_id")})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "inventory", indexes = @Index(columnList = "product_id"))
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long inventoryId;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", unique = true, nullable = false)
-    Product product;
-    int available = 0;
-    int reserved = 0; // số lượng đặt trước chưa xuất kho (giỏ hàng, đơn hàng)
-    LocalDateTime updatedAt;
-
-    // kiểm tra xem có thể đặt thêm không
-    public boolean canReserve(int quantity) {
-        return available >= quantity;
-    }
+    private Long inventoryId;
+    private Long productId;
+    private Long variantId;
+    @Builder.Default
+    private int available = 0;
+    @Builder.Default
+    private int reserved = 0;
+    private LocalDateTime updatedAt;
+    @Version
+    private Long version;
+    public boolean canReserve(int quantity) { return quantity > 0 && available >= quantity; }
 }

@@ -1,7 +1,7 @@
 package com.example.MyShop_API.dto.response;
 
-import com.example.MyShop_API.Enum.CouponScope;
-import com.example.MyShop_API.Enum.DiscountType;
+import com.example.MyShop_API.constants.CouponScope;
+import com.example.MyShop_API.constants.DiscountType;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -18,8 +18,8 @@ import java.util.List;
 public class CouponResponse {
     Long couponId;
     String code;
-    CouponScope scope;
-    DiscountType discountType;
+    String scope;
+    String discountType;
     BigDecimal discountPercent; // 10.00 = 10%
     BigDecimal discountAmount; // 5000VNĐ
     BigDecimal maxDiscountAmount; // maximum discount limit

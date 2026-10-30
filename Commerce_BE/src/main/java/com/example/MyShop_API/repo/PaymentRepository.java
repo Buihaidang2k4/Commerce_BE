@@ -1,6 +1,6 @@
 package com.example.MyShop_API.repo;
 
-import com.example.MyShop_API.Enum.PaymentStatus;
+import com.example.MyShop_API.constants.PaymentStatus;
 import com.example.MyShop_API.entity.Payment;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
     Optional<Payment> findByPaymentId(Long paymentId);
 
-    Optional<Payment> findByOrder_OrderId(Long orderOrderId);
+    Optional<Payment> findByOrderId(Long orderOrderId);
 
-    List<Payment> findByPaymentStatusInAndExpiredAtBefore(List<PaymentStatus> paymentStatuses, LocalDateTime now);
+    List<Payment> findByPaymentStatusInAndExpiredAtBefore(List<String> paymentStatuses, LocalDateTime now);
 }

@@ -26,6 +26,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ApplicationInitConfig {
+    private final com.example.MyShop_API.service.model.ModelLookup models;
     @Autowired
     @Lazy
     PasswordEncoder passwordEncoder;
@@ -57,11 +58,11 @@ public class ApplicationInitConfig {
                         .email(adminEmail)
                         .password(passwordEncoder.encode(adminPassword))
                         .enabled(true)
-                        .roles((Set.of(role)))
                         .build();
 
 
-                userRepository.save(user);
+                user = userRepository.save(user);
+                models.replaceRoles(user.getId(), List.of(role));
             }
         };
     }

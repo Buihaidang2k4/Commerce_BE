@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.order_status_history;
 
-import com.example.MyShop_API.Enum.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatus;
 import com.example.MyShop_API.entity.Order;
 import com.example.MyShop_API.entity.OrderStatusHistory;
 import com.example.MyShop_API.entity.User;
@@ -26,17 +26,18 @@ public class OrderStatusHistoryService implements IOrderStatusHistoryService {
     @Override
     @Transactional(readOnly = true)
     public List<OrderStatusHistory> getHistory(Long orderId) {
-        return historyRepository.findByOrderOrderIdOrderByChangedAtAsc(orderId);
+        return historyRepository.findByOrderIdOrderByChangedAtAsc(orderId);
     }
 
     // =============== LOG STATUS ORDER ======================
     @Override
-    public void logStatusChange(Order order, OrderStatus newStatus, User user) {
+    public void logStatusChange(Order order, String newStatus, User user) {
         OrderStatusHistory orderStatusHistory = OrderStatusHistory.builder()
-                .order(order)
+                .orderId(order.getOrderId())
                 .changedAt(LocalDateTime.now())
+                .fromStatus(order.getOrderStatus())
                 .orderStatus(newStatus)
-                .changedBy(user)
+                .changedByUserId(user == null ? null : user.getId())
                 .build();
 
         historyRepository.save(orderStatusHistory);

@@ -1,7 +1,7 @@
 package com.example.MyShop_API.dto.request;
 
 
-import com.example.MyShop_API.Enum.PaymentMethod;
+import com.example.MyShop_API.constants.PaymentMethod;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
@@ -29,7 +29,7 @@ public class OrderRequest {
     int quantity; // Use Buy Now
 
     @NotNull(message = "{validation.payment.method.is.required}")
-    PaymentMethod paymentMethod; // VNPAY : CASH
+    String paymentMethod; // VNPAY : CASH
     String bankCode = "NCB"; // VNPAY
 
     @NotNull(message = "{validation.shipping.fee.is.required}")

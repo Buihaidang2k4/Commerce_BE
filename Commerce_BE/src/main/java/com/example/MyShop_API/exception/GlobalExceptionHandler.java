@@ -23,6 +23,11 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.error(exception.getCode(), message));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<?>> handleInvalidValue(IllegalArgumentException exception) {
+        return error(CommonMessageUtils.VALIDATION_ERROR);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleException(Exception exception) {
         String message = MessageHandlerUtils.getMessage(CommonMessageUtils.UNCATEGORIZED_EXCEPTION);

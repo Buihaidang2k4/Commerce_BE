@@ -1,27 +1,29 @@
 package com.example.MyShop_API.mapper;
 
-import com.example.MyShop_API.dto.request.UserCreationRequest;
-import com.example.MyShop_API.dto.request.UserUpdateRequest;
-import com.example.MyShop_API.dto.response.UserResponse;
-import com.example.MyShop_API.entity.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.BeanMapping;
-import org.mapstruct.Mapping;
-import org.mapstruct.NullValuePropertyMappingStrategy;
-import org.mapstruct.MappingTarget;
+import com.example.MyShop_API.entity.*;
+import com.example.MyShop_API.dto.request.*;
+import com.example.MyShop_API.dto.response.*;
+import com.example.MyShop_API.service.model.ModelLookup;
+import org.mapstruct.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
 
-@Mapper(componentModel = "spring", uses = {UserProfileMapper.class})
-public interface UserMapper {
+@Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public abstract class UserMapper {
+    @Autowired protected ModelLookup models;
+    @Autowired protected UserProfileMapper profiles;
+    @Autowired protected RoleMapper roles;
     @Mapping(target = "id", ignore = true)
-    User toEntity(UserCreationRequest request);
-
-    @Mapping(source = "profile", target = "userProfile")
-    UserResponse toResponse(User user);
-
-    User toEntity(UserResponse userResponse);
-
+    public abstract User toEntity(UserCreationRequest request);
+    public abstract UserResponse toResponse(User user);
+    public abstract User toEntity(UserResponse response);
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "roles", ignore = true)
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    void update(UserUpdateRequest request, @MappingTarget User user);
+    public abstract void update(UserUpdateRequest request, @MappingTarget User user);
+
+    @AfterMapping
+    protected void fill(User user, @MappingTarget UserResponse response) {
+        response.setUserProfile(profiles.toResponse(models.profileForUser(user.getId())));
+        response.setRoles(models.roles(user.getId()).stream().map(roles::toResponse).collect(java.util.stream.Collectors.toSet()));
+    }
 }

@@ -2,49 +2,32 @@ package com.example.MyShop_API.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
-
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
+@Table(name = "order_delivery_addresses", indexes = {@Index(name = "idx_order_delivery_addresses_order_id", columnList = "order_id")})
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "order_delivery_addresses")
 public class OrderDeliveryAddress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id", nullable = false, unique = true)
-    Order order;
-
-    @Column(nullable = false)
-    String recipientName;
-
-    @Column(nullable = false, length = 20)
-    String recipientPhone;
-
-    @Column(nullable = false)
-    String street;           // Số nhà, tên đường
-
-    @Column(nullable = false)
-    String ward;             // Phường/Xã
-
-    @Column(nullable = false)
-    String district;         // Quận/Huyện
-
-    @Column(nullable = false)
-    String province;         // Tỉnh/Thành phố
-
-    String postalCode;       // Có thể null ở VN
-
+    private Long id;
+    private Long orderId;
+    private String recipientName;
+    private String recipientPhone;
+    private String street;
+    private String ward;
+    private String district;
+    private String province;
+    private String postalCode;
     @Column(columnDefinition = "TEXT")
-    String deliveryNote;     // Ghi chú: "Giao sau 17h", "Để trước cửa"...
+    private String deliveryNote;
+    @Builder.Default
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    LocalDateTime createdAt = LocalDateTime.now();
 }
