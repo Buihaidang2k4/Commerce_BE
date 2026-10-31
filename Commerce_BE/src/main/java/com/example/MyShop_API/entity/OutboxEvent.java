@@ -1,18 +1,21 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
 @Table(name = "outbox_events", indexes = {@Index(name = "idx_outbox_events_event_id", columnList = "event_id"), @Index(name = "idx_outbox_events_aggregate_id", columnList = "aggregate_id"), @Index(name = "idx_outbox_events_correlation_id", columnList = "correlation_id")})
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OutboxEvent {
+public class OutboxEvent extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,15 +25,12 @@ public class OutboxEvent {
     private String eventType;
     private Long aggregateVersion;
     @Column(columnDefinition = "TEXT")
-    private String payload;
+    private String payloadJson;
     private String correlationId;
     private Instant occurredAt;
     private Instant publishedAt;
-    @Builder.Default
-    private Integer attempts = 0;
-    @Column(columnDefinition = "TEXT")
-    private String lastError;
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt;
+    private Integer publishAttemptCount;
+    private String lastErrorMessage;
+
+
 }

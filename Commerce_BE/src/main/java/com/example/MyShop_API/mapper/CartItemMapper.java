@@ -12,11 +12,13 @@ import java.util.List;
 public abstract class CartItemMapper {
     @Autowired protected ModelLookup models;
 
+    @Mapping(source = "id", target = "cartItemId")
+    @Mapping(source = "lineAmount", target = "totalPrice")
     public abstract CartItemResponse toResponse(CartItem item);
 
     @AfterMapping
     protected void fill(CartItem item, @MappingTarget CartItemResponse response) {
         var product = models.product(item.getProductId());
-        response.setProductName(product == null ? null : product.getProductName());
+        response.setProductName(product == null ? null : product.getName());
     }
 }

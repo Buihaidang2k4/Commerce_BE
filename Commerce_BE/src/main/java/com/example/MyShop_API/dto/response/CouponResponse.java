@@ -6,7 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,8 +24,8 @@ public class CouponResponse {
     BigDecimal discountAmount; // 5000VNĐ
     BigDecimal maxDiscountAmount; // maximum discount limit
     BigDecimal minOrderValue; // Minimum conditions for discount
-    LocalDateTime startDate;
-    LocalDateTime expiryDate;
+    Instant startDate;
+    Instant expiryDate;
     List<Long> categoryIds = new ArrayList<>();
     List<Long> productIds = new ArrayList<>();
     boolean enabled = true;

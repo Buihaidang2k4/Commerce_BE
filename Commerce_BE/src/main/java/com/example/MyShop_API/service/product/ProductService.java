@@ -5,13 +5,13 @@ import com.example.MyShop_API.dto.request.productSearch.AdminProductSearchCondit
 import com.example.MyShop_API.dto.request.productSearch.UserProductSearchCondition;
 import com.example.MyShop_API.dto.response.ProductResponse;
 import com.example.MyShop_API.entity.Category;
-import com.example.MyShop_API.entity.Inventory;
+import com.example.MyShop_API.entity.StockBalance;
 import com.example.MyShop_API.entity.Product;
 import com.example.MyShop_API.exception.AppException;
 import com.example.MyShop_API.constants.CommonMessageUtils;
 import com.example.MyShop_API.mapper.ProductMapper;
 import com.example.MyShop_API.repo.*;
-import com.example.MyShop_API.service.inventory.IInventoryService;
+import com.example.MyShop_API.service.inventory.IStockBalanceService;
 import com.example.MyShop_API.utils.SlugUtils;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -39,7 +39,7 @@ public class ProductService implements IProductService {
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
     CartItemRepository cartItemRepository;
-    IInventoryService inventoryService;
+    IStockBalanceService inventoryService;
     OrderItemRepository orderItemRepository;
 
     @Transactional
@@ -49,14 +49,17 @@ public class ProductService implements IProductService {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED));
 
-        if (productRepository.existsProductByProductName(request.getProductName()))
+        if (productRepository.existsProductByName(request.getProductName()))
             throw new AppException(CommonMessageUtils.PRODUCT_NAME_IS_EXISTED);
 
         String slug = SlugUtils.toSlug(request.getProductName());
 
         // mapper
         Product product = productMapper.toEntity(request);
-        product.setCategoryId(category.getCategoryId());
+        product.setSoldQuantity(0);
+        product.setReviewCount(0);
+        product.setAverageRating(0.0);
+        product.setCategoryId(category.getId());
         product.setSpecialPrice(calculateSpecialPrice(request.getPrice(), request.getDiscount()));
         product.setSlug(slug);
         // Lưu khởi tạo id
@@ -79,8 +82,8 @@ public class ProductService implements IProductService {
                 .orElseThrow(() -> new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED));
         if (category == null)
             throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
-        findProduct.setCategoryId(category.getCategoryId());
-        findProduct.setUpdateAt(LocalDate.now());
+        findProduct.setCategoryId(category.getId());
+        findProduct.setUpdatedAt(java.time.Instant.now());
         productMapper.update(request, findProduct);
         // Cập nhật tồn kho
         inventoryService.updateStock(productId, request.getQuantity());
@@ -97,7 +100,7 @@ public class ProductService implements IProductService {
                 () -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED)
         );
 
-        if (orderItemRepository.existsByProductId(product.getProductId())) {
+        if (orderItemRepository.existsByProductId(product.getId())) {
             throw new AppException(CommonMessageUtils.PRODUCT_HAS_ORDERS);
         }
 
@@ -112,17 +115,17 @@ public class ProductService implements IProductService {
 
         // Tạo sẵn vài Category
         Category electronics = Category.builder()
-                .categoryName("Cây ăn quả")
+                .name("Cây ăn quả")
                 .description("Các loại cây ăn quả")
                 .build();
 
         Category fashion = Category.builder()
-                .categoryName("Cây lấy gỗ")
+                .name("Cây lấy gỗ")
                 .description("Các loại cây lấy gỗ")
                 .build();
 
         Category home = Category.builder()
-                .categoryName("Rau củ quả")
+                .name("Rau củ quả")
                 .description("Các loại rau củ quả")
                 .build();
 
@@ -133,33 +136,33 @@ public class ProductService implements IProductService {
             Category category = (i % 3 == 0) ? electronics : (i % 3 == 1 ? fashion : home);
 
             Product product = Product.builder()
-                    .productName("Sản phẩm " + i)
+                    .name("Sản phẩm " + i)
                     .origin("Việt Nam " + i)
-                    .bio("Sản phẩm chất lượng " + i)
+                    .shortDescription("Sản phẩm chất lượng " + i)
                     .slug("san-pham-" + i)
                     .height(20.0)
                     .length(10.0)
                     .weight(50.0)
                     .width(100.0)
                     .description("Mô tả sản phẩm " + i)
-                    .categoryId(category.getCategoryId())
+                    .categoryId(category.getId())
                     .price(BigDecimal.valueOf(1000 * i))
                     .specialPrice(BigDecimal.ZERO)
                     .discount(BigDecimal.ZERO)
-                    .soldCount(0)
+                    .soldQuantity(0)
                     .reviewCount(0)
-                    .avgRating(0.0)
-                    .createAt(LocalDate.now())
+                    .averageRating(0.0)
+                    .createdAt(java.time.Instant.now())
                     .build();
 
             // Tạo tồn kho cho sản phẩm
-            Inventory inventory = Inventory.builder()
-                    .available(100 + i)
-                    .productId(product.getProductId())
+            StockBalance inventory = StockBalance.builder()
+                    .onHandQuantity(100 + i)
+                    .productId(product.getId())
                     .build();
 
             productRepository.save(product);
-            inventory.setProductId(product.getProductId());
+            inventory.setProductId(product.getId());
             models.getInventories().save(inventory);
 
             products.add(product);
@@ -234,17 +237,17 @@ public class ProductService implements IProductService {
     @Override
     @Transactional(readOnly = true)
     public Product getProductByName(String productName) {
-        return productRepository.getProductByProductName(productName).orElseThrow(() -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
+        return productRepository.getProductByName(productName).orElseThrow(() -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
     }
 
     // ============== GET ALL BY CATEGORY NAME ============
     @Override
     @Transactional(readOnly = true)
     public Page<Product> searchProductByCategory(String categoryName, Pageable pageable) {
-        Category findCategory = categoryRepository.getCategoriesByCategoryName(categoryName);
+        Category findCategory = categoryRepository.findByName(categoryName);
         if (findCategory == null)
             throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
-        return productRepository.findByCategory_CategoryName(categoryName, pageable);
+        return productRepository.findByCategoryName(categoryName, pageable);
     }
 
     private BigDecimal calculateSpecialPrice(BigDecimal price, BigDecimal discount) {

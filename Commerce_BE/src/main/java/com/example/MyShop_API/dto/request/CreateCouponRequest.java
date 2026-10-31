@@ -7,7 +7,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 
 @Getter
@@ -42,11 +42,11 @@ public class CreateCouponRequest {
     BigDecimal minOrderValue;
 
     @FutureOrPresent(message = "{validation.start.date.must.be.now.or.in.the.future}")
-    LocalDateTime startDate;
+    Instant startDate;
 
     @NotNull(message = "{validation.expirydate.not.null}")
     @Future(message = "{validation.expiry.date.must.be.in.the.future}")
-    LocalDateTime expiryDate;
+    Instant expiryDate;
 
     Integer usageLimit;           // null = không giới hạn
     boolean limitPerUser = true;  // mặc định bật

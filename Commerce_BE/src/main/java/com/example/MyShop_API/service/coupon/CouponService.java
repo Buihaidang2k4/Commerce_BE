@@ -24,7 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,13 +60,13 @@ public class CouponService implements ICouponService {
 
         Coupon coupon = couponMapper.toCoupon(request);
 
-        coupon.setStartDate(
+        coupon.setStartsAt(
                 request.getStartDate() != null
                         ? request.getStartDate()
-                        : LocalDateTime.now()
+                        : Instant.now()
         );
 
-        coupon.setUsedCount(0);
+        coupon.setRedeemedCount(0);
 
         // generate unique code
         String code;
@@ -80,8 +80,8 @@ public class CouponService implements ICouponService {
         switch (request.getScope()) {
 
             case "GLOBAL" -> {
-                models.replaceCouponCategories(coupon.getCouponId(), List.of());
-                models.replaceCouponProducts(coupon.getCouponId(), List.of());
+                models.replaceCouponCategories(coupon.getId(), List.of());
+                models.replaceCouponProducts(coupon.getId(), List.of());
             }
 
             case "CATEGORY" -> {
@@ -92,7 +92,7 @@ public class CouponService implements ICouponService {
                     throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
                 }
 
-                models.replaceCouponCategories(coupon.getCouponId(), categories);
+                models.replaceCouponCategories(coupon.getId(), categories);
             }
 
             case "PRODUCT" -> {
@@ -103,7 +103,7 @@ public class CouponService implements ICouponService {
                     throw new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED);
                 }
 
-                models.replaceCouponProducts(coupon.getCouponId(), products);
+                models.replaceCouponProducts(coupon.getId(), products);
             }
         }
 
@@ -115,7 +115,7 @@ public class CouponService implements ICouponService {
     @Override
     @Transactional(readOnly = true)
     public List<Coupon> getAvailableCoupons(BigDecimal orderTotal) {
-        return couponRepository.findAvailableCoupons(orderTotal, LocalDateTime.now());
+        return couponRepository.findAvailableCoupons(orderTotal, Instant.now());
     }
 
     @Override
@@ -134,15 +134,15 @@ public class CouponService implements ICouponService {
         log.info("================== START APPLY COUPON ==================");
         Coupon coupon = couponRepository.findByCodeIgnoreCaseAndEnabledTrue(couponCode)
                 .filter(Coupon::isUsable)
-                .filter(c -> c.getMinOrderValue() == null || orderTotal.compareTo(c.getMinOrderValue()) >= 0)
+                .filter(c -> c.getMinimumOrderAmount() == null || orderTotal.compareTo(c.getMinimumOrderAmount()) >= 0)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.COUPON_INVALID));
 
         // Check limit per user
         if (coupon.isLimitPerUser()) {
-            int usedCount = orderRepository.countByProfileIdAndCouponId(
-                    profile.getProfileId(), coupon.getCouponId());
+            int usedCount = orderRepository.countByUserProfileIdAndCouponId(
+                    profile.getId(), coupon.getId());
 
-            if (usedCount >= coupon.getMaxUsesPerUser())
+            if (usedCount >= coupon.getPerUserUsageLimit())
                 throw new AppException(CommonMessageUtils.COUPON_LIMIT_PER_USER_EXCEEDED);
         }
         // valid scope
@@ -152,12 +152,12 @@ public class CouponService implements ICouponService {
         BigDecimal discount = calculateDiscount(coupon, orderTotal);
 
         // apply discount
-        order.setCouponId(coupon.getCouponId());
+        order.setCouponId(coupon.getId());
 
         coupon.incrementUsedCount();
         couponRepository.save(coupon);
 
-        log.info("Coupon {} applied to order {}. Discount: {}", couponCode, order.getOrderId(), discount);
+        log.info("Coupon {} applied to order {}. Discount: {}", couponCode, order.getId(), discount);
         log.info("================= END APPLY COUPON ================");
         return discount;
     }
@@ -168,14 +168,14 @@ public class CouponService implements ICouponService {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.COUPON_NOT_EXISTED));
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
 
         // 1. Không cho update coupon đã hết hạn
-        if (coupon.getExpiryDate().isBefore(now))
+        if (coupon.getEndsAt().isBefore(now))
             throw new AppException(CommonMessageUtils.COUPON_EXPIRED);
 
-        boolean hasBeenUsed = coupon.getUsedCount() != null && coupon.getUsedCount() > 0;
-        boolean hasStarted = coupon.getStartDate() != null && coupon.getStartDate().isBefore(now);
+        boolean hasBeenUsed = coupon.getRedeemedCount() != null && coupon.getRedeemedCount() > 0;
+        boolean hasStarted = coupon.getStartsAt() != null && coupon.getStartsAt().isBefore(now);
 
 
         // 2. expiryDate chỉ cho update khi chưa bắt đầu
@@ -188,21 +188,21 @@ public class CouponService implements ICouponService {
                 throw new AppException(CommonMessageUtils.EXPIRY_BEFORE_START);
             }
 
-            coupon.setStartDate(request.getStartDate());
+            coupon.setStartsAt(request.getStartDate());
         }
 
         // 3. expiryDate chỉ cho gia hạn
         if (request.getExpiryDate() != null) {
-            if (request.getExpiryDate().isBefore(coupon.getExpiryDate()))
+            if (request.getExpiryDate().isBefore(coupon.getEndsAt()))
                 throw new AppException(CommonMessageUtils.CANNOT_SHORTEN_EXPIRY);
 
-            coupon.setExpiryDate(request.getExpiryDate());
+            coupon.setEndsAt(request.getExpiryDate());
         }
 
 
         // 4. enable
         if (request.getEnabled() != null) {
-            if (Boolean.TRUE.equals(request.getEnabled()) && coupon.getExpiryDate().isBefore(now))
+            if (Boolean.TRUE.equals(request.getEnabled()) && coupon.getEndsAt().isBefore(now))
                 throw new AppException(CommonMessageUtils.CANNOT_ENABLE_EXPIRED_COUPON);
 
             coupon.setEnabled(request.getEnabled());
@@ -212,11 +212,11 @@ public class CouponService implements ICouponService {
         if (!hasBeenUsed) {
 
             if (request.getMinOrderValue() != null) {
-                coupon.setMinOrderValue(request.getMinOrderValue());
+                coupon.setMinimumOrderAmount(request.getMinOrderValue());
             }
 
             if (request.getMaxDiscountAmount() != null) {
-                coupon.setMaxDiscountAmount(request.getMaxDiscountAmount());
+                coupon.setMaximumDiscountAmount(request.getMaxDiscountAmount());
             }
 
         } else {
@@ -239,19 +239,19 @@ public class CouponService implements ICouponService {
         Coupon coupon = couponRepository.findById(couponId)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.COUPON_NOT_EXISTED));
 
-        if (coupon.getUsedCount() > 0) {
+        if (coupon.getRedeemedCount() > 0) {
             throw new AppException(CommonMessageUtils.COUPON_ALREADY_USED);
         }
 
-        LocalDateTime now = LocalDateTime.now();
+        Instant now = Instant.now();
         if (coupon.isEnabled()
-                && !coupon.getStartDate().isAfter(now)
-                && !coupon.getExpiryDate().isBefore(now)) {
+                && !coupon.getStartsAt().isAfter(now)
+                && !coupon.getEndsAt().isBefore(now)) {
             throw new AppException(CommonMessageUtils.CANNOT_DELETE_ACTIVE_COUPON);
         }
 
-        models.replaceCouponCategories(coupon.getCouponId(), List.of());
-        models.replaceCouponProducts(coupon.getCouponId(), List.of());
+        models.replaceCouponCategories(coupon.getId(), List.of());
+        models.replaceCouponProducts(coupon.getId(), List.of());
         couponRepository.delete(coupon);
     }
 
@@ -393,9 +393,9 @@ public class CouponService implements ICouponService {
                 return;
 
             case "CATEGORY":
-                boolean matchCategory = models.orderItems(order.getOrderId()).stream()
+                boolean matchCategory = models.orderItems(order.getId()).stream()
                         .map(oi -> models.category(models.product(oi.getProductId()).getCategoryId()))
-                        .anyMatch(models.couponCategories(coupon.getCouponId())::contains);
+                        .anyMatch(models.couponCategories(coupon.getId())::contains);
 
                 if (!matchCategory) {
                     throw new AppException(CommonMessageUtils.COUPON_CATEGORY_NOT_APPLICABLE);
@@ -403,9 +403,9 @@ public class CouponService implements ICouponService {
                 break;
 
             case "PRODUCT":
-                boolean matchProduct = models.orderItems(order.getOrderId()).stream()
+                boolean matchProduct = models.orderItems(order.getId()).stream()
                         .map(oi -> models.product(oi.getProductId()))
-                        .anyMatch(models.couponProducts(coupon.getCouponId())::contains);
+                        .anyMatch(models.couponProducts(coupon.getId())::contains);
 
                 if (!matchProduct) {
                     throw new AppException(CommonMessageUtils.COUPON_PRODUCT_NOT_APPLICABLE);
@@ -425,12 +425,12 @@ public class CouponService implements ICouponService {
 
             case "PERCENTAGE":
                 discount = orderTotal
-                        .multiply(coupon.getDiscountPercent())
+                        .multiply(coupon.getDiscountPercentage())
                         .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
-                if (coupon.getMaxDiscountAmount() != null
-                        && discount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
-                    discount = coupon.getMaxDiscountAmount();
+                if (coupon.getMaximumDiscountAmount() != null
+                        && discount.compareTo(coupon.getMaximumDiscountAmount()) > 0) {
+                    discount = coupon.getMaximumDiscountAmount();
                 }
                 break;
 

@@ -1,26 +1,29 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.*;
 import java.sql.Blob;
 
 @Entity
-@Table(name = "user_profile", indexes = {@Index(name = "idx_user_profile_user_id", columnList = "user_id")})
+@Table(name = "user_profiles", indexes = {@Index(name = "idx_user_profiles_user_id", columnList = "user_id")})
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserProfile {
+public class UserProfile extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long profileId;
+    private Long id;
     private Long userId;
-    private String username;
+    private String displayName;
     private Boolean gender;
     private LocalDate birthDate;
-    private String mobileNumber;
+    private String phoneNumber;
+
 
 }

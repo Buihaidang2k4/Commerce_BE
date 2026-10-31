@@ -1,5 +1,7 @@
 package com.example.MyShop_API.service.report;
 
+import lombok.RequiredArgsConstructor;
+
 import com.example.MyShop_API.entity.Order;
 import com.example.MyShop_API.service.report.styleExcel.BorderStyleUtil;
 import org.apache.poi.ss.usermodel.*;
@@ -15,7 +17,7 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@lombok.RequiredArgsConstructor
+@RequiredArgsConstructor
 public class ReportExcelService {
     private final com.example.MyShop_API.service.model.ModelLookup models;
     @Value("${report.temp-dir-excel}")
@@ -42,15 +44,15 @@ public class ReportExcelService {
         int rowIdx = 1;
         for (Order order : orders) {
             Row row = sheet.createRow(rowIdx++);
-            row.createCell(0).setCellValue(order.getOrderId());
-            row.createCell(1).setCellValue(models.deliveryAddress(order.getOrderId()).getRecipientName());
-            row.createCell(2).setCellValue(models.orderItems(order.getOrderId()).stream().map(orderItem -> orderItem.getProductTitle()).findFirst().toString());
-            row.createCell(3).setCellValue(models.orderItems(order.getOrderId()).stream().map(orderItem -> orderItem.getQuantity()).findFirst().toString());
+            row.createCell(0).setCellValue(order.getId());
+            row.createCell(1).setCellValue(models.deliveryAddress(order.getId()).getRecipientName());
+            row.createCell(2).setCellValue(models.orderItems(order.getId()).stream().map(orderItem -> orderItem.getProductNameSnapshot()).findFirst().toString());
+            row.createCell(3).setCellValue(models.orderItems(order.getId()).stream().map(orderItem -> orderItem.getQuantity()).findFirst().toString());
             row.createCell(4).setCellValue(order.getTotalAmount().toString());
 
             Cell cell = row.createCell(5);
             cell.setCellStyle(dataStyle);
-            cell.setCellValue(order.getOrderStatus().toString());
+            cell.setCellValue(order.getStatus().toString());
 
         }
 

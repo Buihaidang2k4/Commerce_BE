@@ -132,7 +132,7 @@
             </div>
             <div class="code-row">
                 <span class="code-label"><strong>Mã đơn hàng:</strong></span>
-                <span th:text="${order.orderId}"></span>
+                <span th:text="${order.id}"></span>
             </div>
         </div>
     </div>
@@ -182,7 +182,7 @@
             </div>
             <!--            <div class="product-item">1. Áo thời trang nữ - Đỏ, , SL: 1</div>-->
             <div th:each="oi,index: ${orderItems}">
-                <span th:text="${index.count + '. '+oi.getProductTitle() +' , SL:'+ oi.getQuantity()}"></span>
+                <span th:text="${index.count + '. '+oi.getProductNameSnapshot() +' , SL:'+ oi.getQuantity()}"></span>
             </div>
         </div>
         <div class="qr-section">

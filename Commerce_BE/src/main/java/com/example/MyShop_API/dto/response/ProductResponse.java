@@ -3,7 +3,7 @@ package com.example.MyShop_API.dto.response;
 import com.example.MyShop_API.dto.request.ImageDTO;
 import com.example.MyShop_API.dto.request.InventoryDTO;
 import com.example.MyShop_API.entity.Category;
-import com.example.MyShop_API.entity.Image;
+import com.example.MyShop_API.entity.ProductImage;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

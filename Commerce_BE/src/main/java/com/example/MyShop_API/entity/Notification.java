@@ -1,33 +1,34 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
-@Table(name = "notifications", indexes = {@Index(name = "idx_notifications_user_id", columnList = "user_id"), @Index(name = "idx_notifications_event_id", columnList = "event_id")})
+@Table(name = "notifications", indexes = {@Index(name = "idx_notifications_user_id", columnList = "user_id"), @Index(name = "idx_notifications_source_event_id", columnList = "source_event_id")})
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Notification {
+public class Notification extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
-    private String channel;
+    private String channelCode;
     private String templateCode;
     private String subject;
     @Column(columnDefinition = "TEXT")
-    private String content;
-    @Builder.Default
-    private String status = "PENDING";
-    private String eventId;
+    private String body;
+    private String status;
+    private String sourceEventId;
     private Instant sentAt;
     private Instant readAt;
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt;
+
+
 }

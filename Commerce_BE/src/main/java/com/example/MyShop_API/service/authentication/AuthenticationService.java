@@ -5,13 +5,13 @@ import com.example.MyShop_API.dto.request.IntrospectRequest;
 import com.example.MyShop_API.dto.request.UserCreationRequest;
 import com.example.MyShop_API.dto.response.AuthenticationResponse;
 import com.example.MyShop_API.dto.response.IntrospectResponse;
-import com.example.MyShop_API.entity.User;
+import com.example.MyShop_API.entity.UserAccount;
 import com.example.MyShop_API.exception.AppException;
 import com.example.MyShop_API.constants.CommonMessageUtils;
-import com.example.MyShop_API.mapper.UserMapper;
-import com.example.MyShop_API.repo.UserRepository;
+import com.example.MyShop_API.mapper.UserAccountMapper;
+import com.example.MyShop_API.repo.UserAccountRepository;
 import com.example.MyShop_API.service.token_blacklist.TokenBlacklistService;
-import com.example.MyShop_API.service.user.UserService;
+import com.example.MyShop_API.service.user.UserAccountService;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
@@ -50,9 +50,9 @@ public class AuthenticationService implements IAuthenticationService {
     private final com.example.MyShop_API.service.model.ModelLookup models;
     private final static String REFRESH_COOKIES_NAME = "refresh_token";
 
-    UserRepository userRepository;
-    UserService userService;
-    UserMapper userMapper;
+    UserAccountRepository userRepository;
+    UserAccountService userService;
+    UserAccountMapper userMapper;
     PasswordEncoder passwordEncoder;
     TokenBlacklistService blacklistService;
 
@@ -84,7 +84,7 @@ public class AuthenticationService implements IAuthenticationService {
      */
     public AuthenticationResponse authenticate(AuthenticationRequest request) throws ParseException {
         log.info("======================= START LOGIN ======================");
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(
+        UserAccount user = userRepository.findByEmail(request.getEmail()).orElseThrow(
                 () -> new AppException(CommonMessageUtils.INVALID_CREDENTIALS)
         );
 
@@ -94,7 +94,7 @@ public class AuthenticationService implements IAuthenticationService {
             throw new AppException(CommonMessageUtils.USER_ALREADY_LOCKED);
         }
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
             throw new AppException(CommonMessageUtils.PASSWORD_NOT_MATCHES);
         }
         // Thu hồi toàn bộ token cũ trước khi sinh token mới
@@ -138,7 +138,7 @@ public class AuthenticationService implements IAuthenticationService {
             throw new AppException(CommonMessageUtils.USER_INVALID);
         }
 
-        User user = userRepository.findByEmail(email).orElseGet(() -> {
+        UserAccount user = userRepository.findByEmail(email).orElseGet(() -> {
             // Lấy name từ Google token trong lambda để tránh lỗi final
             String userName = (String) idToken.getPayload().get("name");
             if (userName == null || userName.trim().isEmpty()) {
@@ -180,7 +180,7 @@ public class AuthenticationService implements IAuthenticationService {
 
         String email = signedJWT.getJWTClaimsSet().getSubject();
 
-        User user = userRepository.findByEmail(email).orElseThrow(() ->
+        UserAccount user = userRepository.findByEmail(email).orElseThrow(() ->
                 new AppException(CommonMessageUtils.USER_NOT_EXISTED));
 
         try {
@@ -259,15 +259,15 @@ public class AuthenticationService implements IAuthenticationService {
         return idToken;
     }
 
-    private String generateAccessToken(User user) {
+    private String generateAccessToken(UserAccount user) {
         return buildToken(user, Duration.ofMillis(ACCESS_TOKEN_DURATION), "access_token");
     }
 
-    private String generateRefreshToken(User user) {
+    private String generateRefreshToken(UserAccount user) {
         return buildToken(user, Duration.ofMillis(REFRESH_TOKEN_DURATION), "refresh_token");
     }
 
-    private String buildToken(User user, Duration duration, String type) {
+    private String buildToken(UserAccount user, Duration duration, String type) {
         try {
             JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
                     .subject(user.getEmail())
@@ -289,12 +289,12 @@ public class AuthenticationService implements IAuthenticationService {
     }
 
 
-    private String buildScope(User user) {
+    private String buildScope(UserAccount user) {
         // Phan cach nhau boi dau cach
         StringJoiner stringJoiner = new StringJoiner(" ");
 
         if (!CollectionUtils.isEmpty(models.roles(user.getId())))
-            models.roles(user.getId()).forEach(role -> stringJoiner.add("ROLE_" + role.getRoleName()));
+            models.roles(user.getId()).forEach(role -> stringJoiner.add("ROLE_" + role.getCode()));
 
 
         return stringJoiner.toString();

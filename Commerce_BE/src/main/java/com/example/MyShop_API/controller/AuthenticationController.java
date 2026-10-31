@@ -11,7 +11,7 @@ import com.example.MyShop_API.dto.response.ApiResponse;
 import com.example.MyShop_API.dto.response.AuthenticationResponse;
 import com.example.MyShop_API.dto.response.IntrospectResponse;
 import com.example.MyShop_API.service.authentication.IAuthenticationService;
-import com.example.MyShop_API.service.password_reset_otp.IPasswordResetOtpService;
+import com.example.MyShop_API.service.password_reset_otp.IPasswordResetChallengeService;
 import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,7 +43,7 @@ public class AuthenticationController {
     private static final String ACCESS_COOKIE_NAME = "access_token";
 
     IAuthenticationService authenticationService;
-    IPasswordResetOtpService resetOtpService;
+    IPasswordResetChallengeService resetOtpService;
 
     @PostMapping(ApiPath.AUTH_LOGIN)
     ResponseEntity<ApiResponse> login(@Valid @RequestBody AuthenticationRequest request,

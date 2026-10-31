@@ -6,7 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
-@Data // Auto create getter setter constructor toString
+@Data // Auto create getter setter Object toString
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

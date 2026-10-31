@@ -3,15 +3,15 @@ package com.example.MyShop_API.service.userprofie;
 import com.example.MyShop_API.constants.RoleCode;
 import com.example.MyShop_API.dto.request.UserProfileRequest;
 import com.example.MyShop_API.dto.response.UserProfileResponse;
-import com.example.MyShop_API.entity.Address;
-import com.example.MyShop_API.entity.Cart;
-import com.example.MyShop_API.entity.User;
+import com.example.MyShop_API.entity.UserAddress;
+import com.example.MyShop_API.entity.ShoppingCart;
+import com.example.MyShop_API.entity.UserAccount;
 import com.example.MyShop_API.entity.UserProfile;
 import com.example.MyShop_API.exception.AppException;
 import com.example.MyShop_API.constants.CommonMessageUtils;
 import com.example.MyShop_API.mapper.UserProfileMapper;
 import com.example.MyShop_API.repo.UserProfileRepository;
-import com.example.MyShop_API.repo.UserRepository;
+import com.example.MyShop_API.repo.UserAccountRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -30,7 +30,7 @@ public class UserProfileService implements IUserProfileService {
     private final com.example.MyShop_API.service.model.ModelLookup models;
     UserProfileRepository userProfileRepository;
     UserProfileMapper userProfileMapper;
-    UserRepository userRepository;
+    UserAccountRepository userRepository;
 
     @Transactional(readOnly = true)
     public List<UserProfileResponse> getUserProfile() {
@@ -47,13 +47,13 @@ public class UserProfileService implements IUserProfileService {
 
     @Transactional
     public UserProfileResponse createOrUpdateProfile(Long userId, UserProfileRequest userProfileRequest) {
-        User user = userRepository.findByIdForUpdate(userId).orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
-        if (models.roles(userId).stream().noneMatch(role -> "USER".equals(role.getRoleName()))) throw new AppException(CommonMessageUtils.ROLE_NOT_ALLOWED);
+        UserAccount user = userRepository.findByIdForUpdate(userId).orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
+        if (models.roles(userId).stream().noneMatch(role -> "USER".equals(role.getCode()))) throw new AppException(CommonMessageUtils.ROLE_NOT_ALLOWED);
         UserProfile profile = models.profileForUser(userId);
         if (profile == null) {
             profile = createEmptyUserProfile();
             profile.setUserId(userId);
-            Cart cart = models.cartForProfile(profile.getProfileId());
+            ShoppingCart cart = models.cartForProfile(profile.getId());
             cart.setUserId(userId);
             models.getCarts().save(cart);
         }
@@ -65,7 +65,7 @@ public class UserProfileService implements IUserProfileService {
     @Transactional
     public UserProfile createEmptyUserProfile() {
         UserProfile profile = userProfileRepository.save(new UserProfile());
-        models.getCarts().save(Cart.builder().profileId(profile.getProfileId()).build());
+        models.getCarts().save(ShoppingCart.builder().userProfileId(profile.getId()).build());
         return profile;
     }
 }

@@ -1,0 +1,38 @@
+package com.example.MyShop_API.repo;
+
+import com.example.MyShop_API.entity.ProductReview;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface ProductReviewRepository extends JpaRepository<ProductReview, Long> {
+    @Query("""
+            SELECT COUNT(r) > 0
+            FROM ProductReview r
+            WHERE r.userProfileId = :profileId
+              AND r.orderId = :orderId
+              AND r.productId = :productId
+              AND r.deleted = false
+            """)
+    boolean existsReviewForOrderAndProduct(
+            @Param("profileId") Long profileId,
+            @Param("productId") Long productId,
+            @Param("orderId") Long orderId);
+
+    Page<ProductReview> findByProductIdAndDeletedFalse(Long productId, Pageable pageable);
+
+    @Query("""
+            SELECT
+            COALESCE(AVG(r.rating),0) ,
+            COUNT(r)
+            FROM ProductReview r WHERE r.productId =:productId AND r.deleted = false
+            """)
+    Object findRatingStats(@Param("productId") Long productId);
+
+}

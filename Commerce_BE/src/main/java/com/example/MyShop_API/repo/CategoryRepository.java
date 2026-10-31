@@ -9,9 +9,8 @@ import java.util.List;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
-    boolean existsCategoriesByCategoryName(String categoryName);
+    boolean existsByName(String categoryName);
 
-    Category getCategoriesByCategoryName(String categoryName);
+    Category findByName(String categoryName);
 
-    Category findByCategoryName(String categoryName);
 }

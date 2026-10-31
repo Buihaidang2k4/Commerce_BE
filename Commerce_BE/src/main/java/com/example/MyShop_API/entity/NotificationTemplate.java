@@ -1,30 +1,31 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
-@Table(name = "notification_templates", indexes = {@Index(name = "idx_notification_templates_code", columnList = "code")})
+@Table(name = "notification_templates")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class NotificationTemplate {
+public class NotificationTemplate extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String code;
-    private String locale;
-    private String channel;
+    private String templateCode;
+    private String languageTag;
+    private String channelCode;
     private String subjectTemplate;
     @Column(columnDefinition = "TEXT")
     private String bodyTemplate;
-    @Builder.Default
-    private Boolean enabled = true;
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt;
+    private Boolean enabled;
+
+
 }

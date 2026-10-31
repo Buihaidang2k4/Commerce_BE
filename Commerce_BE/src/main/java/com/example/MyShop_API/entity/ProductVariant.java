@@ -1,18 +1,21 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
 @Table(name = "product_variants", indexes = {@Index(name = "idx_product_variants_product_id", columnList = "product_id")})
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductVariant {
+public class ProductVariant extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,14 +26,11 @@ public class ProductVariant {
     @Column(precision = 18, scale = 2)
     private BigDecimal price;
     @Column(precision = 18, scale = 2)
-    private BigDecimal specialPrice;
-    @Builder.Default
-    private String currency = "VND";
-    @Builder.Default
-    private String status = "ACTIVE";
+    private BigDecimal salePrice;
+    private String currencyCode;
+    private String status;
     @Version
     private Long version;
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt;
+
+
 }

@@ -1,7 +1,7 @@
 package com.example.MyShop_API.dto.response;
 
 
-import com.example.MyShop_API.entity.Address;
+import com.example.MyShop_API.entity.UserAddress;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

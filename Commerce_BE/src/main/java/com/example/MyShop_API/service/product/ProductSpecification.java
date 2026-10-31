@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.product;
 
-import com.example.MyShop_API.entity.Inventory;
+import com.example.MyShop_API.entity.StockBalance;
 import com.example.MyShop_API.entity.Product;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -9,7 +9,7 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public class ProductSpecification {
 
@@ -18,7 +18,7 @@ public class ProductSpecification {
             if (!StringUtils.hasText(keyword)) return null;
             String like = "%" + keyword.toLowerCase() + "%";
             return cb.or(
-                    cb.like(cb.lower(root.get("productName")), like),
+                    cb.like(cb.lower(root.get("name")), like),
                     cb.like(cb.lower(root.get("slug")), like)
             );
         };
@@ -29,7 +29,7 @@ public class ProductSpecification {
             if (!StringUtils.hasText(categoryName)) return null;
             var subquery = query.subquery(Long.class);
             var category = subquery.from(com.example.MyShop_API.entity.Category.class);
-            subquery.select(category.get("categoryId")).where(cb.equal(category.get("categoryName"), categoryName));
+            subquery.select(category.get("id")).where(cb.equal(category.get("name"), categoryName));
             return root.get("categoryId").in(subquery);
         };
     }
@@ -57,14 +57,14 @@ public class ProductSpecification {
     public static Specification<Product> bestSeller(Boolean bestSeller) {
         return (root, query, cb) ->
                 Boolean.TRUE.equals(bestSeller)
-                        ? cb.greaterThan(root.get("soldCount"), 0)
+                        ? cb.greaterThan(root.get("soldQuantity"), 0)
                         : null;
     }
 
 
     public static Specification<Product> minRating(Double rating) {
         return (root, query, cb) ->
-                rating == null ? null : cb.greaterThanOrEqualTo(root.get("avgRating"), rating);
+                rating == null ? null : cb.greaterThanOrEqualTo(root.get("averageRating"), rating);
     }
 
     public static Specification<Product> origin(String origin) {
@@ -79,20 +79,20 @@ public class ProductSpecification {
             if (inStock == null) return null;
 
             var subquery = query.subquery(Long.class);
-            var inventory = subquery.from(Inventory.class);
+            var inventory = subquery.from(StockBalance.class);
             subquery.select(inventory.get("productId")).where(inStock
-                    ? cb.greaterThan(inventory.get("available"), 0)
-                    : cb.equal(inventory.get("available"), 0));
-            return root.get("productId").in(subquery);
+                    ? cb.greaterThan(cb.diff(inventory.<Integer>get("onHandQuantity"), inventory.<Integer>get("reservedQuantity")), 0)
+                    : cb.equal(cb.diff(inventory.<Integer>get("onHandQuantity"), inventory.<Integer>get("reservedQuantity")), 0));
+            return root.get("id").in(subquery);
         };
     }
 
     public static Specification<Product> createdBetween(LocalDate from, LocalDate to) {
         return (root, query, cb) -> {
             if (from == null && to == null) return null;
-            if (from == null) return cb.lessThanOrEqualTo(root.get("createAt"), to);
-            if (to == null) return cb.greaterThanOrEqualTo(root.get("createAt"), from);
-            return cb.between(root.get("createAt"), from, to);
+            if (from == null) return cb.lessThan(root.get("createdAt"), to.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant());
+            if (to == null) return cb.greaterThanOrEqualTo(root.get("createdAt"), from.atStartOfDay(java.time.ZoneOffset.UTC).toInstant());
+            return cb.and(cb.greaterThanOrEqualTo(root.get("createdAt"), from.atStartOfDay(java.time.ZoneOffset.UTC).toInstant()), cb.lessThan(root.get("createdAt"), to.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant()));
         };
     }
 }

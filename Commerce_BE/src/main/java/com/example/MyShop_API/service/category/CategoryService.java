@@ -45,14 +45,14 @@ public class CategoryService implements ICategoryService {
     @Override
     @Transactional(readOnly = true)
     public Category getCategoryByName(String name) {
-        return categoryRepository.findByCategoryName(name);
+        return categoryRepository.findByName(name);
     }
 
     public Category addCategory(Category category) {
-        if (categoryRepository.existsCategoriesByCategoryName(category.getCategoryName())) {
+        if (categoryRepository.existsByName(category.getName())) {
             throw new AppException(CommonMessageUtils.CATEGORY_EXISTED);
         }
-        category.setCreateAt(LocalDate.now());
+        category.setUpdatedAt(java.time.Instant.now());
         return categoryRepository.save(category);
     }
 
@@ -62,9 +62,9 @@ public class CategoryService implements ICategoryService {
             throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
         }
 
-        oldCategory.setCategoryName(category.getCategoryName());
+        oldCategory.setName(category.getName());
         oldCategory.setDescription(category.getDescription());
-        oldCategory.setUpdateAt(LocalDate.now());
+        oldCategory.setUpdatedAt(java.time.Instant.now());
         return categoryRepository.save(oldCategory);
     }
 

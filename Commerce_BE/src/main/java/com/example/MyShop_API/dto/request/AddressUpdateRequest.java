@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -43,5 +43,5 @@ public class AddressUpdateRequest {
     @Size(max = 50)
     String label;
 
-    LocalDateTime updatedAt = LocalDateTime.now();
+    Instant updatedAt = Instant.now();
 }

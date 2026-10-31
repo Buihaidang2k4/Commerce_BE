@@ -1,34 +1,34 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
-@Table(name = "payment_transactions", indexes = {@Index(name = "idx_payment_transactions_payment_id", columnList = "payment_id"), @Index(name = "idx_payment_transactions_provider_event_id", columnList = "provider_event_id")})
+@Table(name = "payment_transactions", indexes = {@Index(name = "idx_payment_transactions_payment_intent_id", columnList = "payment_intent_id"), @Index(name = "idx_payment_transactions_provider_event_id", columnList = "provider_event_id"), @Index(name = "idx_payment_transactions_provider_transaction_id", columnList = "provider_transaction_id")})
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaymentTransaction {
+public class PaymentTransaction extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long paymentId;
-    private String provider;
+    private Long paymentIntentId;
+    private String providerCode;
     private String providerEventId;
-    private String providerRef;
+    private String providerTransactionId;
     @Column(precision = 18, scale = 2)
     private BigDecimal amount;
-    @Builder.Default
-    private String currency = "VND";
-    private String status;
-    @Column(columnDefinition = "TEXT")
+    private String currencyCode;
+    private String transactionStatus;
     private String payloadHash;
     private Instant receivedAt;
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt;
+
+
 }

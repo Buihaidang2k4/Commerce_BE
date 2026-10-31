@@ -1,22 +1,28 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
 import java.time.*;
 import java.sql.Blob;
 
 @Entity
-@Table(name = "role")
+@Table(name = "roles", indexes = {@Index(name = "idx_roles_code", columnList = "code")})
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class Role {
+public class Role extends AuditableEntity {
     @Id
-    private String roleName;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    private String code;
+    private String name;
     @Column(columnDefinition = "TEXT")
     private String description;
+
 
 }

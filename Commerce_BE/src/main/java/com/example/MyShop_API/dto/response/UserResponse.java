@@ -3,7 +3,7 @@ package com.example.MyShop_API.dto.response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Set;
 
 @Getter
@@ -16,7 +16,7 @@ public class UserResponse {
     String email;
     boolean enabled = true;
     String lockedReason;
-    LocalDateTime lockedAt;
+    Instant lockedAt;
     Set<RoleResponse> roles;
     UserProfileResponse userProfile;
 }

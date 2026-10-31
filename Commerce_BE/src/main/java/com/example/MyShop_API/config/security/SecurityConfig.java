@@ -1,5 +1,8 @@
 package com.example.MyShop_API.config.security;
 
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -29,8 +32,8 @@ import java.util.List;
 public class SecurityConfig {
     private static final String ACCESS_TOKEN_NAME = "access_token";
 
-    @lombok.experimental.NonFinal
-    @org.springframework.beans.factory.annotation.Value("${app.cors.allowed-origins}")
+    @NonFinal
+    @Value("${app.cors.allowed-origins}")
     String allowedOrigins;
 
     @Autowired
@@ -38,9 +41,9 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityWebFilterChain(HttpSecurity http, org.springframework.data.redis.core.StringRedisTemplate redis,
-            @org.springframework.beans.factory.annotation.Value("${api.prefix}") String apiPrefix,
-            @org.springframework.beans.factory.annotation.Value("${app.auth.rate-limit.requests:20}") int authRequests,
-            @org.springframework.beans.factory.annotation.Value("${app.auth.rate-limit.window-seconds:60}") int authWindow) throws Exception {
+            @Value("${api.prefix}") String apiPrefix,
+            @Value("${app.auth.rate-limit.requests:20}") int authRequests,
+            @Value("${app.auth.rate-limit.window-seconds:60}") int authWindow) throws Exception {
         if (authRequests < 1 || authWindow < 1) throw new IllegalArgumentException("Invalid authentication rate limit");
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

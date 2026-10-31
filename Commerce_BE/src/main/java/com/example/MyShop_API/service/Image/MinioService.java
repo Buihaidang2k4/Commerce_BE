@@ -1,4 +1,4 @@
-package com.example.MyShop_API.service.Image;
+package com.example.MyShop_API.service.ProductImage;
 
 import io.minio.*;
 import io.minio.errors.*;

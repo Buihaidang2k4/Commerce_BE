@@ -6,10 +6,10 @@ import com.example.MyShop_API.exception.AppException;
 
 import com.example.MyShop_API.dto.response.ApiResponse;
 import com.example.MyShop_API.dto.response.CartItemResponse;
-import com.example.MyShop_API.entity.Cart;
+import com.example.MyShop_API.entity.ShoppingCart;
 import com.example.MyShop_API.mapper.CartItemMapper;
 import com.example.MyShop_API.service.cart.ICartItemService;
-import com.example.MyShop_API.service.cart.ICartService;
+import com.example.MyShop_API.service.cart.IShoppingCartService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +27,9 @@ import java.util.Optional;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CartItemController {
     ICartItemService cartItemService;
-    ICartService cartService;
+    IShoppingCartService cartService;
     CartItemMapper cartItemMapper;
-    com.example.MyShop_API.mapper.CartMapper cartMapper;
+    com.example.MyShop_API.mapper.ShoppingCartMapper cartMapper;
 
     @GetMapping(ApiPath.CART_ITEM_CART_CART_ID_CART_ITEM_CART_ITEM_ID)
     ResponseEntity<ApiResponse<CartItemResponse>> getCartItem(@PathVariable Long cartId, @PathVariable Long cartItemId) {
@@ -48,7 +48,7 @@ public class CartItemController {
             Long checkCartId = cartId.map(id -> cartService.getCartById(id) != null ? id : cartService.initializeNewCart()).orElseGet(() -> cartService.initializeNewCart());
 
             cartItemService.addItemToCart(checkCartId, productId, quantity);
-            Cart cart = cartService.getCartById(checkCartId);
+            ShoppingCart cart = cartService.getCartById(checkCartId);
             return ResponseEntity.ok(new ApiResponse(200, "add cartItem success", cartMapper.toResponse(cart)));
         } catch (Exception e) {
             if (e instanceof AppException appException) throw appException;

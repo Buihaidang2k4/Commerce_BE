@@ -6,10 +6,10 @@ import com.example.MyShop_API.dto.request.OrderRequest;
 import com.example.MyShop_API.dto.request.PlaceOrderFromCartRequest;
 import com.example.MyShop_API.dto.response.OrderResponse;
 import com.example.MyShop_API.dto.response.VnpayResponse;
-import com.example.MyShop_API.entity.Cart;
+import com.example.MyShop_API.entity.ShoppingCart;
 import com.example.MyShop_API.entity.CartItem;
 import com.example.MyShop_API.entity.Order;
-import com.example.MyShop_API.entity.User;
+import com.example.MyShop_API.entity.UserAccount;
 import com.example.MyShop_API.exception.AppException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.aspectj.weaver.ast.Or;
@@ -45,7 +45,7 @@ public interface IOrderService {
 
     void cancelOrder(Long orderId);
 
-    Order updateOrderStatus(Long orderId, String orderStatus, User admin);
+    Order updateOrderStatus(Long orderId, String orderStatus, UserAccount admin);
 
     void deleteOrder(Long orderId);
 

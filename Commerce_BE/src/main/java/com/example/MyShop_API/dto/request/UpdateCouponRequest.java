@@ -4,7 +4,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -15,6 +15,6 @@ public class UpdateCouponRequest {
     Boolean enabled;
     BigDecimal maxDiscountAmount;
     BigDecimal minOrderValue;
-    LocalDateTime startDate;
-    LocalDateTime expiryDate;
+    Instant startDate;
+    Instant expiryDate;
 }

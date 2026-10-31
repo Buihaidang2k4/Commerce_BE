@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -15,5 +15,5 @@ public class InventoryDTO {
     Long productId;
     int available;
     int reserved;
-    LocalDateTime updatedAt;
+    Instant updatedAt;
 }

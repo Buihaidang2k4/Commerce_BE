@@ -13,17 +13,32 @@ public abstract class OrderMapper {
     @Autowired protected ModelLookup models;
     @Autowired protected OrderItemMapper items;
     @Autowired protected CouponMapper coupons;
+
+    @Mapping(source = "profileId", target = "userProfileId")
+    @Mapping(source = "shippingFee", target = "shippingAmount")
     public abstract Order toEntity(OrderRequest request);
+
+
+
+    @Mapping(source = "id", target = "orderId")
+    @Mapping(source = "userProfileId", target = "profileId")
+    @Mapping(source = "shippingAmount", target = "shippingFee")
+    @Mapping(source = "status", target = "orderStatus")
     public abstract OrderResponse toResponse(Order order);
     public abstract List<OrderResponse> toResponse(List<Order> orders);
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(source = "profileId", target = "userProfileId")
+    @Mapping(source = "shippingFee", target = "shippingAmount")
     public abstract void update(OrderRequest request, @MappingTarget Order order);
 
     @AfterMapping
     protected void fill(Order order, @MappingTarget OrderResponse response) {
-        response.setOrderItemResponses(models.orderItems(order.getOrderId()).stream().map(items::toResponse).toList());
+        response.setOrderItemResponses(models.orderItems(order.getId()).stream().map(items::toResponse).toList());
         response.setCouponResponse(coupons.toCouponResponse(models.coupon(order.getCouponId())));
-        var address = models.deliveryAddress(order.getOrderId());
+        var address = models.deliveryAddress(order.getId());
         response.setDeliveryAddressId(address == null ? null : address.getId());
     }
 }

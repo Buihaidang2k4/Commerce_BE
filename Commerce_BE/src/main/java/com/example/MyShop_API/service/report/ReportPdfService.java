@@ -1,7 +1,7 @@
 package com.example.MyShop_API.service.report;
 
 import com.example.MyShop_API.entity.Order;
-import com.example.MyShop_API.entity.OrderDeliveryAddress;
+import com.example.MyShop_API.entity.OrderShippingAddress;
 import com.example.MyShop_API.entity.OrderItem;
 import com.example.MyShop_API.exception.AppException;
 import com.example.MyShop_API.constants.CommonMessageUtils;
@@ -45,9 +45,9 @@ public class ReportPdfService {
         // random mã đơn hàng HC-51-03-GV13
         String randomOrder = RadomCodeTemplate.generateCode();
         // Địa chỉ
-        OrderDeliveryAddress deliveryAddress = models.deliveryAddress(order.getOrderId());
+        OrderShippingAddress deliveryAddress = models.deliveryAddress(order.getId());
         // Nội dung đơn hàng
-        java.util.List<OrderItem> orderItems = models.orderItems(order.getOrderId());
+        java.util.List<OrderItem> orderItems = models.orderItems(order.getId());
         int sizeOrderItem = orderItems.size();
 
         Context context = new Context();

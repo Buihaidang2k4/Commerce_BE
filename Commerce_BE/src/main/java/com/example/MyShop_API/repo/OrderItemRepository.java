@@ -15,56 +15,54 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Long> {
     // Doanh thu theo san pham
     @Query(value = """
             SELECT
-            	p.product_id ,
-            	p.product_name ,
-            	SUM(oi.quantity * oi.price) as revenueProduct,
-            	SUM(oi.quantity) as totalSold,
-            	COUNT(DISTINCT o.order_id ) as totalOrders,
-            	AVG(oi.price) as avgPrice
-            FROM
-            	order_items oi
+                p.id ,
+                p.name ,
+                SUM(oi.quantity * oi.unit_price) as revenueProduct,
+                SUM(oi.quantity) as totalSold,
+                COUNT(DISTINCT o.id ) as totalOrders,
+                AVG(oi.unit_price) as avgPrice
+            FROM order_items oi
             JOIN products p ON
-            	oi.product_id = p.product_id
+                oi.product_id = p.id
             JOIN orders o ON
-            	oi.order_id = o.order_id
-            JOIN payments pm ON
-            	pm.payment_id = o.payment_id
+                oi.order_id = o.id
+            JOIN payment_intents pm ON
+                pm.id = o.payment_id
             WHERE
-            	YEAR(o.order_date) =:year
-            	AND MONTH(o.order_date) =:month
-            	AND pm.payment_status = 'PAID'
+                YEAR(o.order_date) =:year
+                AND MONTH(o.order_date) =:month
+                AND pm.status = 'PAID'
             GROUP BY
-            	p.product_id ,
-            	p.product_name
+                p.id ,
+                p.name
             """, nativeQuery = true)
     List<Object[]> getRevenueByProduct(@Param("year") int year,
                                        @Param("month") int month);
 
     @Query(value = """
             SELECT
-            	c.category_id ,
-            	c.category_name ,
-            	SUM(oi.quantity * oi.price ) as revenueCategory,
-            	SUM(oi.quantity) as totalProductSold,
-            	COUNT(DISTINCT o.order_id ) as totalOrders,
-            	AVG(oi.price) as avgOrderValue
-            FROM
-            	order_items oi
+                c.id ,
+                c.name ,
+                SUM(oi.quantity * oi.unit_price ) as revenueCategory,
+                SUM(oi.quantity) as totalProductSold,
+                COUNT(DISTINCT o.id ) as totalOrders,
+                AVG(oi.unit_price) as avgOrderValue
+            FROM order_items oi
             JOIN products p ON
-            	oi.product_id = p.product_id
+                oi.product_id = p.id
             JOIN categories c ON
-            	c.category_id = p.category_id
+                c.id = p.category_id
             JOIN orders o ON
-            	o.order_id = oi.order_id
-            JOIN payments pm ON
-            	o.payment_id = pm.payment_id
+                o.id = oi.order_id
+            JOIN payment_intents pm ON
+                o.payment_id = pm.id
             WHERE
-            	YEAR(o.order_date) =:year
-            	AND MONTH(o.order_date) =:month
-            	AND pm.payment_status = 'PAID'
+                YEAR(o.order_date) =:year
+                AND MONTH(o.order_date) =:month
+                AND pm.status = 'PAID'
             GROUP BY
-            	c.category_id ,
-            	c.category_name
+                c.id ,
+                c.name
             """, nativeQuery = true)
     List<Object[]> getRevenueByCategory(@Param("year") int year,
                                         @Param("month") int month);

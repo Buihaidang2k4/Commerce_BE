@@ -1,9 +1,9 @@
 package com.example.MyShop_API.service.token_blacklist;
 
-import com.example.MyShop_API.entity.RevokedToken;
+import com.example.MyShop_API.entity.TokenRevocation;
 import com.example.MyShop_API.exception.AppException;
 import com.example.MyShop_API.constants.CommonMessageUtils;
-import com.example.MyShop_API.repo.RevokedTokenRepository;
+import com.example.MyShop_API.repo.TokenRevocationRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +28,7 @@ public class TokenBlacklistService {
     private static final String PREFIX = "blacklist:refresh_token:";
     private static final String USER_TOKEN_LIST_PREFIX = "refresh_tokens:user:";
     RedisTemplate<String, Object> redisTemplate;
-    RevokedTokenRepository revokedTokenRepository;
+    TokenRevocationRepository revokedTokenRepository;
 
     // hash token key save redis
     private String getRedisKey(String token) {
@@ -46,7 +46,7 @@ public class TokenBlacklistService {
         redisTemplate.opsForValue().set(key, true, duration);
         try {
             // 2. ghi vào db ( dự phòng khi phục hồi)
-            revokedTokenRepository.save(RevokedToken.builder()
+            revokedTokenRepository.save(TokenRevocation.builder()
                     .token(token)
                     .revokedAt(now)
                     .expiresAt(expiresAt)
@@ -132,8 +132,8 @@ public class TokenBlacklistService {
     @PostConstruct
     public void reloadFromDatabase() {
         try {
-            List<RevokedToken> tokens = revokedTokenRepository.findAllValid(Instant.now());
-            for (RevokedToken token : tokens) {
+            List<TokenRevocation> tokens = revokedTokenRepository.findAllValid(Instant.now());
+            for (TokenRevocation token : tokens) {
                 long ttl = Duration.between(Instant.now(), token.getExpiresAt()).toMillis();
                 if (ttl > 0) {
                     redisTemplate.opsForValue().set(getRedisKey(token.getToken()), true, Duration.ofMillis(ttl));

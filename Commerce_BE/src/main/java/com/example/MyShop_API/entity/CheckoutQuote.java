@@ -1,39 +1,39 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
 @Table(name = "checkout_quotes", indexes = {@Index(name = "idx_checkout_quotes_user_id", columnList = "user_id"), @Index(name = "idx_checkout_quotes_address_id", columnList = "address_id")})
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CheckoutQuote {
+public class CheckoutQuote extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
     private Long addressId;
-    @Builder.Default
-    private String currency = "VND";
+    private String currencyCode;
     @Column(precision = 18, scale = 2)
-    private BigDecimal subtotal;
+    private BigDecimal subtotalAmount;
     @Column(precision = 18, scale = 2)
-    private BigDecimal discountTotal;
+    private BigDecimal discountAmount;
     @Column(precision = 18, scale = 2)
-    private BigDecimal shippingTotal;
+    private BigDecimal shippingAmount;
     @Column(precision = 18, scale = 2)
-    private BigDecimal grandTotal;
+    private BigDecimal totalAmount;
     @Column(columnDefinition = "TEXT")
     private String snapshotJson;
     private Instant expiresAt;
-    @Builder.Default
-    private String status = "ACTIVE";
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt;
+    private String status;
+
+
 }

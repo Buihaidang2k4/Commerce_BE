@@ -17,30 +17,30 @@ import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    @Query("SELECT o FROM Order o WHERE o.profileId =:profileId")
-    List<Order> findByProfileId(@Param("profileId") Long profileId);
+    @Query("SELECT o FROM Order o WHERE o.userProfileId =:profileId")
+    List<Order> findByUserProfileId(@Param("profileId") Long profileId);
 
-    List<Order> findByOrderStatus(String orderStatus);
+    List<Order> findByStatus(String orderStatus);
 
-    int countByProfileIdAndCouponId(Long profileProfileId, Long couponCouponId);
+    int countByUserProfileIdAndCouponId(Long profileProfileId, Long couponCouponId);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT o FROM Order o WHERE o.orderId = :id")
+    @Query("SELECT o FROM Order o WHERE o.id = :id")
     Optional<Order> findByIdForUpdate(@Param("id") Long id);
 
 
     @Modifying
-    @Query("UPDATE Order o SET o.orderStatus=:status WHERE o.orderId=:orderId")
+    @Query("UPDATE Order o SET o.status=:status WHERE o.id=:orderId")
     void updateStatus(@Param("orderId") Long orderId, @Param("status") String status);
 
     @Query("""
             SELECT COUNT(o) > 0
             FROM Order o
-            JOIN OrderItem oi ON oi.orderId = o.orderId
-            WHERE o.profileId = :profileId
+            JOIN OrderItem oi ON oi.orderId = o.id
+            WHERE o.userProfileId = :profileId
               AND oi.productId = :productId
-              AND o.orderId = :orderId
-              AND o.orderStatus IN :statuses
+              AND o.id = :orderId
+              AND o.status IN :statuses
             """)
     boolean hasPurchasedProductInOrder(
             @Param("profileId") Long profileId,
@@ -51,19 +51,18 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Doanh thu thang
     @Query(value = """
             SELECT
-            	MONTH(o.order_date) as month,
-            	SUM(oi.quantity * oi.price ) as revenue,
-            	COUNT(DISTINCT o.order_id ) as totalOrders,
-            	SUM(oi.quantity) as totalProductSoild
-            FROM
-            	orders o
+                MONTH(o.order_date) as month,
+                SUM(oi.quantity * oi.unit_price ) as revenue,
+                COUNT(DISTINCT o.id ) as totalOrders,
+                SUM(oi.quantity) as totalProductSoild
+            FROM orders o
             JOIN order_items oi ON
-            	o.order_id = oi.order_id
-            JOIN payments p ON
-            	o.payment_id = p.payment_id
+                o.id = oi.order_id
+            JOIN payment_intents p ON
+                o.payment_id = p.id
             WHERE
-            	YEAR(o.order_date) =:year
-            	AND p.payment_status = 'PAID'
+                YEAR(o.order_date) =:year
+                AND p.status = 'PAID'
             GROUP BY MONTH(o.order_date )
             ORDER By month
             """, nativeQuery = true)
@@ -72,49 +71,47 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // Doanh thu quy
     @Query(value = """
             SELECT
-            	QUARTER(o.order_date) as quater,
-            	SUM(oi.quantity * oi.price) as revenueQuater,
-            	COUNT(DISTINCT o.order_id) as totalOrders,
-            	SUM(oi.quantity) as totalProductSold
-            FROM
-            	orders o
+                QUARTER(o.order_date) as quater,
+                SUM(oi.quantity * oi.unit_price) as revenueQuater,
+                COUNT(DISTINCT o.id) as totalOrders,
+                SUM(oi.quantity) as totalProductSold
+            FROM orders o
             JOIN order_items oi ON
-            	o.order_id = oi.order_id
-            JOIN payments p ON
-            	o.payment_id = p.payment_id
+                o.id = oi.order_id
+            JOIN payment_intents p ON
+                o.payment_id = p.id
             WHERE
-            	YEAR(o.order_date) =:year
-            	and p.payment_status = 'PAID'
+                YEAR(o.order_date) =:year
+                and p.status = 'PAID'
             GROUP BY
-            	QUARTER(o.order_date)
+                QUARTER(o.order_date)
             ORDER BY
-            	quater
+                quater
             """, nativeQuery = true)
     List<Object[]> getQuarterlyRevenue(@Param("year") int year);
 
     // Doanh thu theo nam
     @Query(value = """
-            	SELECT
-            	QUARTER(o.order_date) as year,
-            	SUM(oi.quantity * oi.price) as revenueYear,
-            	COUNT(DISTINCT o.order_id) as totalOrders,
-            	SUM(oi.quantity) as totalProductSold
-            FROM
-            	orders o
+                SELECT
+                QUARTER(o.order_date) as year,
+                SUM(oi.quantity * oi.unit_price) as revenueYear,
+                COUNT(DISTINCT o.id) as totalOrders,
+                SUM(oi.quantity) as totalProductSold
+            FROM orders o
             JOIN order_items oi ON
-            	o.order_id = oi.order_id
-            JOIN payments p ON
-            	o.payment_id = p.payment_id
+                o.id = oi.order_id
+            JOIN payment_intents p ON
+                o.payment_id = p.id
             WHERE
-            	YEAR(o.order_date) BETWEEN :fromYear AND :toYear\s
-            	and p.payment_status = 'PAID'
+                YEAR(o.order_date) BETWEEN :fromYear AND :toYear\s
+                and p.status = 'PAID'
             GROUP BY
-            	QUARTER(o.order_date)
+                QUARTER(o.order_date)
             ORDER BY
-            	year
+                year
             """, nativeQuery = true)
     List<Object[]> getAnnualRevenue(@Param("fromYear") int fromYear,
                                     @Param("toYear") int toYear);
 
-    Page<Order> findByOrderStatus(String orderStatus, Pageable pageable);
+    Page<Order> findByStatus(String orderStatus, Pageable pageable);
 }

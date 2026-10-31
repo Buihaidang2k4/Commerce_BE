@@ -9,13 +9,13 @@ import com.example.MyShop_API.dto.request.PlaceOrderFromCartRequest;
 import com.example.MyShop_API.dto.response.ApiResponse;
 import com.example.MyShop_API.dto.request.OrderRequest;
 import com.example.MyShop_API.dto.response.OrderResponse;
-import com.example.MyShop_API.entity.Cart;
+import com.example.MyShop_API.entity.ShoppingCart;
 import com.example.MyShop_API.entity.Order;
-import com.example.MyShop_API.entity.User;
+import com.example.MyShop_API.entity.UserAccount;
 import com.example.MyShop_API.exception.AppException;
 import com.example.MyShop_API.constants.CommonMessageUtils;
 import com.example.MyShop_API.mapper.OrderMapper;
-import com.example.MyShop_API.repo.UserRepository;
+import com.example.MyShop_API.repo.UserAccountRepository;
 import com.example.MyShop_API.service.order.IOrderService;
 import com.example.MyShop_API.service.order.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -44,7 +44,7 @@ import java.util.Map;
 public class OrderController {
     IOrderService orderService;
     OrderMapper orderMapper;
-    UserRepository userRepository;
+    UserAccountRepository userRepository;
 
     @PostMapping(ApiPath.ORDER_BUY_NOW_TEST)
     @Operation(summary = "Buy now ")
@@ -173,7 +173,7 @@ public class OrderController {
 
     ) {
         String email = principal.getName();
-        User admin = userRepository.findByEmail(email)
+        UserAccount admin = userRepository.findByEmail(email)
                 .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
 
         OrderResponse orderResponse = orderMapper.toResponse(orderService.updateOrderStatus(orderId, orderStatus, admin));

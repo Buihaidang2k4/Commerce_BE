@@ -3,7 +3,7 @@ package com.example.MyShop_API.dto.response;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -18,7 +18,7 @@ public class PaymentDto {
     String bankCode;
     String responseCode;
     String status;
-    LocalDateTime paymentDate;
+    Instant paymentDate;
     String transactionNo;
     String cardType;
 }

@@ -34,7 +34,7 @@ public class RoleService implements IRoleService {
     @Transactional(readOnly = true)
     public RoleResponse getRoleById(String id) {
         log.debug("getRoleById({})", id);
-        Role role = roleRepository.findById(id).orElseThrow(() ->
+        Role role = roleRepository.findByCode(id).orElseThrow(() ->
                 new AppException(CommonMessageUtils.USER_NOT_EXISTED));
 
         return roleMapper.toResponse(role);
@@ -43,21 +43,23 @@ public class RoleService implements IRoleService {
     public RoleResponse createRole(RoleRequest roleRequest) {
         log.debug("createRole({})", roleRequest);
         Role role = roleMapper.toEntity(roleRequest);
+        if (role.getName() == null) role.setName(role.getCode());
         return roleMapper.toResponse(roleRepository.save(role));
     }
 
     public RoleResponse updateRole(String id, RoleRequest roleRequest) {
         log.debug("updateRole({})", id);
-        Role role = roleRepository.findById(id).orElseThrow(() ->
+        Role role = roleRepository.findByCode(id).orElseThrow(() ->
                 new AppException(CommonMessageUtils.USER_NOT_EXISTED));
 
         roleMapper.updateRole(roleRequest, role);
         return roleMapper.toResponse(roleRepository.saveAndFlush(role));
     }
 
+    @Transactional
     public void deleteRole(String id) {
         log.debug("deleteRole({})", id);
-        roleRepository.deleteById(id);
+        roleRepository.deleteByCode(id);
     }
 
 }

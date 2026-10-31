@@ -1,30 +1,31 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
-@Table(name = "stock_movements", indexes = {@Index(name = "idx_stock_movements_variant_id", columnList = "variant_id"), @Index(name = "idx_stock_movements_product_id", columnList = "product_id"), @Index(name = "idx_stock_movements_ref_id", columnList = "ref_id"), @Index(name = "idx_stock_movements_actor_id", columnList = "actor_id")})
+@Table(name = "stock_movements", indexes = {@Index(name = "idx_stock_movements_variant_id", columnList = "variant_id"), @Index(name = "idx_stock_movements_product_id", columnList = "product_id"), @Index(name = "idx_stock_movements_reference_id", columnList = "reference_id"), @Index(name = "idx_stock_movements_actor_user_id", columnList = "actor_user_id")})
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class StockMovement {
+public class StockMovement extends CreatedEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long variantId;
     private Long productId;
     private Integer quantityDelta;
-    @Column(columnDefinition = "TEXT")
     private String reason;
-    private String refType;
-    private Long refId;
-    private Long actorId;
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt;
+    private String referenceType;
+    private Long referenceId;
+    private Long actorUserId;
+
+
 }

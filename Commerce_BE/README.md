@@ -45,8 +45,7 @@ Tune app.auth.rate-limit.requests and app.auth.rate-limit.window-seconds as need
 Behind a reverse proxy, also apply per-client limits at the proxy; the app deliberately ignores untrusted forwarded IP headers.
 A production TLS proxy configuration and schema migration remain deployment work.
 SMTP connection/read/write timeouts are configured. MinIO signed URL lifetime is in minutes (default 5).
-Run unit tests: ./mvnw -Dtest=OrderServiceTest,CookieOriginFilterTest,AuthRateLimitFilterTest test
-The contextLoads test needs live dependencies and valid environment settings.
+Build without tests: ./mvnw -Dmaven.test.skip=true package. Test source files were removed as requested.
 
 ## API paths, thông báo lỗi và MyBatis
 
@@ -70,10 +69,7 @@ Truy vấn dùng #{parameter} để bind tham số, không nối trực tiếp d
 Nếu vừa ghi bằng JPA vừa đọc bằng MyBatis trong cùng transaction, flush JPA trước khi cần nhìn thấy thay đổi.
 Mapper mẫu chưa thay thế logic báo cáo JPA hiện có và chưa thêm endpoint mới.
 
-Kiểm thử không cần database:
-./mvnw -o -Dtest=OrderServiceTest,CookieOriginFilterTest,AuthRateLimitFilterTest,MessageHandlerUtilsTest,LocalizedErrorResponseTest,OrderReportMapperTest -DforkCount=0 test-compile org.apache.maven.plugins:maven-surefire-plugin:3.5.4:test
-
 ## Model độc lập và chuyển schema
 
-Entity đã bỏ toàn bộ JPA association/enum; tham chiếu lưu bằng ID thường. Xem [phân tích model](docs/SMARTCOMMERCE_MODEL_ANALYSIS.md) và [hướng dẫn migration MySQL](db/mysql/README.md). Mặc định schema mode là validate; chạy SQL create/upgrade trước khi khởi động. Không dùng Hibernate update để thay thế bước gỡ constraint cũ.
+Entity đã bỏ toàn bộ JPA association/enum; tham chiếu lưu bằng ID thường. Xem [chuẩn tên và hướng dẫn migration MySQL](docs/MODEL_NAMING_MIGRATION.md), [schema](database/README.md) và [mô tả entity](docs/ENTITY_DATA_DICTIONARY_VI.md). Mặc định schema mode là validate; chạy SQL create/upgrade trước khi khởi động. Không dùng Hibernate update để thay thế bước gỡ constraint cũ.
 Các entity mới là nền cho tính năng trong tài liệu, chưa phải toàn bộ marketplace đã có API/service.

@@ -1,29 +1,29 @@
 package com.example.MyShop_API.entity;
 
+
 import jakarta.persistence.*;
 import lombok.*;
-import java.time.*;
+import lombok.experimental.SuperBuilder;
 import java.math.BigDecimal;
+import java.time.*;
+import java.sql.Blob;
 
 @Entity
 @Table(name = "flash_sale_campaigns")
 @Getter
 @Setter
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FlashSaleCampaign {
+public class FlashSaleCampaign extends AuditableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
     private Instant startsAt;
     private Instant endsAt;
-    @Builder.Default
-    private String status = "DRAFT";
-    @Builder.Default
-    private Integer paymentTtlSeconds = 600;
-    @Builder.Default
-    private Instant createdAt = Instant.now();
-    private Instant updatedAt;
+    private String status;
+    private Integer paymentTtlSeconds;
+
+
 }

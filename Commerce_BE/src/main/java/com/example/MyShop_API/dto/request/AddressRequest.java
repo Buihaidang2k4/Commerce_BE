@@ -4,7 +4,7 @@ import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -53,5 +53,5 @@ public class AddressRequest {
     @Size(max = 50)
     String label; // Ví dụ: "Nhà riêng", "Công ty", "Nhà bố mẹ", "Quán cà phê"
 
-    LocalDateTime createdAt = LocalDateTime.now();
+    Instant createdAt = Instant.now();
 }
