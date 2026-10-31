@@ -1,5 +1,9 @@
 package com.example.MyShop_API.service.report;
 
+import com.example.MyShop_API.repo.OrderItemRepository;
+import com.example.MyShop_API.repo.OrderShippingAddressRepository;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 
 import com.example.MyShop_API.entity.Order;
@@ -19,7 +23,8 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ReportExcelService {
-    private final com.example.MyShop_API.service.model.ModelLookup models;
+    private final OrderItemRepository orderItemRepository;
+    private final OrderShippingAddressRepository orderShippingAddressRepository;
     @Value("${report.temp-dir-excel}")
     private String tempDir;
 
@@ -45,9 +50,9 @@ public class ReportExcelService {
         for (Order order : orders) {
             Row row = sheet.createRow(rowIdx++);
             row.createCell(0).setCellValue(order.getId());
-            row.createCell(1).setCellValue(models.deliveryAddress(order.getId()).getRecipientName());
-            row.createCell(2).setCellValue(models.orderItems(order.getId()).stream().map(orderItem -> orderItem.getProductNameSnapshot()).findFirst().toString());
-            row.createCell(3).setCellValue(models.orderItems(order.getId()).stream().map(orderItem -> orderItem.getQuantity()).findFirst().toString());
+            row.createCell(1).setCellValue(Optional.ofNullable(order.getId()).map(orderShippingAddressRepository::findOrderDeliveryAddressByOrderId).orElse(null).getRecipientName());
+            row.createCell(2).setCellValue(Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of).stream().map(orderItem -> orderItem.getProductNameSnapshot()).findFirst().toString());
+            row.createCell(3).setCellValue(Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of).stream().map(orderItem -> orderItem.getQuantity()).findFirst().toString());
             row.createCell(4).setCellValue(order.getTotalAmount().toString());
 
             Cell cell = row.createCell(5);

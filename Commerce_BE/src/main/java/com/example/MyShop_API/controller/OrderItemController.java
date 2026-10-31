@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 import com.example.MyShop_API.dto.response.ApiResponse;
 import com.example.MyShop_API.dto.request.OrderItemRequest;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping(ApiPath.BASE_ORDER_ITEM)
+@RequestMapping(ApiPathConstants.BASE_ORDER_ITEM)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderItemController {
@@ -31,7 +31,7 @@ public class OrderItemController {
                 .build();
     }
 
-    @GetMapping(ApiPath.ORDER_ITEM_ORDER_ID)
+    @GetMapping(ApiPathConstants.ORDER_ITEM_ORDER_ID)
     ApiResponse<OrderItemResponse> getOrderItem(@PathVariable Long orderId) {
         return ApiResponse.<OrderItemResponse>builder()
                 .code(200)

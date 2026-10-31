@@ -1,7 +1,7 @@
 package com.example.MyShop_API.dto.request;
 
-import com.example.MyShop_API.constants.CouponScope;
-import com.example.MyShop_API.constants.DiscountType;
+import com.example.MyShop_API.constants.CouponScopeConstants;
+import com.example.MyShop_API.constants.DiscountTypeConstants;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

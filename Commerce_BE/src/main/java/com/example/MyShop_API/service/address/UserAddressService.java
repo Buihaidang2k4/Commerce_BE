@@ -6,7 +6,7 @@ import com.example.MyShop_API.dto.response.AddressResponse;
 import com.example.MyShop_API.entity.UserAddress;
 import com.example.MyShop_API.entity.UserProfile;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.UserAddressMapper;
 import com.example.MyShop_API.repo.UserAddressRepository;
 import com.example.MyShop_API.repo.UserProfileRepository;
@@ -45,7 +45,7 @@ public class UserAddressService implements IUserAddressService {
     @Transactional(readOnly = true)
     public AddressResponse getAddressById(Long addressId) {
         UserAddress address = addressRepository.findById(addressId).orElseThrow(() ->
-                new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
+                new AppException(CommonMessageConstants.ADDRESS_NOT_EXISTED));
 
         return addressMapper.toResponse(address);
     }
@@ -54,7 +54,7 @@ public class UserAddressService implements IUserAddressService {
     public AddressResponse createAddress(AddressRequest request, Long profileId) {
         log.info("=============START CREATING ADDRESS=========================");
         UserProfile userProfile = userProfileRepository.findById(profileId).orElseThrow(() ->
-                new AppException(CommonMessageUtils.USER_NOT_EXISTED));
+                new AppException(CommonMessageConstants.USER_NOT_EXISTED));
 
         UserAddress address = addressMapper.toEntity(request);
 
@@ -80,9 +80,9 @@ public class UserAddressService implements IUserAddressService {
     public AddressResponse updateAddress(Long addressId, Long profileId, AddressUpdateRequest request) {
         log.info("===================== START UPDATE ADDRESS ==============");
         UserAddress findAddress = addressRepository.findById(addressId).orElseThrow(() ->
-                new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
+                new AppException(CommonMessageConstants.ADDRESS_NOT_EXISTED));
 
-        if (!java.util.Objects.equals(findAddress.getUserProfileId(), profileId)) throw new AppException(CommonMessageUtils.FORBIDDEN);
+        if (!java.util.Objects.equals(findAddress.getUserProfileId(), profileId)) throw new AppException(CommonMessageConstants.FORBIDDEN);
         addressMapper.updateAddress(request, findAddress);
 
         if (request.getIsDefault() != null && request.getIsDefault()) {
@@ -100,10 +100,10 @@ public class UserAddressService implements IUserAddressService {
     public void deleteAddress(Long addressId, Long profileId) {
         log.info("=====================START DELETE ADDRESS==============");
         UserAddress address = addressRepository.findById(addressId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.ADDRESS_NOT_EXISTED));
 
         if (!java.util.Objects.equals(address.getUserProfileId(), profileId)) {
-            throw new AppException(CommonMessageUtils.FORBIDDEN);
+            throw new AppException(CommonMessageConstants.FORBIDDEN);
         }
 
         addressRepository.delete(address);

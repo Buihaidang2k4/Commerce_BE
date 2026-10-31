@@ -172,27 +172,6 @@
             <version>1.15</version>
         </dependency>
 
-        <!--        Google api -->
-        <!-- https://mvnrepository.com/artifact/com.google.api-client/google-api-client -->
-        <dependency>
-            <groupId>com.google.api-client</groupId>
-            <artifactId>google-api-client</artifactId>
-            <version>2.5.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.http-client</groupId>
-            <artifactId>google-http-client-jackson2</artifactId>
-            <version>1.44.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.google.oauth-client</groupId>
-            <artifactId>google-oauth-client</artifactId>
-            <version>1.34.1</version>
-        </dependency>
-
-
         <!-- EMAIL       -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

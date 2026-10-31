@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 import com.example.MyShop_API.dto.response.ApiResponse;
 import com.example.MyShop_API.dto.response.PaymentDto;
@@ -27,7 +27,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(ApiPath.BASE_PAYMENT)
+@RequestMapping(ApiPathConstants.BASE_PAYMENT)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PaymentIntentController {
@@ -43,18 +43,18 @@ public class PaymentIntentController {
         return ResponseEntity.ok(new ApiResponse<>(200, "success", paymentService.getPayments()));
     }
 
-    @GetMapping(ApiPath.PAYMENT_PAYMENT_ID)
+    @GetMapping(ApiPathConstants.PAYMENT_PAYMENT_ID)
     ResponseEntity<ApiResponse<PaymentDto>> getPayment(@PathVariable Long paymentId) {
         return ResponseEntity.ok(new ApiResponse<>(200, "success", paymentService.getPayment(paymentId)));
     }
 
-    @GetMapping(ApiPath.PAYMENT_ORDER_ORDER_ID)
+    @GetMapping(ApiPathConstants.PAYMENT_ORDER_ORDER_ID)
     ResponseEntity<ApiResponse<PaymentDto>> getPaymentByOrder(@PathVariable Long orderId) {
         return ResponseEntity.ok(new ApiResponse<>(200, "success", paymentService.getPaymentByOrder(orderId)));
     }
 
     // ================ Create Url payment =================
-    @GetMapping(ApiPath.PAYMENT_VN_PAY)
+    @GetMapping(ApiPathConstants.PAYMENT_VN_PAY)
     @Operation(summary = "test")
     public ResponseEntity<ApiResponse<String>> pay(HttpServletRequest request,
                                                    @RequestParam Long orderId,
@@ -64,7 +64,7 @@ public class PaymentIntentController {
     }
 
 
-    @GetMapping(ApiPath.PAYMENT_VN_PAY_CALLBACK)
+    @GetMapping(ApiPathConstants.PAYMENT_VN_PAY_CALLBACK)
     public void vnpayCallback(HttpServletRequest request,
                               HttpServletResponse response) throws IOException {
 
@@ -82,7 +82,7 @@ public class PaymentIntentController {
 
 
     // ===================== PAYMENT CASH ======================
-    @PostMapping(ApiPath.PAYMENT_COD_ORDER_ID)
+    @PostMapping(ApiPathConstants.PAYMENT_COD_ORDER_ID)
     @Operation(summary = "test")
     ResponseEntity<ApiResponse<?>> payWithCash(@PathVariable Long orderId) {
         return ResponseEntity.ok(new ApiResponse(200, "pay success", paymentService.processCashPayment(orderId)));
@@ -90,7 +90,7 @@ public class PaymentIntentController {
 
 
     // ===================== PAYMENT VNPAY ======================
-    @PostMapping(ApiPath.PAYMENT_VNPAY_COMFIRM_ORDER_ID)
+    @PostMapping(ApiPathConstants.PAYMENT_VNPAY_COMFIRM_ORDER_ID)
     @Operation(summary = "pay for the order vnpay")
     ResponseEntity<ApiResponse<?>> payWithVnpay(@PathVariable Long orderId, HttpServletRequest request) {
         return ResponseEntity.ok(new ApiResponse(200, "pay success", paymentService.payOrderwithVnpay(orderId, request)));

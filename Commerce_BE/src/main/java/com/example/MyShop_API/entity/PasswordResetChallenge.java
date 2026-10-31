@@ -1,15 +1,12 @@
 package com.example.MyShop_API.entity;
 
-
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
-import java.math.BigDecimal;
-import java.time.*;
-import java.sql.Blob;
+import java.time.Instant;
 
 @Entity
-@Table(name = "password_reset_challenges", indexes = {@Index(name = "idx_password_reset_challenges_user_id", columnList = "user_id")})
+@Table(name = "password_reset_challenges", indexes = {@Index(name = "idx_password_reset_challenges_expires_at", columnList = "expires_at"), @Index(name = "idx_password_reset_challenges_user_id", columnList = "user_id")})
 @Getter
 @Setter
 @SuperBuilder
@@ -20,11 +17,11 @@ public class PasswordResetChallenge extends AuditableEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
-    private String otp;
+    private String otpHash;
     private Instant expiresAt;
     private boolean used;
+    private Integer failedAttempts;
 
     public boolean isExpired() { return expiresAt == null || !Instant.now().isBefore(expiresAt); }
     public boolean isValid() { return !used && !isExpired(); }
-    @PrePersist public void initializeExpiry() { if (expiresAt == null) expiresAt = Instant.now().plusSeconds(300); }
 }

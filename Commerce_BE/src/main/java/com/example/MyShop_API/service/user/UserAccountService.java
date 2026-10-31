@@ -1,24 +1,33 @@
 package com.example.MyShop_API.service.user;
 
-import com.example.MyShop_API.anotation.AdminOnly;
-import com.example.MyShop_API.anotation.AllAccess;
-import com.example.MyShop_API.constants.PredefinedRole;
+import com.example.MyShop_API.utils.AuthUtils;
+
+import com.example.MyShop_API.constants.RoleCodeConstants;
+import com.example.MyShop_API.constants.AccountStatusConstants;
+
+import com.example.MyShop_API.constants.CommonMessageConstants;
+import com.example.MyShop_API.constants.PredefinedRoleConstants;
 import com.example.MyShop_API.dto.request.ChangePasswordRequest;
 import com.example.MyShop_API.dto.request.UserCreationRequest;
 import com.example.MyShop_API.dto.request.UserUpdateRequest;
 import com.example.MyShop_API.dto.response.UserResponse;
-import com.example.MyShop_API.entity.*;
+import com.example.MyShop_API.entity.Role;
+import com.example.MyShop_API.entity.ShoppingCart;
+import com.example.MyShop_API.entity.UserAccount;
+import com.example.MyShop_API.entity.UserProfile;
+import com.example.MyShop_API.entity.UserRole;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
 import com.example.MyShop_API.mapper.UserAccountMapper;
-import com.example.MyShop_API.repo.*;
-import com.example.MyShop_API.service.userprofie.UserProfileService;
-import lombok.AccessLevel;
+import com.example.MyShop_API.repo.PasswordResetChallengeRepository;
+import com.example.MyShop_API.repo.RefreshSessionRepository;
+import com.example.MyShop_API.repo.RoleRepository;
+import com.example.MyShop_API.repo.ShoppingCartRepository;
+import com.example.MyShop_API.repo.UserAccountRepository;
+import com.example.MyShop_API.repo.UserProfileRepository;
+import com.example.MyShop_API.repo.UserRoleRepository;
+import com.example.MyShop_API.service.userprofie.IUserProfileService;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.access.prepost.PostAuthorize;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,169 +35,187 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.time.Instant;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.TreeSet;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserAccountService implements IUserAccountService {
-    private final com.example.MyShop_API.service.model.ModelLookup models;
-    UserAccountRepository userRepository;
-    UserAccountMapper userMapper;
-    PasswordEncoder passwordEncoder;
-    RoleRepository roleRepository;
-    UserProfileService profileService;
+    private final UserProfileRepository userProfileRepository;
+    private final ShoppingCartRepository shoppingCartRepository;
+    private final UserRoleRepository userRoleRepository;
+    private final UserAccountRepository userRepository;
+    private final UserAccountMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final IUserProfileService profileService;
+    private final RefreshSessionRepository sessionRepository;
+    private final PasswordResetChallengeRepository challengeRepository;
 
-    @AdminOnly
     @Transactional(readOnly = true)
     public List<UserResponse> getUsers() {
-        log.info("getUsers().........");
+        AuthUtils.validateCheckAuth(List.of(RoleCodeConstants.ADMIN));
         return userRepository.findAll().stream().map(userMapper::toResponse).toList();
     }
 
-    @AdminOnly
     @Transactional(readOnly = true)
     public UserResponse getUserById(Long id) {
-        UserAccount user = userRepository.findById(id).orElse(null);
-        return userMapper.toResponse(user);
+        AuthUtils.validateCheckAuth(List.of(RoleCodeConstants.ADMIN));
+        return userMapper.toResponse(userRepository.findById(id).orElseThrow(() -> new AppException(CommonMessageConstants.USER_NOT_EXISTED)));
     }
 
     @Override
-    @AdminOnly
+    @PreAuthorize("isAuthenticated()")
     @Transactional(readOnly = true)
     public UserAccount findUserByPrincipal(Principal principal) {
-        return userRepository.findByEmail(principal.getName()).orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
+        return userRepository.findByEmail(principal.getName()).orElseThrow(() -> new AppException(CommonMessageConstants.USER_NOT_EXISTED));
     }
-
 
     @Transactional
     public UserResponse createUser(UserCreationRequest request) {
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) throw new AppException(CommonMessageUtils.USER_EXISTED);
-        UserAccount user = userMapper.toEntity(request);
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
-        user.setEnabled(true);
-        user = userRepository.save(user);
-        Role role = roleRepository.findByCode(PredefinedRole.USER_ROLE).orElseGet(() -> roleRepository.save(Role.builder().code(PredefinedRole.USER_ROLE).description("Customer").build()));
-        models.replaceRoles(user.getId(), List.of(role));
+        // A stable parent row serializes registration across application instances without UNIQUE/FK.
+        Role role = roleRepository.findByCodeForUpdate(PredefinedRoleConstants.USER_ROLE)
+                .orElseThrow(() -> new AppException(CommonMessageConstants.AUTH_CONFIGURATION));
+        String email = request.getEmail().trim().toLowerCase(Locale.ROOT);
+        if (userRepository.existsByEmailIgnoreCase(email)) throw new AppException(CommonMessageConstants.USER_EXISTED);
+        UserAccount user = UserAccount.builder().email(email).passwordHash(passwordEncoder.encode(request.getPassword())).accountStatus(AccountStatusConstants.ACTIVE).build();
+        userRepository.saveAndFlush(user);
+        replaceRoles(user.getId(), List.of(role));
         UserProfile profile = profileService.createEmptyUserProfile();
         profile.setUserId(user.getId());
-        models.getProfiles().save(profile);
-        ShoppingCart cart = models.cartForProfile(profile.getId());
+        userProfileRepository.save(profile);
+        ShoppingCart cart = shoppingCartRepository.findByUserProfileId(profile.getId())
+                .orElseThrow(() -> new AppException(CommonMessageConstants.CART_NOT_EXISTED));
         cart.setUserId(user.getId());
-        models.getCarts().save(cart);
+        shoppingCartRepository.save(cart);
         return userMapper.toResponse(user);
     }
 
-    @AllAccess
+    @PreAuthorize("isAuthenticated()")
     @Transactional
     public void changePassword(ChangePasswordRequest request, Long id) {
-        UserAccount user = userRepository.findById(id).orElseThrow(() ->
-                new AppException(CommonMessageUtils.USER_NOT_EXISTED));
-
-        if (!passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash())) {
-            throw new AppException(CommonMessageUtils.PASSWORD_NOT_MATCHES);
-        }
-
-        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new AppException(CommonMessageUtils.PASSWORD_CONFIRM_NOT_MATCHES);
-        }
-
+        UserAccount user = lockAccount(id);
+        requireOwner(user);
+        if (user.getPasswordHash() == null || !passwordEncoder.matches(request.getOldPassword(), user.getPasswordHash()))
+            throw new AppException(CommonMessageConstants.PASSWORD_NOT_MATCHES);
+        if (!request.getNewPassword().equals(request.getConfirmPassword()))
+            throw new AppException(CommonMessageConstants.PASSWORD_CONFIRM_NOT_MATCHES);
         user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
-        try {
-            userRepository.save(user);
-            log.info("================== CHANGE PASSWORD ===================");
-        } catch (DataIntegrityViolationException e) {
-            throw new AppException(CommonMessageUtils.USER_EXISTED);
-        }
+        userRepository.save(user);
+        challengeRepository.deleteAllByUserId(id);
+        sessionRepository.revokeAllByUserId(id, Instant.now());
     }
 
-    @AdminOnly
     @Transactional
     public UserResponse updateRoleUser(UserUpdateRequest request, Long id) {
-        log.info("updateUser().........");
-        UserAccount findUser = userRepository.findById(id)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
-        userMapper.update(request, findUser);
-        var roles = roleRepository.findByCodeIn(request.getRoles());
-
-        models.replaceRoles(findUser.getId(), roles);
-
-        try {
-            findUser = userRepository.save(findUser);
-
-        } catch (DataIntegrityViolationException e) {
-            throw new AppException(CommonMessageUtils.USER_EXISTED);
-        }
-
-        return userMapper.toResponse(findUser);
+        AuthUtils.validateCheckAuth(List.of(RoleCodeConstants.ADMIN));
+        lockAdminCatalog();
+        UserAccount user = lockAccount(id);
+        if (user.getEmail().equals(SecurityContextHolder.getContext().getAuthentication().getName()))
+            throw new AppException(CommonMessageConstants.FORBIDDEN);
+        if (AccountStatusConstants.DELETED.equals(user.getAccountStatus()))
+            throw new AppException(CommonMessageConstants.USER_NOT_EXISTED);
+        if (request.getRoles() == null || request.getRoles().isEmpty())
+            throw new AppException(CommonMessageConstants.ROLE_INVALID);
+        TreeSet<String> codes = new TreeSet<>();
+        request.getRoles().forEach(code -> {
+            if (code == null || code.isBlank()) throw new AppException(CommonMessageConstants.ROLE_INVALID);
+            codes.add(code.trim().toUpperCase(Locale.ROOT));
+        });
+        List<Role> roles = roleRepository.findByCodeIn(codes);
+        if (roles.size() != codes.size()) throw new AppException(CommonMessageConstants.ROLE_NOT_FOUND);
+        replaceRoles(id, roles);
+        sessionRepository.revokeAllByUserId(id, Instant.now());
+        return userMapper.toResponse(user);
     }
 
     @Override
-    @AdminOnly
     @Transactional
     public void lockUser(Long userId, String reason, Principal principal) {
-        if (reason == null || reason.trim().isEmpty()) {
-            throw new AppException(CommonMessageUtils.LOCK_REASON_REQUIRED);
-        }
-        UserAccount current = findUserByPrincipal(principal);
-
-        if (userId.equals(current.getId()))
-            throw new AppException(CommonMessageUtils.CANNOT_LOCK_YOURSELF);
-
-        UserAccount user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
-
-        boolean isAdmin = models.roles(user.getId()).stream()
-                .anyMatch(role -> role.getCode().equals(com.example.MyShop_API.constants.RoleCode.ADMIN));
-
-        if (isAdmin)
-            throw new AppException(CommonMessageUtils.CANNOT_LOCK_ADMIN);
-
-        if (!user.isEnabled())
-            throw new AppException(CommonMessageUtils.USER_ALREADY_LOCKED);
-
-        user.setEnabled(false);
-        user.setLockReason(reason);
+        AuthUtils.validateCheckAuth(List.of(RoleCodeConstants.ADMIN));
+        lockAdminCatalog();
+        if (reason == null || reason.isBlank()) throw new AppException(CommonMessageConstants.LOCK_REASON_REQUIRED);
+        UserAccount user = lockAccount(userId);
+        if (user.getEmail().equals(principal.getName()))
+            throw new AppException(CommonMessageConstants.CANNOT_LOCK_YOURSELF);
+        protectAdmin(userId);
+        if (AccountStatusConstants.DELETED.equals(user.getAccountStatus()))
+            throw new AppException(CommonMessageConstants.USER_NOT_EXISTED);
+        if (!user.isEnabled()) throw new AppException(CommonMessageConstants.USER_ALREADY_LOCKED);
+        user.setAccountStatus(AccountStatusConstants.LOCKED);
+        user.setLockReason(reason.trim());
         user.setLockedAt(Instant.now());
         userRepository.save(user);
+        sessionRepository.revokeAllByUserId(userId, Instant.now());
     }
 
     @Override
-    @AdminOnly
     @Transactional
     public void unlockUser(Long userId) {
-        UserAccount user = userRepository.findById(userId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
-
-        if (user.isEnabled())
-            throw new AppException(CommonMessageUtils.USER_ALREADY_UNLOCKED);
-        user.setEnabled(true);
-        user.setLockReason("");
-
+        AuthUtils.validateCheckAuth(List.of(RoleCodeConstants.ADMIN));
+        lockAdminCatalog();
+        UserAccount user = lockAccount(userId);
+        if (AccountStatusConstants.DELETED.equals(user.getAccountStatus()))
+            throw new AppException(CommonMessageConstants.USER_NOT_EXISTED);
+        if (user.isEnabled()) throw new AppException(CommonMessageConstants.USER_ALREADY_UNLOCKED);
+        user.setAccountStatus(AccountStatusConstants.ACTIVE);
+        user.setLockReason(null);
+        user.setLockedAt(null);
         userRepository.save(user);
     }
 
-    @AdminOnly
     @Transactional
     public void deleteUserById(Long id) {
-        log.info("deleteUserById().........");
-        userRepository.deleteById(id);
+        AuthUtils.validateCheckAuth(List.of(RoleCodeConstants.ADMIN));
+        lockAdminCatalog();
+        UserAccount user = lockAccount(id);
+        protectAdmin(id);
+        user.setAccountStatus(AccountStatusConstants.DELETED);
+        user.setLockedAt(Instant.now());
+        userRepository.save(user);
+        userRoleRepository.deleteByUserId(id);
+        challengeRepository.deleteAllByUserId(id);
+        sessionRepository.revokeAllByUserId(id, Instant.now());
     }
 
-    @AllAccess // Tất cả role đều truy cập được
-    @PostAuthorize("returnObject.email.toLowerCase() == authentication.name.toLowerCase()")
+    @PreAuthorize("isAuthenticated()")
+    @Transactional(readOnly = true)
     public UserResponse getMyInfor() {
-        var auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserAccount user = userRepository.findByEmail(email).orElseThrow(() -> new AppException(CommonMessageConstants.USER_NOT_EXISTED));
+        if (!user.isEnabled()) throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+        return userMapper.toResponse(user);
+    }
 
-        String email = auth.getName();
-        UserAccount user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
+    private void lockAdminCatalog() {
+        roleRepository.findByCodeForUpdate(PredefinedRoleConstants.USER_ROLE)
+                .orElseThrow(() -> new AppException(CommonMessageConstants.AUTH_CONFIGURATION));
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserAccount actor = userRepository.findByEmail(email).filter(UserAccount::isEnabled)
+                .orElseThrow(() -> new AppException(CommonMessageConstants.FORBIDDEN));
+        if (roleRepository.findAllByUserId(actor.getId()).stream().noneMatch(role -> RoleCodeConstants.ADMIN.equals(role.getCode())))
+            throw new AppException(CommonMessageConstants.FORBIDDEN);
+    }
 
-        log.info("user = {}", models.profileForUser(user.getId()));
-        UserResponse response = userMapper.toResponse(user);
-        log.info("=========== Get Info ===============");
-        return response;
+    private UserAccount lockAccount(Long id) {
+        return userRepository.findByIdForUpdate(id).orElseThrow(() -> new AppException(CommonMessageConstants.USER_NOT_EXISTED));
+    }
+
+    private void requireOwner(UserAccount user) {
+        if (!user.isEnabled() || !user.getEmail().equals(SecurityContextHolder.getContext().getAuthentication().getName()))
+            throw new AppException(CommonMessageConstants.FORBIDDEN);
+    }
+
+    private void protectAdmin(Long id) {
+        if (roleRepository.findAllByUserId(id).stream().anyMatch(role -> RoleCodeConstants.ADMIN.equals(role.getCode())))
+            throw new AppException(CommonMessageConstants.CANNOT_LOCK_ADMIN);
+    }
+
+    private void replaceRoles(Long userId, Collection<Role> roles) {
+        userRoleRepository.deleteByUserId(userId);
+        userRoleRepository.flush();
+        userRoleRepository.saveAll(roles.stream().map(role -> UserRole.builder().userId(userId).roleId(role.getId()).build()).toList());
     }
 }

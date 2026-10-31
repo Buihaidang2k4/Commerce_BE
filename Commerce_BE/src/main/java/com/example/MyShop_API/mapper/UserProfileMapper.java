@@ -1,16 +1,20 @@
 package com.example.MyShop_API.mapper;
 
+import com.example.MyShop_API.repo.ShoppingCartRepository;
+import com.example.MyShop_API.repo.UserAddressRepository;
+import java.util.Optional;
+
 import com.example.MyShop_API.entity.*;
 import com.example.MyShop_API.dto.request.*;
 import com.example.MyShop_API.dto.response.*;
-import com.example.MyShop_API.service.model.ModelLookup;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class UserProfileMapper {
-    @Autowired protected ModelLookup models;
+    @Autowired protected ShoppingCartRepository shoppingCartRepository;
+    @Autowired protected UserAddressRepository userAddressRepository;
     @Autowired protected UserAddressMapper addresses;
     @Autowired protected ShoppingCartMapper carts;
 
@@ -22,6 +26,7 @@ public abstract class UserProfileMapper {
     @Mapping(source = "id", target = "profileId")
     @Mapping(source = "displayName", target = "username")
     @Mapping(source = "phoneNumber", target = "mobileNumber")
+    @BeanMapping(builder = @Builder(disableBuilder = true))
     public abstract UserProfileResponse toResponse(UserProfile profile);
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 
@@ -33,7 +38,7 @@ public abstract class UserProfileMapper {
 
     @AfterMapping
     protected void fill(UserProfile profile, @MappingTarget UserProfileResponse response) {
-        response.setAddressResponse(addresses.toResponse(models.addresses(profile.getId())));
-        response.setCartResponse(carts.toResponse(models.cartForProfile(profile.getId())));
+        response.setAddressResponse(addresses.toResponse(Optional.ofNullable(profile.getId()).map(userAddressRepository::findByUserProfileId).orElseGet(List::of)));
+        response.setCartResponse(carts.toResponse(Optional.ofNullable(profile.getId()).flatMap(shoppingCartRepository::findByUserProfileId).orElse(null)));
     }
 }

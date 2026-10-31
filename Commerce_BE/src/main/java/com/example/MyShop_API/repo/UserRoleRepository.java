@@ -6,4 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserRoleRepository extends JpaRepository<UserRole, Long> {
     java.util.List<UserRole> findByUserId(Long id);
     void deleteByUserId(Long id);
+    void deleteByRoleId(Long roleId);
 }

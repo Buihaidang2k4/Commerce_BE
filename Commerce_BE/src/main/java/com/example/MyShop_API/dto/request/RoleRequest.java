@@ -1,15 +1,22 @@
 package com.example.MyShop_API.dto.request;
 
-
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+import java.util.Set;
 
-@Data // Auto create getter setter Object toString
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoleRequest {
-    String roleName;
-    String description;
+    @NotBlank @Size(max = 100)
+    private String roleName;
+    @Size(max = 255)
+    private String name;
+    @Size(max = 4000)
+    private String description;
+    @Size(max = 1000)
+    private Set<@Positive Long> permissionIds;
 }

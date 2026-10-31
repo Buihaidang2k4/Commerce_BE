@@ -1,5 +1,7 @@
 package com.example.MyShop_API.repo;
 
+import java.util.Set;
+
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -28,4 +30,6 @@ public interface ProductRepository extends JpaRepository<Product, Long>, JpaSpec
     @Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT e FROM Product e WHERE e.id = :id")
     java.util.Optional<Product> findByIdForUpdate(@Param("id") Long id);
+    @Query("SELECT p FROM Product p WHERE p.id IN (SELECT cp.productId FROM CouponProduct cp WHERE cp.couponId = :couponId)")
+    Set<Product> findAllByCouponId(@Param("couponId") Long couponId);
 }

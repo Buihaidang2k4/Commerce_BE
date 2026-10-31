@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.order;
 
-import com.example.MyShop_API.constants.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatusConstants;
 import com.example.MyShop_API.dto.request.OrderPlaceListItemRequest;
 import com.example.MyShop_API.dto.request.OrderRequest;
 import com.example.MyShop_API.dto.request.PlaceOrderFromCartRequest;

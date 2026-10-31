@@ -1,18 +1,16 @@
 package com.example.MyShop_API.utils;
 
+import com.example.MyShop_API.constants.CommonConstants;
+
 import java.security.SecureRandom;
-import java.util.Random;
 
 public class RadomCodeTemplate {
-    private static final String DIGITSBARCODE = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     private static final SecureRandom RANDOM = new SecureRandom();
-    private static final String LETTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    private static final String DIGITSNUMBER = "0123456789";
 
     public static String radomBarcode(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            sb.append(DIGITSBARCODE.charAt(RANDOM.nextInt(DIGITSBARCODE.length())));
+            sb.append(CommonConstants.BARCODE_CHARACTERS.charAt(RANDOM.nextInt(CommonConstants.BARCODE_CHARACTERS.length())));
         }
         return sb.toString();
     }
@@ -21,7 +19,7 @@ public class RadomCodeTemplate {
     private static String randomLetters(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            sb.append(LETTERS.charAt(RANDOM.nextInt(LETTERS.length())));
+            sb.append(CommonConstants.UPPERCASE_LETTERS.charAt(RANDOM.nextInt(CommonConstants.UPPERCASE_LETTERS.length())));
         }
         return sb.toString();
     }
@@ -30,7 +28,7 @@ public class RadomCodeTemplate {
     private static String randomDigits(int length) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < length; i++) {
-            sb.append(DIGITSNUMBER.charAt(RANDOM.nextInt(DIGITSNUMBER.length())));
+            sb.append(CommonConstants.DIGITS.charAt(RANDOM.nextInt(CommonConstants.DIGITS.length())));
         }
         return sb.toString();
     }

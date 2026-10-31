@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 import com.example.MyShop_API.dto.request.CreateCouponRequest;
 import com.example.MyShop_API.dto.request.UpdateCouponRequest;
@@ -19,40 +19,40 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
-@RequestMapping(ApiPath.BASE_COUPON)
+@RequestMapping(ApiPathConstants.BASE_COUPON)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CouponController {
     ICouponService couponService;
     CouponMapper couponMapper;
 
-    @GetMapping(ApiPath.COUPON_ALL)
+    @GetMapping(ApiPathConstants.COUPON_ALL)
     ResponseEntity<ApiResponse<List<CouponResponse>>> getCoupons() {
         return ResponseEntity.ok(new ApiResponse<>(200, "All coupon", couponMapper.toCouponResponses(couponService.getCoupons())));
     }
 
-    @GetMapping(ApiPath.COUPON_COUPON_AVAILABLE)
+    @GetMapping(ApiPathConstants.COUPON_COUPON_AVAILABLE)
     ResponseEntity<ApiResponse<List<CouponResponse>>> getCouponsEnableFalse() {
         return ResponseEntity.ok(new ApiResponse<>(200, "All coupon", couponMapper.toCouponResponses(couponService.getAvailableCoupons())));
     }
 
-    @GetMapping(ApiPath.COUPON_GET_AVAILABLE_COUPONS_ORDER_TOTAL)
+    @GetMapping(ApiPathConstants.COUPON_GET_AVAILABLE_COUPONS_ORDER_TOTAL)
     ResponseEntity<ApiResponse<List<CouponResponse>>> getAvailableCoupons(@PathVariable BigDecimal orderTotal) {
         return ResponseEntity.ok(new ApiResponse<>(200, "available coupons", couponMapper.toCouponResponses(couponService.getAvailableCoupons(orderTotal))));
     }
 
-    @PostMapping(ApiPath.COUPON_COUPON_CREATE)
+    @PostMapping(ApiPathConstants.COUPON_COUPON_CREATE)
     ResponseEntity<ApiResponse<CouponResponse>> createCoupon(@Valid @RequestBody CreateCouponRequest request) {
         return ResponseEntity.ok(new ApiResponse<>(200, "create coupon success", couponMapper.toCouponResponse(couponService.createCoupon(request))));
     }
 
-    @PutMapping(ApiPath.COUPON_COUPON_ID)
+    @PutMapping(ApiPathConstants.COUPON_COUPON_ID)
     ResponseEntity<ApiResponse<?>> updateCoupon(@Valid @RequestBody UpdateCouponRequest request, @PathVariable Long couponId) {
         couponService.updateCoupon(couponId, request);
         return ResponseEntity.ok(new ApiResponse<>(200, "update coupon success", null));
     }
 
-    @DeleteMapping(ApiPath.COUPON_COUPON_ID)
+    @DeleteMapping(ApiPathConstants.COUPON_COUPON_ID)
     ResponseEntity<ApiResponse<?>> deleteCoupon(@PathVariable Long couponId) {
         couponService.deleteCoupon(couponId);
         return ResponseEntity.ok(new ApiResponse<>(200, "delete coupon success", null));

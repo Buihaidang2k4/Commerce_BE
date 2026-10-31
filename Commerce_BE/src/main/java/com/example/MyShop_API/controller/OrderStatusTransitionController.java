@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 import com.example.MyShop_API.dto.response.ApiResponse;
 import com.example.MyShop_API.entity.OrderStatusTransition;
@@ -17,13 +17,13 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping(ApiPath.BASE_ORDER_STATUS_HISTORY)
+@RequestMapping(ApiPathConstants.BASE_ORDER_STATUS_HISTORY)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderStatusTransitionController {
     IOrderStatusTransitionService historyService;
 
-    @GetMapping(ApiPath.ORDER_STATUS_HISTORY_ORDER_ID)
+    @GetMapping(ApiPathConstants.ORDER_STATUS_HISTORY_ORDER_ID)
     ResponseEntity<ApiResponse<List<OrderStatusTransition>>> getHistory(@PathVariable Long orderId) {
         return ResponseEntity.ok(new ApiResponse(200, "history", historyService.getHistory(orderId)));
     }

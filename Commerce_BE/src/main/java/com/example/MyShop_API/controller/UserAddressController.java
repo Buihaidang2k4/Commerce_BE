@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 import com.example.MyShop_API.dto.request.AddressRequest;
 import com.example.MyShop_API.dto.request.AddressUpdateRequest;
@@ -23,14 +23,14 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping(ApiPath.BASE_ADDRESS)
+@RequestMapping(ApiPathConstants.BASE_ADDRESS)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserAddressController {
     IUserAddressService addressService;
 
 
-    @GetMapping(ApiPath.ADDRESS_ALL)
+    @GetMapping(ApiPathConstants.ADDRESS_ALL)
     ApiResponse<List<AddressResponse>> getAllAddresses() {
         return ApiResponse.<List<AddressResponse>>builder()
                 .code(200)
@@ -39,7 +39,7 @@ public class UserAddressController {
                 .build();
     }
 
-    @GetMapping(ApiPath.ADDRESS_ADDRESS_ADDRESS_ID)
+    @GetMapping(ApiPathConstants.ADDRESS_ADDRESS_ADDRESS_ID)
     ApiResponse<AddressResponse> getAddress(@PathVariable Long addressId) {
         return ApiResponse.<AddressResponse>builder()
                 .code(200)
@@ -48,19 +48,19 @@ public class UserAddressController {
                 .build();
     }
 
-    @GetMapping(ApiPath.ADDRESS_PROFILE_PROFILE_ID)
+    @GetMapping(ApiPathConstants.ADDRESS_PROFILE_PROFILE_ID)
     ResponseEntity<ApiResponse<List<AddressResponse>>> getAddressByProfile(@PathVariable Long profileId) {
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Success", addressService.getAddressByProfileId(profileId)));
     }
 
-    @PostMapping(ApiPath.ADDRESS_USER_PROFILE_USER_PROFILE_ID_ADD)
+    @PostMapping(ApiPathConstants.ADDRESS_USER_PROFILE_USER_PROFILE_ID_ADD)
     ApiResponse<AddressResponse> createAddress(@Valid @RequestBody AddressRequest addressRequest, @PathVariable Long userProfileId) {
         return ApiResponse.<AddressResponse>builder()
                 .data(addressService.createAddress(addressRequest, userProfileId))
                 .build();
     }
 
-    @PutMapping(ApiPath.ADDRESS_UPDATE)
+    @PutMapping(ApiPathConstants.ADDRESS_UPDATE)
     ApiResponse<AddressResponse> updateAddress(@Valid @RequestBody AddressUpdateRequest addressRequest
             , @RequestParam Long addressId
             , @RequestParam Long profileId
@@ -70,7 +70,7 @@ public class UserAddressController {
                 .build();
     }
 
-    @DeleteMapping(ApiPath.ADDRESS_DELETE)
+    @DeleteMapping(ApiPathConstants.ADDRESS_DELETE)
     ApiResponse<Void> deleteAddress(
             @RequestParam Long addressId,
             @RequestParam Long profileId

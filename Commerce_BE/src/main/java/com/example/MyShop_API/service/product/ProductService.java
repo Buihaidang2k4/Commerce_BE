@@ -8,7 +8,7 @@ import com.example.MyShop_API.entity.Category;
 import com.example.MyShop_API.entity.StockBalance;
 import com.example.MyShop_API.entity.Product;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.ProductMapper;
 import com.example.MyShop_API.repo.*;
 import com.example.MyShop_API.service.inventory.IStockBalanceService;
@@ -34,7 +34,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductService implements IProductService {
-    private final com.example.MyShop_API.service.model.ModelLookup models;
+    private final StockBalanceRepository stockBalanceRepository;
     ProductRepository productRepository;
     ProductMapper productMapper;
     CategoryRepository categoryRepository;
@@ -47,10 +47,10 @@ public class ProductService implements IProductService {
         log.info("=================== START ADD PRODUCT ====================");
         // Tìm danh mục
         Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.CATEGORY_NOT_EXISTED));
 
         if (productRepository.existsProductByName(request.getProductName()))
-            throw new AppException(CommonMessageUtils.PRODUCT_NAME_IS_EXISTED);
+            throw new AppException(CommonMessageConstants.PRODUCT_NAME_IS_EXISTED);
 
         String slug = SlugUtils.toSlug(request.getProductName());
 
@@ -75,13 +75,13 @@ public class ProductService implements IProductService {
     public Product updateProduct(AddProductRequest request, Long productId) {
         log.info("=================== START UPDATE PRODUCT ===================");
         Product findProduct = productRepository.findById(productId).orElseThrow(
-                () -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
+                () -> new AppException(CommonMessageConstants.PRODUCT_NOT_EXISTED));
 
         // Check category
         Category category = categoryRepository.findById(request.getCategoryId())
-                .orElseThrow(() -> new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.CATEGORY_NOT_EXISTED));
         if (category == null)
-            throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
+            throw new AppException(CommonMessageConstants.CATEGORY_NOT_EXISTED);
         findProduct.setCategoryId(category.getId());
         findProduct.setUpdatedAt(java.time.Instant.now());
         productMapper.update(request, findProduct);
@@ -97,11 +97,11 @@ public class ProductService implements IProductService {
     @Transactional
     public void deleteProductById(Long productId) {
         Product product = productRepository.findById(productId).orElseThrow(
-                () -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED)
+                () -> new AppException(CommonMessageConstants.PRODUCT_NOT_EXISTED)
         );
 
         if (orderItemRepository.existsByProductId(product.getId())) {
-            throw new AppException(CommonMessageUtils.PRODUCT_HAS_ORDERS);
+            throw new AppException(CommonMessageConstants.PRODUCT_HAS_ORDERS);
         }
 
         cartItemRepository.deleteByProductId(productId);
@@ -163,7 +163,7 @@ public class ProductService implements IProductService {
 
             productRepository.save(product);
             inventory.setProductId(product.getId());
-            models.getInventories().save(inventory);
+            stockBalanceRepository.save(inventory);
 
             products.add(product);
         }
@@ -216,7 +216,7 @@ public class ProductService implements IProductService {
     @Override
     @Transactional(readOnly = true)
     public Product getProductBySlug(String slug) {
-        return productRepository.findBySlug(slug).orElseThrow(() -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
+        return productRepository.findBySlug(slug).orElseThrow(() -> new AppException(CommonMessageConstants.PRODUCT_NOT_EXISTED));
     }
 
     // ============== GET ALL ===================
@@ -230,14 +230,14 @@ public class ProductService implements IProductService {
     @Transactional(readOnly = true)
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElseThrow(
-                () -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
+                () -> new AppException(CommonMessageConstants.PRODUCT_NOT_EXISTED));
     }
 
     // ============ GET ALL BY PRODUCT NAME =============
     @Override
     @Transactional(readOnly = true)
     public Product getProductByName(String productName) {
-        return productRepository.getProductByName(productName).orElseThrow(() -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
+        return productRepository.getProductByName(productName).orElseThrow(() -> new AppException(CommonMessageConstants.PRODUCT_NOT_EXISTED));
     }
 
     // ============== GET ALL BY CATEGORY NAME ============
@@ -246,7 +246,7 @@ public class ProductService implements IProductService {
     public Page<Product> searchProductByCategory(String categoryName, Pageable pageable) {
         Category findCategory = categoryRepository.findByName(categoryName);
         if (findCategory == null)
-            throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
+            throw new AppException(CommonMessageConstants.CATEGORY_NOT_EXISTED);
         return productRepository.findByCategoryName(categoryName, pageable);
     }
 

@@ -1,6 +1,6 @@
 package com.example.MyShop_API.repo;
 
-import com.example.MyShop_API.constants.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatusConstants;
 import com.example.MyShop_API.entity.Order;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;

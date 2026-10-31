@@ -9,7 +9,7 @@ import java.time.*;
 import java.sql.Blob;
 
 @Entity
-@Table(name = "refresh_sessions", indexes = {@Index(name = "idx_refresh_sessions_user_id", columnList = "user_id"), @Index(name = "idx_refresh_sessions_token_family_id", columnList = "token_family_id"), @Index(name = "idx_refresh_sessions_replaced_by_session_id", columnList = "replaced_by_session_id")})
+@Table(name = "refresh_sessions", indexes = {@Index(name = "idx_refresh_sessions_expires_at", columnList = "expires_at"), @Index(name = "idx_refresh_sessions_user_id", columnList = "user_id"), @Index(name = "idx_refresh_sessions_token_hash", columnList = "token_hash"), @Index(name = "idx_refresh_sessions_token_family_id", columnList = "token_family_id"), @Index(name = "idx_refresh_sessions_replaced_by_session_id", columnList = "replaced_by_session_id")})
 @Getter
 @Setter
 @SuperBuilder

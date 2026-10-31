@@ -30,7 +30,7 @@ Admin bootstrap is off. To create an administrator, set BOOTSTRAP_ADMIN_ENABLED=
 BOOTSTRAP_ADMIN_EMAIL and BOOTSTRAP_ADMIN_PASSWORD (at least 12 characters), start once, then disable bootstrap.
 Existing admin accounts are not changed: rotate any old default credentials manually.
 JWT_EXPIRATION and JWT_REFRESHABLE_DURATION are milliseconds; cookie lifetimes use the same durations. Browser writes require an allowed Origin, or an allowed Referer for authenticated cookie requests.
-API clients using cookies must supply Origin; bearer-only requests do not require it.
+API clients using authentication cookies must supply an allowed Origin for write requests.
 Swagger is disabled in production unless SWAGGER_ENABLED=true.
 Readiness: /actuator/health/readiness (DB and Redis); MinIO has its own Compose healthcheck.
 Generated PDF files are temporary container data; do not treat them as durable storage.
@@ -40,7 +40,7 @@ Generated PDF files are temporary container data; do not treat them as durable s
 Back up MySQL with a consistent logical dump and back up the MinIO data volume or use object replication.
 Store backups outside the Docker host; periodically restore both into an isolated environment and verify orders/images.
 Redis AOF is enabled; token blacklist recovery also relies on the database.
-Login/Google/OTP/password-reset requests are limited in Redis to 20 per direct peer IP per endpoint per 60 seconds.
+Login/registration/OTP/password-reset requests are limited in Redis to 20 per direct peer IP per endpoint per 60 seconds.
 Tune app.auth.rate-limit.requests and app.auth.rate-limit.window-seconds as needed.
 Behind a reverse proxy, also apply per-client limits at the proxy; the app deliberately ignores untrusted forwarded IP headers.
 A production TLS proxy configuration and schema migration remain deployment work.
@@ -73,3 +73,7 @@ Mapper mẫu chưa thay thế logic báo cáo JPA hiện có và chưa thêm end
 
 Entity đã bỏ toàn bộ JPA association/enum; tham chiếu lưu bằng ID thường. Xem [chuẩn tên và hướng dẫn migration MySQL](docs/MODEL_NAMING_MIGRATION.md), [schema](database/README.md) và [mô tả entity](docs/ENTITY_DATA_DICTIONARY_VI.md). Mặc định schema mode là validate; chạy SQL create/upgrade trước khi khởi động. Không dùng Hibernate update để thay thế bước gỡ constraint cũ.
 Các entity mới là nền cho tính năng trong tài liệu, chưa phải toàn bộ marketplace đã có API/service.
+
+## Auth và RBAC
+
+Xem [luồng auth và triển khai](docs/AUTH_FLOW_VI.md). Refresh dùng session DB lưu hash, rotation và thu hồi chuỗi khi replay. Chạy migration `database/03_auth_sessions_rbac.sql` trước khi triển khai; phiên và OTP cũ sẽ bị vô hiệu một lần. Quản lý role/permission chỉ cho ADMIN; schema vẫn không FK/UNIQUE/enum.

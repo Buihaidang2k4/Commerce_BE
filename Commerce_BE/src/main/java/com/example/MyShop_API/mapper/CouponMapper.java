@@ -1,16 +1,19 @@
 package com.example.MyShop_API.mapper;
 
+import com.example.MyShop_API.repo.CategoryRepository;
+import com.example.MyShop_API.repo.ProductRepository;
+
 import com.example.MyShop_API.entity.*;
 import com.example.MyShop_API.dto.request.*;
 import com.example.MyShop_API.dto.response.*;
-import com.example.MyShop_API.service.model.ModelLookup;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class CouponMapper {
-    @Autowired protected ModelLookup models;
+    @Autowired protected ProductRepository productRepository;
+    @Autowired protected CategoryRepository categoryRepository;
 
 
 
@@ -36,6 +39,7 @@ public abstract class CouponMapper {
     @Mapping(source = "minimumOrderAmount", target = "minOrderValue")
     @Mapping(source = "startsAt", target = "startDate")
     @Mapping(source = "endsAt", target = "expiryDate")
+    @BeanMapping(builder = @Builder(disableBuilder = true))
     public abstract CouponResponse toCouponResponse(Coupon coupon);
     public abstract List<CouponResponse> toCouponResponses(List<Coupon> coupons);
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
@@ -52,7 +56,7 @@ public abstract class CouponMapper {
 
     @AfterMapping
     protected void fill(Coupon coupon, @MappingTarget CouponResponse response) {
-        response.setCategoryIds(models.couponCategories(coupon.getId()).stream().map(Category::getId).toList());
-        response.setProductIds(models.couponProducts(coupon.getId()).stream().map(Product::getId).toList());
+        response.setCategoryIds(categoryRepository.findAllByCouponId(coupon.getId()).stream().map(Category::getId).toList());
+        response.setProductIds(productRepository.findAllByCouponId(coupon.getId()).stream().map(Product::getId).toList());
     }
 }

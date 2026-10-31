@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.payment;
 
-import com.example.MyShop_API.constants.PaymentMethod;
+import com.example.MyShop_API.constants.PaymentMethodConstants;
 import com.example.MyShop_API.dto.response.PaymentDto;
 import com.example.MyShop_API.dto.response.PaymentInitResponse;
 import com.example.MyShop_API.dto.response.VnpayResponse;

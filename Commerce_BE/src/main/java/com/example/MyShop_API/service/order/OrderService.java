@@ -1,9 +1,12 @@
 package com.example.MyShop_API.service.order;
 
-import com.example.MyShop_API.constants.OrderStatus;
-import com.example.MyShop_API.constants.PaymentMethod;
-import com.example.MyShop_API.constants.PaymentStatus;
-import com.example.MyShop_API.anotation.AdminOnly;
+import com.example.MyShop_API.constants.RoleCodeConstants;
+
+import com.example.MyShop_API.utils.AuthUtils;
+
+import com.example.MyShop_API.constants.OrderStatusConstants;
+import com.example.MyShop_API.constants.PaymentMethodConstants;
+import com.example.MyShop_API.constants.PaymentStatusConstants;
 import com.example.MyShop_API.dto.request.OrderPlaceListItemRequest;
 import com.example.MyShop_API.dto.request.OrderRequest;
 import com.example.MyShop_API.dto.request.PlaceOrderFromCartRequest;
@@ -11,7 +14,7 @@ import com.example.MyShop_API.dto.response.OrderResponse;
 import com.example.MyShop_API.dto.response.VnpayResponse;
 import com.example.MyShop_API.entity.*;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.OrderMapper;
 import com.example.MyShop_API.repo.*;
 import com.example.MyShop_API.service.cart.IShoppingCartService;
@@ -43,7 +46,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderService implements IOrderService {
-    private final com.example.MyShop_API.service.model.ModelLookup models;
+    private final OrderShippingAddressRepository orderShippingAddressRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final OrderStatusTransitionRepository orderStatusTransitionRepository;
+    private final ShoppingCartRepository shoppingCartRepository;
+    private final StockBalanceRepository stockBalanceRepository;
     OrderRepository orderRepository;
     IShoppingCartService cartService;
     ProductRepository productRepository;
@@ -69,7 +76,7 @@ public class OrderService implements IOrderService {
     @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
         log.info("getOrderById().........");
-        return orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+        return orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
     }
 
     @Override
@@ -96,18 +103,18 @@ public class OrderService implements IOrderService {
     @Transactional
     public OrderResponse buyNow(OrderRequest orderRequest) {
         Product product = productRepository.findById(orderRequest.getProductId())
-                .orElseThrow(() -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.PRODUCT_NOT_EXISTED));
 
         UserProfile profile = profileRepository.findById(orderRequest.getProfileId())
-                .orElseThrow(() -> new AppException(CommonMessageUtils.PROFILE_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.PROFILE_NOT_EXISTED));
 
         if (!inventoryService.reserveStock(product.getId(), orderRequest.getQuantity())) {
-            throw new AppException(CommonMessageUtils.INVENTORY_NOT_ENOUGH, models.inventory(product.getId()).getAvailableQuantity(), orderRequest.getQuantity());
+            throw new AppException(CommonMessageConstants.INVENTORY_NOT_ENOUGH, Optional.ofNullable(product.getId()).flatMap(stockBalanceRepository::findByProductId).orElse(null).getAvailableQuantity(), orderRequest.getQuantity());
         }
 
-        String status = PaymentMethod.VNPAY.equals(orderRequest.getPaymentMethod())
-                ? OrderStatus.CREATED
-                : OrderStatus.PENDING;
+        String status = PaymentMethodConstants.VNPAY.equals(orderRequest.getPaymentMethod())
+                ? OrderStatusConstants.CREATED
+                : OrderStatusConstants.PENDING;
 
         Order order = Order.builder()
                 .userProfileId(profile.getId())
@@ -128,7 +135,7 @@ public class OrderService implements IOrderService {
         orderRepository.save(order);
         item.setOrderId(order.getId());
         item.setProductNameSnapshot(product.getName());
-        models.getOrderItems().save(item);
+        orderItemRepository.save(item);
 
         calculateTotalAmount(
                 order,
@@ -168,19 +175,19 @@ public class OrderService implements IOrderService {
         log.info("====================== START PLACE ORDER FROM LIST CART ITEMS ======================");
         // tim profile
         UserProfile profile = profileRepository.findById(orderRequest.getProfileId())
-                .orElseThrow(() -> new AppException(CommonMessageUtils.PROFILE_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.PROFILE_NOT_EXISTED));
 
         // lấy items người dùng đã chọn
         List<CartItem> cartItems = cartItemRepository.lockCartItems(orderRequest.getListItemId());
 
-        ShoppingCart selectedCart = models.cartForProfile(profile.getId());
-        if (selectedCart == null || cartItems.size() != orderRequest.getListItemId().stream().distinct().count() || cartItems.stream().anyMatch(item -> !Objects.equals(item.getCartId(), selectedCart.getId()))) throw new AppException(CommonMessageUtils.CART_NOT_MATCH);
+        ShoppingCart selectedCart = Optional.ofNullable(profile.getId()).flatMap(shoppingCartRepository::findByUserProfileId).orElse(null);
+        if (selectedCart == null || cartItems.size() != orderRequest.getListItemId().stream().distinct().count() || cartItems.stream().anyMatch(item -> !Objects.equals(item.getCartId(), selectedCart.getId()))) throw new AppException(CommonMessageConstants.CART_NOT_MATCH);
         if (cartItems.isEmpty())
-            throw new AppException(CommonMessageUtils.LIST_CART_ITEMS_EMPTY);
+            throw new AppException(CommonMessageConstants.LIST_CART_ITEMS_EMPTY);
 
-        String status = PaymentMethod.VNPAY.equals(orderRequest.getPaymentMethod())
-                ? OrderStatus.CREATED
-                : OrderStatus.PENDING;
+        String status = PaymentMethodConstants.VNPAY.equals(orderRequest.getPaymentMethod())
+                ? OrderStatusConstants.CREATED
+                : OrderStatusConstants.PENDING;
         // Tạo đơn hàng
         Order order = createOrderFromCartItem(cartItems, profile);
         order.setStatus(status);
@@ -206,7 +213,7 @@ public class OrderService implements IOrderService {
 
         // xoa item sau khi dat
         cartService.removeSelectedItemsFromCartByItemIds(
-                models.cartForProfile(order.getUserProfileId()).getId(),
+                Optional.ofNullable(order.getUserProfileId()).flatMap(shoppingCartRepository::findByUserProfileId).orElse(null).getId(),
                 orderRequest.getListItemId()
         );
 
@@ -222,18 +229,18 @@ public class OrderService implements IOrderService {
 
         // Đặt hàng
         ShoppingCart cart = cartService.getCartByUserProfileId(orderRequest.getProfileId());
-        models.getCarts().findByIdForUpdate(cart.getId()).orElseThrow(() -> new AppException(CommonMessageUtils.CART_NOT_EXISTED));
-        if (models.cartItems(cart.getId()).isEmpty()) throw new AppException(CommonMessageUtils.CART_NOT_EXISTED);
+        shoppingCartRepository.findByIdForUpdate(cart.getId()).orElseThrow(() -> new AppException(CommonMessageConstants.CART_NOT_EXISTED));
+        if (Optional.ofNullable(cart.getId()).map(cartItemRepository::findByCartId).orElseGet(List::of).isEmpty()) throw new AppException(CommonMessageConstants.CART_NOT_EXISTED);
 
-        String status = PaymentMethod.VNPAY.equals(orderRequest.getPaymentMethod())
-                ? OrderStatus.CREATED
-                : OrderStatus.PENDING;
+        String status = PaymentMethodConstants.VNPAY.equals(orderRequest.getPaymentMethod())
+                ? OrderStatusConstants.CREATED
+                : OrderStatusConstants.PENDING;
 
         // Tạo đơn hàng
         Order order = createOrderFromCart(cart);
         order.setStatus(status);
 
-        calculateTotalAmount(order, orderRequest.getShippingFee(), orderRequest.getCouponCode(), models.profile(cart.getUserProfileId()));
+        calculateTotalAmount(order, orderRequest.getShippingFee(), orderRequest.getCouponCode(), Optional.ofNullable(cart.getUserProfileId()).flatMap(profileRepository::findById).orElse(null));
         Order saveOrder = orderRepository.save(order);
 
         // set address shipping from address profile
@@ -254,7 +261,7 @@ public class OrderService implements IOrderService {
         historyService.logStatusChange(order, status, null);
 
         // clear cart
-        cartService.removeSelectedItemsFromCartByItemIds(cart.getId(), models.cartItems(cart.getId()).stream().map(CartItem::getId).toList());
+        cartService.removeSelectedItemsFromCartByItemIds(cart.getId(), Optional.ofNullable(cart.getId()).map(cartItemRepository::findByCartId).orElseGet(List::of).stream().map(CartItem::getId).toList());
 
         return orderMapper.toResponse(saveOrder);
     }
@@ -273,21 +280,21 @@ public class OrderService implements IOrderService {
         Long orderId = Long.parseLong(txnRef);
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
 
         PaymentIntent payment = paymentRepository.findByOrderId(orderId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.PAYMENT_NOT_EXISTED));
 
         // ========== PAYMENT SUCCESS ==========
-        if (PaymentStatus.PAID.equals(payment.getStatus())) {
-            order.setStatus(OrderStatus.PENDING);
+        if (PaymentStatusConstants.PAID.equals(payment.getStatus())) {
+            order.setStatus(OrderStatusConstants.PENDING);
         }
 
         // ===== PAYMENT FAILED → CHO PHÉP RETRY =====
-        if (PaymentStatus.FAILED.equals(payment.getStatus())) {
-            if (!OrderStatus.CREATED.equals(order.getStatus())) {
-                order.setStatus(OrderStatus.CREATED);
-                historyService.logStatusChange(order, OrderStatus.CREATED, null);
+        if (PaymentStatusConstants.FAILED.equals(payment.getStatus())) {
+            if (!OrderStatusConstants.CREATED.equals(order.getStatus())) {
+                order.setStatus(OrderStatusConstants.CREATED);
+                historyService.logStatusChange(order, OrderStatusConstants.CREATED, null);
             }
         }
 
@@ -298,57 +305,57 @@ public class OrderService implements IOrderService {
 
     // ================== CONFIRM COD ============================
     @Override
-    @AdminOnly
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse confirmCashOrder(Long orderId, Principal principal) {
+        AuthUtils.validateCheckAuth(List.of(RoleCodeConstants.ADMIN));
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
 
-        if (OrderStatus.DELIVERED.equals(order.getStatus()))
-            throw new AppException(CommonMessageUtils.ORDER_ALREADY_DELIVERED);
+        if (OrderStatusConstants.DELIVERED.equals(order.getStatus()))
+            throw new AppException(CommonMessageConstants.ORDER_ALREADY_DELIVERED);
 
         UserAccount admin = userService.findUserByPrincipal(principal);
 
-        if (models.orderItems(order.getId()).isEmpty()) throw new AppException(CommonMessageUtils.ORDER_ITEM_EMPTY);
+        if (Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of).isEmpty()) throw new AppException(CommonMessageConstants.ORDER_ITEM_EMPTY);
 
-        for (OrderItem item : models.orderItems(order.getId())) {
+        for (OrderItem item : Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of)) {
             inventoryService.confirmOrder(
                     item.getProductId(),
                     item.getQuantity()
             );
         }
 
-        order.setStatus(OrderStatus.DELIVERED);
+        order.setStatus(OrderStatusConstants.DELIVERED);
         paymentService.confirmCodPayment(order);
-        historyService.logStatusChange(order, OrderStatus.DELIVERED, admin);
+        historyService.logStatusChange(order, OrderStatusConstants.DELIVERED, admin);
         calculateSoldCount(order);
 
         return orderMapper.toResponse(order);
     }
 
     @Override
-    @AdminOnly
     @Transactional(rollbackFor = Exception.class)
     public OrderResponse confirmVnpayOrder(Long orderId, Principal principal) {
+        AuthUtils.validateCheckAuth(List.of(RoleCodeConstants.ADMIN));
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
 
-        if (OrderStatus.DELIVERED.equals(order.getStatus()))
-            throw new AppException(CommonMessageUtils.ORDER_ALREADY_DELIVERED);
+        if (OrderStatusConstants.DELIVERED.equals(order.getStatus()))
+            throw new AppException(CommonMessageConstants.ORDER_ALREADY_DELIVERED);
 
-        PaymentIntent payment = Optional.ofNullable(models.payment(order.getPaymentId()))
-                .orElseThrow(() -> new AppException(CommonMessageUtils.PAYMENT_NOT_EXISTED));
+        PaymentIntent payment = Optional.ofNullable(Optional.ofNullable(order.getPaymentId()).flatMap(paymentRepository::findById).orElse(null))
+                .orElseThrow(() -> new AppException(CommonMessageConstants.PAYMENT_NOT_EXISTED));
 
-        if (!PaymentMethod.VNPAY.equals(payment.getMethodCode()))
-            throw new AppException(CommonMessageUtils.INVALID_PAYMENT_METHOD);
+        if (!PaymentMethodConstants.VNPAY.equals(payment.getMethodCode()))
+            throw new AppException(CommonMessageConstants.INVALID_PAYMENT_METHOD);
 
-        if (!PaymentStatus.PAID.equals(payment.getStatus()))
-            throw new AppException(CommonMessageUtils.PAYMENT_NOT_PAID);
+        if (!PaymentStatusConstants.PAID.equals(payment.getStatus()))
+            throw new AppException(CommonMessageConstants.PAYMENT_NOT_PAID);
 
 
-        if (models.orderItems(order.getId()).isEmpty()) throw new AppException(CommonMessageUtils.ORDER_ITEM_EMPTY);
+        if (Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of).isEmpty()) throw new AppException(CommonMessageConstants.ORDER_ITEM_EMPTY);
 
-        for (OrderItem item : models.orderItems(order.getId())) {
+        for (OrderItem item : Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of)) {
             inventoryService.confirmOrder(
                     item.getProductId(),
                     item.getQuantity()
@@ -357,8 +364,8 @@ public class OrderService implements IOrderService {
 
         UserAccount admin = userService.findUserByPrincipal(principal);
 
-        order.setStatus(OrderStatus.DELIVERED);
-        historyService.logStatusChange(order, OrderStatus.DELIVERED, admin);
+        order.setStatus(OrderStatusConstants.DELIVERED);
+        historyService.logStatusChange(order, OrderStatusConstants.DELIVERED, admin);
 
         return orderMapper.toResponse(order);
     }
@@ -367,26 +374,26 @@ public class OrderService implements IOrderService {
     @Transactional
     public void cancelOrder(Long orderId) {
         // Tìm kiếm đơn hàng
-        Order order = orderRepository.findByIdForUpdate(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+        Order order = orderRepository.findByIdForUpdate(orderId).orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
 
-        if (OrderStatus.CANCELLED.equals(order.getStatus())) {
-            throw new AppException(CommonMessageUtils.ORDER_ALREADY_CANCELLED);
+        if (OrderStatusConstants.CANCELLED.equals(order.getStatus())) {
+            throw new AppException(CommonMessageConstants.ORDER_ALREADY_CANCELLED);
         }
 
-        if (OrderStatus.DELIVERED.equals(order.getStatus())) {
-            throw new AppException(CommonMessageUtils.ORDER_CANCEL_FAILED);
+        if (OrderStatusConstants.DELIVERED.equals(order.getStatus())) {
+            throw new AppException(CommonMessageConstants.ORDER_CANCEL_FAILED);
         }
 
         // Order was paid/confirm restock
-        if (OrderStatus.SHIPPED.equals(order.getStatus()) || OrderStatus.PENDING.equals(order.getStatus())) {
-            models.orderItems(order.getId()).forEach(orderItem -> {
+        if (OrderStatusConstants.SHIPPED.equals(order.getStatus()) || OrderStatusConstants.PENDING.equals(order.getStatus())) {
+            Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of).forEach(orderItem -> {
                 // restock
                 inventoryService.restock(orderItem.getProductId(), orderItem.getQuantity());
             });
         }
 
         // Update status order
-        order.setStatus(OrderStatus.CANCELLED);
+        order.setStatus(OrderStatusConstants.CANCELLED);
         orderRepository.save(order);
     }
 
@@ -394,18 +401,18 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public Order updateOrderStatus(Long orderId, String newStatus, UserAccount admin) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
 
-        if (newStatus == null || !OrderStatus.VALUES.contains(newStatus)) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        if (newStatus == null || !OrderStatusConstants.VALUES.contains(newStatus)) throw new AppException(CommonMessageConstants.VALIDATION_ERROR);
         String currentStatus = order.getStatus();
 
         // NGĂN CHẶN CHUYỂN TRẠNG THÁI SAI LUẬT
-        if (OrderStatus.DELIVERED.equals(currentStatus)) {
-            throw new AppException(CommonMessageUtils.ORDER_STATUS_FINAL);
+        if (OrderStatusConstants.DELIVERED.equals(currentStatus)) {
+            throw new AppException(CommonMessageConstants.ORDER_STATUS_FINAL);
         }
 
-        if (OrderStatus.CANCELLED.equals(currentStatus)) {
-            throw new AppException(CommonMessageUtils.ORDER_ALREADY_CANCELLED);
+        if (OrderStatusConstants.CANCELLED.equals(currentStatus)) {
+            throw new AppException(CommonMessageConstants.ORDER_ALREADY_CANCELLED);
         }
         historyService.logStatusChange(order, newStatus, admin);
         orderRepository.updateStatus(order.getId(), newStatus);
@@ -416,28 +423,28 @@ public class OrderService implements IOrderService {
     @Transactional
     public void deleteOrder(Long orderId) {
         log.info("deleteOrder().........");
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
 
-        if (OrderStatus.DELIVERED.equals(order.getStatus()) || OrderStatus.SHIPPED.equals(order.getStatus())) {
-            throw new AppException(CommonMessageUtils.ORDER_CANCEL_FAILED);
+        if (OrderStatusConstants.DELIVERED.equals(order.getStatus()) || OrderStatusConstants.SHIPPED.equals(order.getStatus())) {
+            throw new AppException(CommonMessageConstants.ORDER_CANCEL_FAILED);
         }
-        models.getOrderItems().deleteByOrderId(orderId);
-        models.getDeliveryAddresses().deleteByOrderId(orderId);
-        models.getHistories().deleteByOrderId(orderId);
+        orderItemRepository.deleteByOrderId(orderId);
+        orderShippingAddressRepository.deleteByOrderId(orderId);
+        orderStatusTransitionRepository.deleteByOrderId(orderId);
         orderRepository.delete(order);
     }
 
     // ==================== UPDATE SHIPPING ORDER ==========
     @Override
     public Order updateShippingOrder(Long orderId, Long addressId, String orderNote) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
-        UserAddress address = addressRepository.findById(addressId).orElseThrow(() -> new AppException(CommonMessageUtils.ADDRESS_NOT_EXISTED));
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
+        UserAddress address = addressRepository.findById(addressId).orElseThrow(() -> new AppException(CommonMessageConstants.ADDRESS_NOT_EXISTED));
 
         if (!Objects.equals(order.getUserProfileId(), address.getUserProfileId()))
-            throw new AppException(CommonMessageUtils.ORDER_ADDRESS_MISMATCH);
+            throw new AppException(CommonMessageConstants.ORDER_ADDRESS_MISMATCH);
 
-        if (!OrderStatus.PENDING.equals(order.getStatus()))
-            throw new AppException(CommonMessageUtils.ORDER_CANNOT_CHANGE_ADDRESS);
+        if (!OrderStatusConstants.PENDING.equals(order.getStatus()))
+            throw new AppException(CommonMessageConstants.ORDER_CANNOT_CHANGE_ADDRESS);
 
         deliveryAddressService.updateDeliveryAddressFromAddressId(address.getId(), order, orderNote);
         return orderRepository.save(order);
@@ -449,11 +456,11 @@ public class OrderService implements IOrderService {
                 .userProfileId(cart.getUserProfileId())
                 .userId(cart.getUserId())
                 .orderDate(LocalDate.now())
-                .status(OrderStatus.PENDING)
+                .status(OrderStatusConstants.PENDING)
                 .build();
 
         orderRepository.save(order);
-        List<OrderItem> orderItems = models.cartItems(cart.getId()).stream()
+        List<OrderItem> orderItems = Optional.ofNullable(cart.getId()).map(cartItemRepository::findByCartId).orElseGet(List::of).stream()
                 .map(ci ->
                         OrderItem.builder()
                                 .orderId(order.getId())
@@ -467,11 +474,11 @@ public class OrderService implements IOrderService {
                 .collect(Collectors.toList());
 
         orderItems.forEach(item -> {
-            Product product = models.product(item.getProductId());
+            Product product = Optional.ofNullable(item.getProductId()).flatMap(productRepository::findById).orElse(null);
             item.setProductNameSnapshot(product.getName());
             item.setUnitPrice(product.getSpecialPrice() != null ? product.getSpecialPrice() : product.getPrice());
         });
-        models.getOrderItems().saveAll(orderItems);
+        orderItemRepository.saveAll(orderItems);
         return order;
     }
 
@@ -480,7 +487,7 @@ public class OrderService implements IOrderService {
         Order order = Order.builder()
                 .userProfileId(profile.getId())
                 .orderDate(LocalDate.now())
-                .status(OrderStatus.PENDING)
+                .status(OrderStatusConstants.PENDING)
                 .build();
 
         order.setUserId(profile.getUserId());
@@ -498,19 +505,19 @@ public class OrderService implements IOrderService {
                 ).toList();
 
         orderItems.forEach(item -> {
-            Product product = models.product(item.getProductId());
+            Product product = Optional.ofNullable(item.getProductId()).flatMap(productRepository::findById).orElse(null);
             item.setProductNameSnapshot(product.getName());
             item.setUnitPrice(product.getSpecialPrice() != null ? product.getSpecialPrice() : product.getPrice());
         });
-        models.getOrderItems().saveAll(orderItems);
+        orderItemRepository.saveAll(orderItems);
         return order;
     }
 
     // ============== UPDATE CALCULATE SOLD COUNT ==============
     private void calculateSoldCount(Order order) {
-        models.orderItems(order.getId())
+        Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of)
                 .forEach(item -> {
-                    Product product = models.product(item.getProductId());
+                    Product product = Optional.ofNullable(item.getProductId()).flatMap(productRepository::findById).orElse(null);
                     int quantity = item.getQuantity();
                     product.setSoldQuantity(product.getSoldQuantity() + quantity);
                     productRepository.save(product);
@@ -520,7 +527,7 @@ public class OrderService implements IOrderService {
     // ============== CALCULATE TOTAL AMOUNT ==================
     private void calculateTotalAmount(Order order, BigDecimal shippingFee, String couponCode, UserProfile profile) {
         // total amount from order
-        BigDecimal itemTotalAmount = models.orderItems(order.getId()).stream()
+        BigDecimal itemTotalAmount = Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of).stream()
                 .map(oi -> oi.getUnitPrice().multiply(BigDecimal.valueOf(oi.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
@@ -558,7 +565,7 @@ public class OrderService implements IOrderService {
         OrderShippingAddress deliveryAddress = deliveryAddressService.createDeliveryAddressFromAddressId(addressId, profileId, orderNote);
         deliveryAddress.setOrderId(order.getId());
         deliveryAddress.setCreatedAt(Instant.now());
-        models.getDeliveryAddresses().save(deliveryAddress);
+        orderShippingAddressRepository.save(deliveryAddress);
     }
 
 }

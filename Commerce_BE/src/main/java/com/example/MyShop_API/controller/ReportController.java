@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 import com.example.MyShop_API.dto.request.report.*;
 import com.example.MyShop_API.dto.response.ApiResponse;
@@ -27,7 +27,7 @@ import java.nio.file.Paths;
 import java.util.List;
 
 @RestController
-@RequestMapping(ApiPath.BASE_REPORT)
+@RequestMapping(ApiPathConstants.BASE_REPORT)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ReportController {
@@ -40,7 +40,7 @@ public class ReportController {
     @Value("${report.temp-dir}")
     private String tempDir;
 
-    @PostMapping(ApiPath.REPORT_REPORT_ORDER_PDF_ORDER_ID)
+    @PostMapping(ApiPathConstants.REPORT_REPORT_ORDER_PDF_ORDER_ID)
     public ResponseEntity<byte[]> generatePdfOrder(@PathVariable Long orderId) throws IOException {
         String html = reportPdfService.getReportHtml(orderId);
         byte[] pdfBytes = reportPdfService.convertHtmlToPdf(html);
@@ -58,7 +58,7 @@ public class ReportController {
                 .body(pdfBytes);
     }
 
-    @GetMapping(ApiPath.REPORT_EXPORT_ORDERS)
+    @GetMapping(ApiPathConstants.REPORT_EXPORT_ORDERS)
     public ResponseEntity<ApiResponse> exportOrders() throws IOException {
         List<Order> orders = orderRepository.findAll();
         reportExcelService.exportOrders(orders);
@@ -71,31 +71,31 @@ public class ReportController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping(ApiPath.REPORT_MONTHLY_REVENUE)
+    @GetMapping(ApiPathConstants.REPORT_MONTHLY_REVENUE)
     public List<MonthlyRevenueDTO> getMonthlyRevenue(@RequestParam int year) {
         return reportService.getMonthlyRevenue(year);
     }
 
-    @GetMapping(ApiPath.REPORT_QUARTERLY_REVENUE)
+    @GetMapping(ApiPathConstants.REPORT_QUARTERLY_REVENUE)
     public List<QuarterlyRevenueDTO> getQuarterlyRevenue(@RequestParam int year) {
         return reportService.getQuarterlyRevenue(year);
     }
 
-    @GetMapping(ApiPath.REPORT_ANNUAL_REVENUE)
+    @GetMapping(ApiPathConstants.REPORT_ANNUAL_REVENUE)
     public List<AnnualRevenueDTO> getAnnualRevenue(
             @RequestParam int fromYear,
             @RequestParam int toYear) {
         return reportService.getAnnualRevenue(fromYear, toYear);
     }
 
-    @GetMapping(ApiPath.REPORT_PRODUCT_REVENUE)
+    @GetMapping(ApiPathConstants.REPORT_PRODUCT_REVENUE)
     public List<ProductRevenueDTO> getRevenueByProduct(
             @RequestParam int year,
             @RequestParam int month) {
         return reportService.getRevenueByProduct(year, month);
     }
 
-    @GetMapping(ApiPath.REPORT_CATEGORY_REVENUE)
+    @GetMapping(ApiPathConstants.REPORT_CATEGORY_REVENUE)
     public List<CategoryRevenueDTO> getRevenueByCategory(
             @RequestParam int year,
             @RequestParam int month) {

@@ -1,16 +1,22 @@
 package com.example.MyShop_API.mapper;
 
+import com.example.MyShop_API.repo.CategoryRepository;
+import com.example.MyShop_API.repo.ProductImageRepository;
+import com.example.MyShop_API.repo.StockBalanceRepository;
+import java.util.Optional;
+
 import com.example.MyShop_API.entity.*;
 import com.example.MyShop_API.dto.request.*;
 import com.example.MyShop_API.dto.response.*;
-import com.example.MyShop_API.service.model.ModelLookup;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class ProductMapper {
-    @Autowired protected ModelLookup models;
+    @Autowired protected ProductImageRepository productImageRepository;
+    @Autowired protected StockBalanceRepository stockBalanceRepository;
+    @Autowired protected CategoryRepository categoryRepository;
     @Autowired protected StockBalanceMapper inventories;
     @Autowired protected ProductImageMapper images;
 
@@ -49,8 +55,8 @@ public abstract class ProductMapper {
     protected void fill(Product product, @MappingTarget ProductResponse response) {
         response.setCreateAt(product.getCreatedAt() == null ? null : product.getCreatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate());
         response.setUpdateAt(product.getUpdatedAt() == null ? null : product.getUpdatedAt().atZone(java.time.ZoneOffset.UTC).toLocalDate());
-        response.setCategory(models.category(product.getCategoryId()));
-        response.setInventory(inventories.toInventoryDTO(models.inventory(product.getId())));
-        response.setImages(models.images(product.getId()).stream().map(images::toImageDTO).toList());
+        response.setCategory(Optional.ofNullable(product.getCategoryId()).flatMap(categoryRepository::findById).orElse(null));
+        response.setInventory(inventories.toInventoryDTO(Optional.ofNullable(product.getId()).flatMap(stockBalanceRepository::findByProductId).orElse(null)));
+        response.setImages(Optional.ofNullable(product.getId()).map(productImageRepository::findImageByProductId).orElseGet(List::of).stream().map(images::toImageDTO).toList());
     }
 }

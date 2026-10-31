@@ -4,7 +4,7 @@ import com.example.MyShop_API.dto.request.ImageDTO;
 import com.example.MyShop_API.entity.ProductImage;
 import com.example.MyShop_API.entity.Product;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.ProductImageMapper;
 import com.example.MyShop_API.repo.ProductImageRepository;
 import com.example.MyShop_API.service.product.ProductService;
@@ -36,14 +36,14 @@ public class ProductImageService implements IProductImageService {
     @Transactional(readOnly = true)
     public ProductImage getImageById(Long id) {
         return imageRepository.findById(id).orElseThrow(() ->
-                new AppException(CommonMessageUtils.IMAGE_NOT_FOUND));
+                new AppException(CommonMessageConstants.IMAGE_NOT_FOUND));
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<ImageDTO> getImageByProductId(Long productId) {
         List<ProductImage> ds = imageRepository.findImageByProductId(productId);
-        if (ds.isEmpty()) throw new AppException(CommonMessageUtils.IMAGE_NOT_FOUND);
+        if (ds.isEmpty()) throw new AppException(CommonMessageConstants.IMAGE_NOT_FOUND);
 
         return ds.stream().map(imageMapper::toImageDTO).toList();
     }
@@ -51,7 +51,7 @@ public class ProductImageService implements IProductImageService {
     @Override
     public void deleteImageById(Long id) {
         imageRepository.findById(id).ifPresentOrElse(imageRepository::delete, () -> {
-            throw new AppException(CommonMessageUtils.IMAGE_NOT_FOUND, id);
+            throw new AppException(CommonMessageConstants.IMAGE_NOT_FOUND, id);
         });
     }
 

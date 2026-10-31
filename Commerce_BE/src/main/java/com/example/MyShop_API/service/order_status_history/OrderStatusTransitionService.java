@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.order_status_history;
 
-import com.example.MyShop_API.constants.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatusConstants;
 import com.example.MyShop_API.entity.Order;
 import com.example.MyShop_API.entity.OrderStatusTransition;
 import com.example.MyShop_API.entity.UserAccount;

@@ -1,16 +1,22 @@
 package com.example.MyShop_API.mapper;
 
+import com.example.MyShop_API.repo.CouponRepository;
+import com.example.MyShop_API.repo.OrderItemRepository;
+import com.example.MyShop_API.repo.OrderShippingAddressRepository;
+import java.util.Optional;
+
 import com.example.MyShop_API.entity.*;
 import com.example.MyShop_API.dto.request.*;
 import com.example.MyShop_API.dto.response.*;
-import com.example.MyShop_API.service.model.ModelLookup;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class OrderMapper {
-    @Autowired protected ModelLookup models;
+    @Autowired protected OrderShippingAddressRepository orderShippingAddressRepository;
+    @Autowired protected CouponRepository couponRepository;
+    @Autowired protected OrderItemRepository orderItemRepository;
     @Autowired protected OrderItemMapper items;
     @Autowired protected CouponMapper coupons;
 
@@ -36,9 +42,9 @@ public abstract class OrderMapper {
 
     @AfterMapping
     protected void fill(Order order, @MappingTarget OrderResponse response) {
-        response.setOrderItemResponses(models.orderItems(order.getId()).stream().map(items::toResponse).toList());
-        response.setCouponResponse(coupons.toCouponResponse(models.coupon(order.getCouponId())));
-        var address = models.deliveryAddress(order.getId());
+        response.setOrderItemResponses(Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of).stream().map(items::toResponse).toList());
+        response.setCouponResponse(coupons.toCouponResponse(Optional.ofNullable(order.getCouponId()).flatMap(couponRepository::findById).orElse(null)));
+        var address = Optional.ofNullable(order.getId()).map(orderShippingAddressRepository::findOrderDeliveryAddressByOrderId).orElse(null);
         response.setDeliveryAddressId(address == null ? null : address.getId());
     }
 }

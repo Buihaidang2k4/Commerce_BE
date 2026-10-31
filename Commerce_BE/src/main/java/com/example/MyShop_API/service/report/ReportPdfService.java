@@ -1,10 +1,15 @@
 package com.example.MyShop_API.service.report;
 
+import com.example.MyShop_API.repo.OrderItemRepository;
+import com.example.MyShop_API.repo.OrderShippingAddressRepository;
+import java.util.List;
+import java.util.Optional;
+
 import com.example.MyShop_API.entity.Order;
 import com.example.MyShop_API.entity.OrderShippingAddress;
 import com.example.MyShop_API.entity.OrderItem;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.repo.OrderRepository;
 import com.example.MyShop_API.utils.RadomCodeTemplate;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
@@ -27,7 +32,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ReportPdfService {
-    private final com.example.MyShop_API.service.model.ModelLookup models;
+    private final OrderItemRepository orderItemRepository;
+    private final OrderShippingAddressRepository orderShippingAddressRepository;
 
     TemplateEngine templateEngine;
     OrderRepository orderRepository;
@@ -39,15 +45,15 @@ public class ReportPdfService {
 
     // =============== GET REPORT ==================
     public String getReportHtml(Long orderId) {
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
         // mã vận đơn test
         String barCode = RadomCodeTemplate.radomBarcode(15);
         // random mã đơn hàng HC-51-03-GV13
         String randomOrder = RadomCodeTemplate.generateCode();
         // Địa chỉ
-        OrderShippingAddress deliveryAddress = models.deliveryAddress(order.getId());
+        OrderShippingAddress deliveryAddress = Optional.ofNullable(order.getId()).map(orderShippingAddressRepository::findOrderDeliveryAddressByOrderId).orElse(null);
         // Nội dung đơn hàng
-        java.util.List<OrderItem> orderItems = models.orderItems(order.getId());
+        java.util.List<OrderItem> orderItems = Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of);
         int sizeOrderItem = orderItems.size();
 
         Context context = new Context();

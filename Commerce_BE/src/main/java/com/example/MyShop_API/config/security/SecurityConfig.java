@@ -1,5 +1,16 @@
 package com.example.MyShop_API.config.security;
 
+import com.example.MyShop_API.constants.SecurityWhitelistConstants;
+import com.example.MyShop_API.constants.CookieConstants;
+import com.example.MyShop_API.constants.RedisConstants;
+
+import com.example.MyShop_API.constants.ApiPathConstants;
+import com.example.MyShop_API.constants.CommonMessageConstants;
+import com.example.MyShop_API.constants.ErrorCatalogConstants;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import java.util.Arrays;
+
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -20,6 +31,10 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import jakarta.servlet.DispatcherType;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 /**
  * Allow or block requests
@@ -30,7 +45,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class SecurityConfig {
-    private static final String ACCESS_TOKEN_NAME = "access_token";
 
     @NonFinal
     @Value("${app.cors.allowed-origins}")
@@ -40,30 +54,37 @@ public class SecurityConfig {
     CustomJwtDecoder customJwtDecoder;
 
     @Bean
-    public SecurityFilterChain securityWebFilterChain(HttpSecurity http, org.springframework.data.redis.core.StringRedisTemplate redis,
+    public SecurityFilterChain securityWebFilterChain(HttpSecurity http, StringRedisTemplate redis,
             @Value("${api.prefix}") String apiPrefix,
             @Value("${app.auth.rate-limit.requests:20}") int authRequests,
-            @Value("${app.auth.rate-limit.window-seconds:60}") int authWindow) throws Exception {
+            @Value("${app.auth.rate-limit.window-seconds:60}") int authWindow,
+            @Value("${app.auth.rate-limit.store:redis}") String authRateStore) throws Exception {
         if (authRequests < 1 || authWindow < 1) throw new IllegalArgumentException("Invalid authentication rate limit");
+        String rateStore = authRateStore.trim().toLowerCase(Locale.ROOT);
+        if (!Set.of(RedisConstants.AUTH_RATE_STORE_REDIS, RedisConstants.AUTH_RATE_STORE_MEMORY).contains(rateStore))
+            throw new IllegalArgumentException("Invalid authentication rate limit store");
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requestCache(cache -> cache.disable())
                 // CookieOriginFilter enforces an explicit browser origin for cookie writes.
                 .csrf(csrf -> csrf.disable())
-                .addFilterBefore(new CookieOriginFilter(java.util.Arrays.stream(allowedOrigins.split(",")).map(String::trim).filter(v -> !v.isEmpty()).toList()), org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-                .addFilterAfter(new AuthRateLimitFilter(redis, apiPrefix, authRequests, authWindow), CookieOriginFilter.class)
+                .addFilterBefore(new CookieOriginFilter(Arrays.stream(allowedOrigins.split(",")).map(String::trim).filter(v -> !v.isEmpty()).toList()), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(new AuthRateLimitFilter(redis, apiPrefix, authRequests, authWindow, rateStore), CookieOriginFilter.class)
                 .exceptionHandling(errors -> errors.accessDeniedHandler((request, response, exception) -> {
-                    var definition = com.example.MyShop_API.exception.ErrorCatalog.get(com.example.MyShop_API.constants.CommonMessageUtils.FORBIDDEN);
-                    SecurityErrorWriter.write(request, response, definition.status().value(), definition.code(), com.example.MyShop_API.constants.CommonMessageUtils.FORBIDDEN);
+                    var definition = ErrorCatalogConstants.get(CommonMessageConstants.FORBIDDEN);
+                    SecurityErrorWriter.write(request, response, definition.status().value(), definition.code(), CommonMessageConstants.FORBIDDEN);
                 }))
                 .httpBasic(httpBasicAuth -> httpBasicAuth.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(com.example.MyShop_API.constants.ApiPath.HEALTH, com.example.MyShop_API.constants.ApiPath.HEALTH_ALL).permitAll()
-                        .requestMatchers(SecurityWhitelist.PUBLIC_ENDPOINTS.stream().map(path -> com.example.MyShop_API.constants.ApiPath.resolve(apiPrefix, path)).toArray(String[]::new)).permitAll()
-                        .requestMatchers(SecurityWhitelist.SWAGGER_ENDPOINTS.toArray(new String[0])).permitAll()
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                        .requestMatchers(ApiPathConstants.HEALTH, ApiPathConstants.HEALTH_ALL).permitAll()
+                        .requestMatchers(SecurityWhitelistConstants.PUBLIC_ENDPOINTS.stream().map(path -> ApiPathConstants.resolve(apiPrefix, path)).toArray(String[]::new)).permitAll()
+                        .requestMatchers(SecurityWhitelistConstants.SWAGGER_ENDPOINTS.toArray(new String[0])).permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth -> oauth
-                        .bearerTokenResolver(new CookieBearerTokenResolver(ACCESS_TOKEN_NAME))
+                        .bearerTokenResolver(new CookieBearerTokenResolver(CookieConstants.ACCESS_COOKIE_NAME, apiPrefix))
                         .jwt(jwtConfigurer -> jwtConfigurer
                                 .jwtAuthenticationConverter(jwtAuthenticationConverter())
                                 .decoder(customJwtDecoder))
@@ -85,7 +106,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(java.util.Arrays.stream(allowedOrigins.split(",")).map(String::trim).filter(v -> !v.isEmpty()).toList());
+        configuration.setAllowedOrigins(Arrays.stream(allowedOrigins.split(",")).map(String::trim).filter(v -> !v.isEmpty()).toList());
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

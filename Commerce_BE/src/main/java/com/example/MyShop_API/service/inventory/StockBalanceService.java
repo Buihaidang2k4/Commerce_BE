@@ -4,7 +4,7 @@ import com.example.MyShop_API.dto.request.InventoryDTO;
 import com.example.MyShop_API.entity.StockBalance;
 import com.example.MyShop_API.entity.Product;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.StockBalanceMapper;
 import com.example.MyShop_API.repo.StockBalanceRepository;
 import lombok.AccessLevel;
@@ -30,10 +30,10 @@ public class StockBalanceService implements IStockBalanceService {
     @Override
     @Transactional
     public StockBalance initializeInventory(Product product, int initialStock) {
-        productRepository.findByIdForUpdate(product.getId()).orElseThrow(() -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
+        productRepository.findByIdForUpdate(product.getId()).orElseThrow(() -> new AppException(CommonMessageConstants.PRODUCT_NOT_EXISTED));
         var existing = inventoryRepository.findByProductId(product.getId());
         if (existing.isPresent()) return existing.get();
-        if (initialStock < 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        if (initialStock < 0) throw new AppException(CommonMessageConstants.VALIDATION_ERROR);
         StockBalance inventory = StockBalance.builder().productId(product.getId()).onHandQuantity(initialStock).reservedQuantity(0).build();
         return inventoryRepository.save(inventory);
     }
@@ -42,7 +42,7 @@ public class StockBalanceService implements IStockBalanceService {
     @Override
     @Transactional
     public StockBalance updateStock(Long productId, int newAvailable) {
-        if (newAvailable < 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        if (newAvailable < 0) throw new AppException(CommonMessageConstants.VALIDATION_ERROR);
         StockBalance inventory = getInventoryWithLock(productId);
         inventory.setUpdatedAt(Instant.now());
         inventory.setOnHandQuantity(newAvailable + inventory.getReservedQuantity());
@@ -53,7 +53,7 @@ public class StockBalanceService implements IStockBalanceService {
     @Transactional
     @Override
     public boolean reserveStock(Long productId, int quantity) {
-        if (quantity <= 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        if (quantity <= 0) throw new AppException(CommonMessageConstants.VALIDATION_ERROR);
         StockBalance inventory = getInventoryWithLock(productId);
 
         if (!inventory.canReserve(quantity)) {
@@ -72,10 +72,10 @@ public class StockBalanceService implements IStockBalanceService {
     @Override
     @Transactional
     public void cancelReservation(Long productId, int quantity) {
-        if (quantity <= 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        if (quantity <= 0) throw new AppException(CommonMessageConstants.VALIDATION_ERROR);
         StockBalance inventory = getInventoryWithLock(productId);
         if (inventory.getReservedQuantity() < quantity) {
-            throw new AppException(CommonMessageUtils.NOT_ENOUGH_RESERVED_STOCK);
+            throw new AppException(CommonMessageConstants.NOT_ENOUGH_RESERVED_STOCK);
         }
 
         inventory.setReservedQuantity(inventory.getReservedQuantity() - quantity);
@@ -86,10 +86,10 @@ public class StockBalanceService implements IStockBalanceService {
     @Override
     @Transactional
     public void confirmOrder(Long productId, int quantity) {
-        if (quantity <= 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        if (quantity <= 0) throw new AppException(CommonMessageConstants.VALIDATION_ERROR);
         StockBalance inventory = getInventoryWithLock(productId);
         if (inventory.getReservedQuantity() < quantity) {
-            throw new AppException(CommonMessageUtils.NOT_ENOUGH_RESERVED_STOCK);
+            throw new AppException(CommonMessageConstants.NOT_ENOUGH_RESERVED_STOCK);
         }
 
         inventory.setOnHandQuantity(inventory.getOnHandQuantity() - quantity);
@@ -101,11 +101,11 @@ public class StockBalanceService implements IStockBalanceService {
     @Override
     @Transactional
     public void restock(Long productId, int quantity) {
-        if (quantity <= 0) throw new AppException(CommonMessageUtils.VALIDATION_ERROR);
+        if (quantity <= 0) throw new AppException(CommonMessageConstants.VALIDATION_ERROR);
         StockBalance inventory = getInventoryWithLock(productId);
 
         if (inventory.getReservedQuantity() < quantity)
-            throw new AppException(CommonMessageUtils.NOT_ENOUGH_RESERVED_STOCK);
+            throw new AppException(CommonMessageConstants.NOT_ENOUGH_RESERVED_STOCK);
 
         // Tăng số lượng hàng
         // Giảm số lượng đặt trước
@@ -122,7 +122,7 @@ public class StockBalanceService implements IStockBalanceService {
     @Override
     @Transactional
     public StockBalance getInventoryWithLock(Long productId) {
-        return inventoryRepository.findByProductIdWithLock(productId).orElseThrow(() -> new AppException(CommonMessageUtils.INVENTORY_DOES_NOT_EXIST));
+        return inventoryRepository.findByProductIdWithLock(productId).orElseThrow(() -> new AppException(CommonMessageConstants.INVENTORY_DOES_NOT_EXIST));
     }
 
     // 8. Lấy thông tin tồn kho
@@ -137,7 +137,7 @@ public class StockBalanceService implements IStockBalanceService {
     @Override
     @Transactional(readOnly = true)
     public StockBalance getInventoryByProductId(Long productId) {
-        return inventoryRepository.findByProductId(productId).orElseThrow(() -> new AppException(CommonMessageUtils.INVENTORY_DOES_NOT_EXIST, productId));
+        return inventoryRepository.findByProductId(productId).orElseThrow(() -> new AppException(CommonMessageConstants.INVENTORY_DOES_NOT_EXIST, productId));
     }
 
     @Override

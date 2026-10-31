@@ -1,6 +1,6 @@
 package com.example.MyShop_API.repo;
 
-import com.example.MyShop_API.constants.PaymentStatus;
+import com.example.MyShop_API.constants.PaymentStatusConstants;
 import com.example.MyShop_API.entity.PaymentIntent;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

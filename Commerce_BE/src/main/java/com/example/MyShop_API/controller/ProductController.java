@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 
 import com.example.MyShop_API.dto.request.productSearch.AdminProductSearchCondition;
@@ -34,15 +34,14 @@ import static org.springframework.http.HttpStatus.*;
 
 @Slf4j
 @RestController
-@RequestMapping(ApiPath.BASE_PRODUCT)
+@RequestMapping(ApiPathConstants.BASE_PRODUCT)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductController {
-    private final com.example.MyShop_API.service.model.ModelLookup models;
     IProductService productService;
     ProductMapper productMapper;
 
-    @GetMapping(ApiPath.PRODUCT_SEARCH)
+    @GetMapping(ApiPathConstants.PRODUCT_SEARCH)
     public Page<ProductResponse> searchForUser(
             @Valid @ModelAttribute UserProductSearchCondition condition,
             @PageableDefault(page = 0, size = 20, sort = "price", direction = Sort.Direction.ASC) Pageable pageable) {
@@ -50,7 +49,7 @@ public class ProductController {
                 .map(productMapper::toResponse);
     }
 
-    @GetMapping(ApiPath.PRODUCT_ADMIN_SEARCH)
+    @GetMapping(ApiPathConstants.PRODUCT_ADMIN_SEARCH)
     public Page<ProductResponse> searchForAdmin(
             @Valid @ModelAttribute AdminProductSearchCondition condition,
             Pageable pageable) {
@@ -59,7 +58,7 @@ public class ProductController {
     }
 
 
-    @GetMapping(ApiPath.PRODUCT_CATEGORY_BY_CATEGORY_NAME)
+    @GetMapping(ApiPathConstants.PRODUCT_CATEGORY_BY_CATEGORY_NAME)
     ResponseEntity<ApiResponse<?>> getProductByCategoryName(
             @RequestParam String categoryName,
             @RequestParam(defaultValue = "0") int page,
@@ -99,7 +98,7 @@ public class ProductController {
         }
     }
 
-    @GetMapping(ApiPath.PRODUCT_ALL)
+    @GetMapping(ApiPathConstants.PRODUCT_ALL)
     ResponseEntity<ApiResponse<List<ProductResponse>>> getProducts() {
         try {
             List<ProductResponse> products = productMapper.toResponseList(productService.getProducts());
@@ -109,7 +108,7 @@ public class ProductController {
         }
     }
 
-    @GetMapping(ApiPath.PRODUCT_PAGE)
+    @GetMapping(ApiPathConstants.PRODUCT_PAGE)
     ResponseEntity<ApiResponse<?>> getProducts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -133,7 +132,7 @@ public class ProductController {
         return ResponseEntity.ok(new ApiResponse(200, "success", res));
     }
 
-    @GetMapping(ApiPath.PRODUCT_PRODUCT_PRODUCT_ID)
+    @GetMapping(ApiPathConstants.PRODUCT_PRODUCT_PRODUCT_ID)
     ResponseEntity<ApiResponse<?>> getProductById(@PathVariable Long productId) {
         try {
             Product product = productService.getProductById(productId);
@@ -143,7 +142,7 @@ public class ProductController {
         }
     }
 
-    @GetMapping(ApiPath.PRODUCT_PRODUCT_SLUG_SLUG)
+    @GetMapping(ApiPathConstants.PRODUCT_PRODUCT_SLUG_SLUG)
     ResponseEntity<ApiResponse<?>> getProductById(@PathVariable String slug) {
         try {
             Product product = productService.getProductBySlug(slug);
@@ -153,7 +152,7 @@ public class ProductController {
         }
     }
 
-    @GetMapping(ApiPath.PRODUCT_PRODUCT_BY_PRODUCT_NAME)
+    @GetMapping(ApiPathConstants.PRODUCT_PRODUCT_BY_PRODUCT_NAME)
     ResponseEntity<ApiResponse<ProductResponse>> getProductByName(@RequestParam String productName) {
         try {
             Product product = productService.getProductByName(productName);
@@ -163,13 +162,13 @@ public class ProductController {
         }
     }
 
-    @PostMapping(ApiPath.PRODUCT_INIT_DATA_50)
+    @PostMapping(ApiPathConstants.PRODUCT_INIT_DATA_50)
     ResponseEntity<ApiResponse> initData() {
         productService.initDataProduct();
         return ResponseEntity.ok(new ApiResponse(200, "Init data success!", null));
     }
 
-    @PostMapping(ApiPath.PRODUCT_PRODUCT_ADD)
+    @PostMapping(ApiPathConstants.PRODUCT_PRODUCT_ADD)
     ResponseEntity<ApiResponse<ProductResponse>> addProduct(@Valid @RequestBody AddProductRequest addProductRequest) {
         try {
             Product product = productService.addProduct(addProductRequest);
@@ -179,7 +178,7 @@ public class ProductController {
         }
     }
 
-    @PutMapping(ApiPath.PRODUCT_PRODUCT_PRODUCT_ID_UPDATE)
+    @PutMapping(ApiPathConstants.PRODUCT_PRODUCT_PRODUCT_ID_UPDATE)
     ResponseEntity<ApiResponse<ProductResponse>> updateProduct(@PathVariable Long productId, @Valid @RequestBody AddProductRequest addProductRequest) {
         try {
             Product product = productService.updateProduct(addProductRequest, productId);
@@ -189,7 +188,7 @@ public class ProductController {
         }
     }
 
-    @DeleteMapping(ApiPath.PRODUCT_PRODUCT_PRODUCT_ID_DELETE)
+    @DeleteMapping(ApiPathConstants.PRODUCT_PRODUCT_PRODUCT_ID_DELETE)
     ResponseEntity<ApiResponse<?>> deleteProduct(@PathVariable Long productId) {
         try {
             productService.deleteProductById(productId);

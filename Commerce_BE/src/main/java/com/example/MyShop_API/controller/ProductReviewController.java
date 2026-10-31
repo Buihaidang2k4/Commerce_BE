@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 import com.example.MyShop_API.dto.request.CreateReviewRequest;
 import com.example.MyShop_API.dto.response.ApiResponse;
@@ -31,14 +31,14 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 
 @Slf4j
 @RestController
-@RequestMapping(ApiPath.BASE_REVIEW)
+@RequestMapping(ApiPathConstants.BASE_REVIEW)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductReviewController {
     IProductReviewService reviewService;
     ProductReviewMapper reviewMapper;
 
-    @GetMapping(ApiPath.REVIEW_PRODUCT_PRODUCT_ID)
+    @GetMapping(ApiPathConstants.REVIEW_PRODUCT_PRODUCT_ID)
     public ResponseEntity<ApiResponse<?>> getReviewsByProduct(
             @PathVariable Long productId,
             @RequestParam(defaultValue = "0") int page,
@@ -74,7 +74,7 @@ public class ProductReviewController {
         }
     }
 
-    @PostMapping(ApiPath.REVIEW_CREATE_REVIEW)
+    @PostMapping(ApiPathConstants.REVIEW_CREATE_REVIEW)
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<ReviewResponse> createReview(
             @Valid @RequestBody CreateReviewRequest request,

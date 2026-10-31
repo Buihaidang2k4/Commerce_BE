@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class CommonMessageUtils {
+public final class CommonMessageConstants {
     public static final String UNCATEGORIZED_EXCEPTION = "error.uncategorized.exception";
     public static final String INVALID_KEY = "error.invalid.key";
     public static final String REDIS_ERROR = "error.redis.error";
@@ -113,4 +113,11 @@ public final class CommonMessageUtils {
     public static final String AUTH_UNAVAILABLE = "error.auth.unavailable";
     public static final String ORIGIN_REQUIRED = "error.origin.required";
     public static final String ORIGIN_NOT_ALLOWED = "error.origin.not.allowed";
+    public static final String ROLE_NOT_FOUND = "error.role.not.found";
+    public static final String ROLE_EXISTED = "error.role.existed";
+    public static final String ROLE_INVALID = "error.role.invalid";
+    public static final String PERMISSION_NOT_FOUND = "error.permission.not.found";
+    public static final String PERMISSION_EXISTED = "error.permission.existed";
+    public static final String PERMISSION_INVALID = "error.permission.invalid";
+    public static final String AUTH_CONFIGURATION = "error.auth.configuration";
 }

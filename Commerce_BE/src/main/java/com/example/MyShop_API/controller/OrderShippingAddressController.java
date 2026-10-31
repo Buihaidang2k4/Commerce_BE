@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 
 import com.example.MyShop_API.dto.response.ApiResponse;
@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(ApiPath.BASE_ORDER_DELIVERY_ADDRESS)
+@RequestMapping(ApiPathConstants.BASE_ORDER_DELIVERY_ADDRESS)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderShippingAddressController {
     IOrderShippingAddressService orderDeliveryAddressService;
     OrderShippingAddressMapper deliveryAddressMapper;
 
-    @GetMapping(ApiPath.ORDER_DELIVERY_ADDRESS_ORDER_ORDER_ID)
+    @GetMapping(ApiPathConstants.ORDER_DELIVERY_ADDRESS_ORDER_ORDER_ID)
     public ResponseEntity<ApiResponse<OrderDeliveryAddressResponse>> getOrderDeliveryAddress(@PathVariable Long orderId) {
         return ResponseEntity.ok(new ApiResponse<>(200, "success", deliveryAddressMapper.toResponse(orderDeliveryAddressService.getOrderDeliveryAddress(orderId))));
     }

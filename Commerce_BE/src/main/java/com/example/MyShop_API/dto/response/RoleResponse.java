@@ -1,14 +1,17 @@
 package com.example.MyShop_API.dto.response;
 
 import lombok.*;
-import lombok.experimental.FieldDefaults;
+import java.util.List;
 
-@Data // Auto create getter setter Object toString
+@Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoleResponse {
-    String roleName;
-    String description;
+    private Long id;
+    private String code;
+    private String name;
+    private String roleName;
+    private String description;
+    private List<Long> permissionIds;
 }

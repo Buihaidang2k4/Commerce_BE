@@ -18,5 +18,6 @@ public class UserResponse {
     String lockedReason;
     Instant lockedAt;
     Set<RoleResponse> roles;
+    Set<String> permissions;
     UserProfileResponse userProfile;
 }

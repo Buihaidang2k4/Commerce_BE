@@ -1,5 +1,7 @@
 package com.example.MyShop_API.exception;
 
+import com.example.MyShop_API.constants.ErrorCatalogConstants;
+
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
@@ -19,11 +21,11 @@ public class AppException extends RuntimeException {
     }
 
     public int getCode() {
-        return ErrorCatalog.get(messageKey).code();
+        return ErrorCatalogConstants.get(messageKey).code();
     }
 
     public HttpStatus getHttpStatus() {
-        return ErrorCatalog.get(messageKey).status();
+        return ErrorCatalogConstants.get(messageKey).status();
     }
 
     @Override

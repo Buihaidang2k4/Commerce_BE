@@ -1,10 +1,13 @@
 package com.example.MyShop_API.service.cart;
 
+import com.example.MyShop_API.repo.OrderItemRepository;
+import java.util.Optional;
+
 import com.example.MyShop_API.dto.request.CartRequest;
 import com.example.MyShop_API.dto.response.CartResponse;
 import com.example.MyShop_API.entity.*;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.ShoppingCartMapper;
 import com.example.MyShop_API.repo.CartItemRepository;
 import com.example.MyShop_API.repo.ShoppingCartRepository;
@@ -30,7 +33,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ShoppingCartService implements IShoppingCartService {
-    private final com.example.MyShop_API.service.model.ModelLookup models;
+    private final OrderItemRepository orderItemRepository;
     com.example.MyShop_API.service.inventory.IStockBalanceService inventoryService;
     ShoppingCartRepository cartRepository;
     UserProfileRepository userProfileRepository;
@@ -72,7 +75,7 @@ public class ShoppingCartService implements IShoppingCartService {
     @Transactional(readOnly = true)
     public ShoppingCart getCartById(Long cartId) {
         return cartRepository.findByIdWithItems(cartId)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.CART_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.CART_NOT_EXISTED));
     }
 
     /**
@@ -84,7 +87,7 @@ public class ShoppingCartService implements IShoppingCartService {
     @Override
     @Transactional(readOnly = true)
     public ShoppingCart getCartByUserProfileId(Long userProfileId) {
-        return cartRepository.findByUserProfileId(userProfileId).orElseThrow(() -> new AppException(CommonMessageUtils.CART_NOT_EXISTED));
+        return cartRepository.findByUserProfileId(userProfileId).orElseThrow(() -> new AppException(CommonMessageConstants.CART_NOT_EXISTED));
     }
 
 
@@ -121,7 +124,7 @@ public class ShoppingCartService implements IShoppingCartService {
     @Override
     public ShoppingCart addCartForUserProfile(Long userProfileId, Long cartId) {
         UserProfile userProfile = userProfileRepository.findById(userProfileId).orElseThrow(()
-                -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
+                -> new AppException(CommonMessageConstants.USER_NOT_EXISTED));
 
         ShoppingCart cart = getCartById(cartId);
         cart.setUserProfileId(userProfile.getId());
@@ -137,7 +140,7 @@ public class ShoppingCartService implements IShoppingCartService {
     @Transactional
     public void clearCart(Long cartId) {
         ShoppingCart cart = getCartById(cartId);
-        for (CartItem item : models.cartItems(cartId)) inventoryService.cancelReservation(item.getProductId(), item.getQuantity());
+        for (CartItem item : Optional.ofNullable(cartId).map(cartItemRepository::findByCartId).orElseGet(List::of)) inventoryService.cancelReservation(item.getProductId(), item.getQuantity());
         cartItemRepository.hardDeleteByCartId(cartId);
         cart.setSubtotalAmount(BigDecimal.ZERO);
         cartRepository.save(cart);
@@ -145,7 +148,7 @@ public class ShoppingCartService implements IShoppingCartService {
 
     @Transactional
     public void recalcTotalPrice(ShoppingCart cart) {
-        BigDecimal total = models.cartItems(cart.getId()).stream()
+        BigDecimal total = Optional.ofNullable(cart.getId()).map(cartItemRepository::findByCartId).orElseGet(List::of).stream()
                 .map(ci -> ci.getLineAmount() == null ? BigDecimal.ZERO : ci.getLineAmount())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         cart.setSubtotalAmount(total);
@@ -162,9 +165,9 @@ public class ShoppingCartService implements IShoppingCartService {
         if (cartItemIds == null || cartItemIds.isEmpty()) {
             return;
         }
-        ShoppingCart cart = cartRepository.findById(cartId).orElseThrow(() -> new AppException(CommonMessageUtils.CART_NOT_EXISTED));
+        ShoppingCart cart = cartRepository.findById(cartId).orElseThrow(() -> new AppException(CommonMessageConstants.CART_NOT_EXISTED));
         for (Long id : cartItemIds) {
-            if (cartItemRepository.findByIdAndCartId(id, cartId).isEmpty()) throw new AppException(CommonMessageUtils.CART_ITEM_NOT_EXISTED);
+            if (cartItemRepository.findByIdAndCartId(id, cartId).isEmpty()) throw new AppException(CommonMessageConstants.CART_ITEM_NOT_EXISTED);
             cartItemRepository.deleteByIdDirect(id);
         }
         recalcTotalPrice(cart);
@@ -174,8 +177,8 @@ public class ShoppingCartService implements IShoppingCartService {
     @Override
     @Transactional
     public void removeItemAfterOrder(Order order) {
-        ShoppingCart cart = models.cartForProfile(order.getUserProfileId());
-        List<Long> ids = models.orderItems(order.getId()).stream()
+        ShoppingCart cart = Optional.ofNullable(order.getUserProfileId()).flatMap(cartRepository::findByUserProfileId).orElse(null);
+        List<Long> ids = Optional.ofNullable(order.getId()).map(orderItemRepository::findByOrderId).orElseGet(List::of).stream()
                 .map(OrderItem::getCartItemId)
                 .filter(Objects::nonNull)
                 .toList();

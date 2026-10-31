@@ -1,5 +1,9 @@
 package com.example.MyShop_API.repo;
 
+import java.util.Set;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import com.example.MyShop_API.entity.Category;
 import com.example.MyShop_API.mapper.CategoryMapper;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,4 +17,6 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     Category findByName(String categoryName);
 
+    @Query("SELECT c FROM Category c WHERE c.id IN (SELECT cc.categoryId FROM CouponCategory cc WHERE cc.couponId = :couponId)")
+    Set<Category> findAllByCouponId(@Param("couponId") Long couponId);
 }

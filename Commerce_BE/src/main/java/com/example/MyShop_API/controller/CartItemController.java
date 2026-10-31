@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 import com.example.MyShop_API.exception.AppException;
 
 
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping(ApiPath.BASE_CART_ITEM)
+@RequestMapping(ApiPathConstants.BASE_CART_ITEM)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CartItemController {
@@ -31,17 +31,17 @@ public class CartItemController {
     CartItemMapper cartItemMapper;
     com.example.MyShop_API.mapper.ShoppingCartMapper cartMapper;
 
-    @GetMapping(ApiPath.CART_ITEM_CART_CART_ID_CART_ITEM_CART_ITEM_ID)
+    @GetMapping(ApiPathConstants.CART_ITEM_CART_CART_ID_CART_ITEM_CART_ITEM_ID)
     ResponseEntity<ApiResponse<CartItemResponse>> getCartItem(@PathVariable Long cartId, @PathVariable Long cartItemId) {
         return ResponseEntity.ok(new ApiResponse<>(200, "get all cart", cartItemMapper.toResponse(cartItemService.getCartItem(cartId, cartItemId))));
     }
 
-    @GetMapping(ApiPath.CART_ITEM_PROFILE_ID_IDS)
+    @GetMapping(ApiPathConstants.CART_ITEM_PROFILE_ID_IDS)
     ResponseEntity<ApiResponse<List<CartItemResponse>>> getCartItemIds(@Valid @RequestParam List<Long> ids, @PathVariable Long profileId) {
         return ResponseEntity.ok(new ApiResponse<>(200, "get all cart itemIds", cartItemService.getCartItems(ids, profileId)));
     }
 
-    @PostMapping(ApiPath.CART_ITEM_CART_ITEM_ADD_ITEM_TO_CART)
+    @PostMapping(ApiPathConstants.CART_ITEM_CART_ITEM_ADD_ITEM_TO_CART)
     ResponseEntity<ApiResponse<com.example.MyShop_API.dto.response.CartResponse>> addItemToCart(@RequestParam(value = "cartId", required = false) Optional<Long> cartId, @RequestParam("productId") Long productId, @RequestParam("quantity") Integer quantity) {
         try {
             // check cartId
@@ -56,7 +56,7 @@ public class CartItemController {
         }
     }
 
-    @PutMapping(ApiPath.CART_ITEM_CART_CART_ID_CART_ITEM_CART_ITEM_ID_UPDATE_ITEM_QUANTITY_QUANTITY)
+    @PutMapping(ApiPathConstants.CART_ITEM_CART_CART_ID_CART_ITEM_CART_ITEM_ID_UPDATE_ITEM_QUANTITY_QUANTITY)
     ResponseEntity<ApiResponse> updateItemQuantity(@PathVariable Long cartId, @PathVariable Long cartItemId, @PathVariable Integer quantity) {
         try {
             cartItemService.updateItemQuantity(cartId, cartItemId, quantity);
@@ -67,7 +67,7 @@ public class CartItemController {
         }
     }
 
-    @DeleteMapping(ApiPath.CART_ITEM_CART_CART_ID_CART_ITEM_CART_ITEM_ID_REMOVE_ITEM_FROM_CART)
+    @DeleteMapping(ApiPathConstants.CART_ITEM_CART_CART_ID_CART_ITEM_CART_ITEM_ID_REMOVE_ITEM_FROM_CART)
     ResponseEntity<ApiResponse> removeItemFromCart(@PathVariable("cartId") Long cartId, @PathVariable("cartItemId") Long cartItemId) {
         cartItemService.removeItemFromCart(cartId, cartItemId);
         return ResponseEntity.ok(new ApiResponse(200, "remove cartItem success", null));

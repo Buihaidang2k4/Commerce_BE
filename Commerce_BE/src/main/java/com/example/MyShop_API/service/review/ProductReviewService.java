@@ -1,6 +1,6 @@
 package com.example.MyShop_API.service.review;
 
-import com.example.MyShop_API.constants.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatusConstants;
 import com.example.MyShop_API.dto.request.CreateReviewRequest;
 import com.example.MyShop_API.dto.response.ReviewResponse;
 import com.example.MyShop_API.entity.Order;
@@ -8,7 +8,7 @@ import com.example.MyShop_API.entity.Product;
 import com.example.MyShop_API.entity.ProductReview;
 import com.example.MyShop_API.entity.UserProfile;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.ProductReviewMapper;
 import com.example.MyShop_API.repo.OrderRepository;
 import com.example.MyShop_API.repo.ProductRepository;
@@ -42,28 +42,28 @@ public class ProductReviewService implements IProductReviewService {
     public ProductReview createReview(CreateReviewRequest request, Long profileId, Long orderId, Long productId) {
         log.info("====================== START CREATE REVIEW =======================");
 
-        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(CommonMessageUtils.PRODUCT_NOT_EXISTED));
-        UserProfile profile = profileRepository.findById(profileId).orElseThrow(() -> new AppException(CommonMessageUtils.PROFILE_NOT_EXISTED));
-        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageUtils.ORDER_NOT_EXISTED));
+        Product product = productRepository.findById(productId).orElseThrow(() -> new AppException(CommonMessageConstants.PRODUCT_NOT_EXISTED));
+        UserProfile profile = profileRepository.findById(profileId).orElseThrow(() -> new AppException(CommonMessageConstants.PROFILE_NOT_EXISTED));
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new AppException(CommonMessageConstants.ORDER_NOT_EXISTED));
 
-        boolean purchased = orderRepository.hasPurchasedProductInOrder(profile.getId(), product.getId(), order.getId(), List.of(OrderStatus.DELIVERED));
+        boolean purchased = orderRepository.hasPurchasedProductInOrder(profile.getId(), product.getId(), order.getId(), List.of(OrderStatusConstants.DELIVERED));
 
-        if (!purchased) throw new AppException(CommonMessageUtils.REVIEW_NOT_PURCHASED);
+        if (!purchased) throw new AppException(CommonMessageConstants.REVIEW_NOT_PURCHASED);
 
         // 1. Kiểm tra đơn hàng có thuộc về user không
         if (!order.getUserProfileId().equals(profileId)) {
-            throw new AppException(CommonMessageUtils.ORDER_NOT_BELONG_TO_USER);
+            throw new AppException(CommonMessageConstants.ORDER_NOT_BELONG_TO_USER);
         }
 
         // 2. Kiểm tra đơn đã giao thành công chưa
-        if (!OrderStatus.DELIVERED.equals(order.getStatus())) {
-            throw new AppException(CommonMessageUtils.ORDER_NOT_DELIVERED);
+        if (!OrderStatusConstants.DELIVERED.equals(order.getStatus())) {
+            throw new AppException(CommonMessageConstants.ORDER_NOT_DELIVERED);
         }
 
         // Chỉ cho đánh giá 1 lần cho 1 ĐƠN HÀNG + 1 SẢN PHẨM
         boolean alreadyReviewed = reviewRepository.existsReviewForOrderAndProduct(profileId, orderId, productId);
 
-        if (alreadyReviewed) throw new AppException(CommonMessageUtils.REVIEW_ALREADY_EXISTS_FOR_THIS_ORDER);
+        if (alreadyReviewed) throw new AppException(CommonMessageConstants.REVIEW_ALREADY_EXISTS_FOR_THIS_ORDER);
 
         String usernameRating = profile.getDisplayName() != null ? profile.getDisplayName() : "anonymous" + UUID.randomUUID().toString().substring(0, 5).toUpperCase();
         ProductReview review = ProductReview.builder().productId(product.getId()).userProfileId(profile.getId()).orderId(order.getId()).reviewerNameSnapshot(usernameRating).rating(request.getRating()).content(request.getComment()).createdAt(Instant.now()).build();

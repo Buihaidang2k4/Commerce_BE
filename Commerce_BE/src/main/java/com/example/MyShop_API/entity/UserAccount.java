@@ -1,5 +1,7 @@
 package com.example.MyShop_API.entity;
 
+import com.example.MyShop_API.constants.AccountStatusConstants;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.*;
@@ -27,6 +29,6 @@ public class UserAccount extends AuditableEntity {
     private String lockReason;
     private Instant lockedAt;
 
-    public boolean isEnabled() { return "ACTIVE".equals(accountStatus); }
-    public void setEnabled(boolean enabled) { accountStatus = enabled ? "ACTIVE" : "LOCKED"; }
+    public boolean isEnabled() { return AccountStatusConstants.ACTIVE.equals(accountStatus); }
+    public void setEnabled(boolean enabled) { accountStatus = enabled ? AccountStatusConstants.ACTIVE : AccountStatusConstants.LOCKED; }
 }

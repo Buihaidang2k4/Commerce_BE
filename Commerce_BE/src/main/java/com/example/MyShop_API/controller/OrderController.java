@@ -1,9 +1,9 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 
-import com.example.MyShop_API.constants.OrderStatus;
+import com.example.MyShop_API.constants.OrderStatusConstants;
 import com.example.MyShop_API.dto.request.OrderPlaceListItemRequest;
 import com.example.MyShop_API.dto.request.PlaceOrderFromCartRequest;
 import com.example.MyShop_API.dto.response.ApiResponse;
@@ -13,7 +13,7 @@ import com.example.MyShop_API.entity.ShoppingCart;
 import com.example.MyShop_API.entity.Order;
 import com.example.MyShop_API.entity.UserAccount;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.OrderMapper;
 import com.example.MyShop_API.repo.UserAccountRepository;
 import com.example.MyShop_API.service.order.IOrderService;
@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(ApiPath.BASE_ORDER)
+@RequestMapping(ApiPathConstants.BASE_ORDER)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OrderController {
@@ -46,7 +46,7 @@ public class OrderController {
     OrderMapper orderMapper;
     UserAccountRepository userRepository;
 
-    @PostMapping(ApiPath.ORDER_BUY_NOW_TEST)
+    @PostMapping(ApiPathConstants.ORDER_BUY_NOW_TEST)
     @Operation(summary = "Buy now ")
     ResponseEntity<ApiResponse<OrderResponse>> buyNowTest(
             @Valid @RequestBody OrderRequest orderRequest) {
@@ -54,20 +54,20 @@ public class OrderController {
     }
 
 
-    @GetMapping(ApiPath.ORDER_ALL)
+    @GetMapping(ApiPathConstants.ORDER_ALL)
     ResponseEntity<ApiResponse<List<OrderResponse>>> getOrders() {
         List<OrderResponse> responses = orderMapper.toResponse(orderService.getOrders());
         return ResponseEntity.ok(new ApiResponse<>(200, "Get orders", responses));
     }
 
 
-    @GetMapping(ApiPath.ORDER_ORDER_ORDER_ID)
+    @GetMapping(ApiPathConstants.ORDER_ORDER_ORDER_ID)
     ResponseEntity<ApiResponse<OrderResponse>> getOrder(@PathVariable Long orderId) {
         OrderResponse orderResponse = orderMapper.toResponse(orderService.getOrder(orderId));
         return ResponseEntity.ok(new ApiResponse<>(200, "Get order", orderResponse));
     }
 
-    @GetMapping(ApiPath.ORDER_STATUS_PAGE)
+    @GetMapping(ApiPathConstants.ORDER_STATUS_PAGE)
     ResponseEntity<ApiResponse<List<OrderResponse>>> getOrderByStatusOrPage(@RequestParam String orderStatus,
                                                                             @RequestParam(defaultValue = "0") int page,
                                                                             @RequestParam(defaultValue = "10") int size,
@@ -90,7 +90,7 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse(200, "success", res));
     }
 
-    @GetMapping(ApiPath.ORDER_STATUS)
+    @GetMapping(ApiPathConstants.ORDER_STATUS)
     ResponseEntity<ApiResponse<List<OrderResponse>>> getOrderByStatus(@RequestParam String orderStatus) {
         List<OrderResponse> responses = orderMapper.toResponse(orderService.getOrdersByStatus(orderStatus));
         return ResponseEntity.ok(
@@ -98,14 +98,14 @@ public class OrderController {
         );
     }
 
-    @GetMapping(ApiPath.ORDER_PROFILE_PROFILE_ID)
+    @GetMapping(ApiPathConstants.ORDER_PROFILE_PROFILE_ID)
     ResponseEntity<ApiResponse<List<OrderResponse>>> getOrderByUser(@PathVariable Long profileId) {
         List<OrderResponse> responses = orderMapper.toResponse(orderService.getUserOrders(profileId));
         return ResponseEntity.ok(new ApiResponse<>(200, "Get user order", responses));
     }
 
     // ============= BUY NOW ==============
-    @PostMapping(ApiPath.ORDER_BUY_NOW)
+    @PostMapping(ApiPathConstants.ORDER_BUY_NOW)
     @Operation(summary = "Buy now ")
     ResponseEntity<ApiResponse<Object>> buyNow(
             @Valid @RequestBody OrderRequest orderRequest) {
@@ -113,7 +113,7 @@ public class OrderController {
     }
 
     //============= PLACE ORDER FROM LIST CART ITEM ===============
-    @PostMapping(ApiPath.ORDER_FROM_CART_ITEMS)
+    @PostMapping(ApiPathConstants.ORDER_FROM_CART_ITEMS)
     @Operation(summary = "Place order from list cart items")
     ResponseEntity<ApiResponse<Object>> placeOrderFromListItem(
             @Valid @RequestBody OrderPlaceListItemRequest listItemRequest) {
@@ -122,7 +122,7 @@ public class OrderController {
     }
 
     // ============= PLACE ORDER FROM CART  ===============
-    @PostMapping(ApiPath.ORDER_PLACE_ORDER)
+    @PostMapping(ApiPathConstants.ORDER_PLACE_ORDER)
     @Operation(summary = "Place order from cart")
     ResponseEntity<ApiResponse<Object>> placeOrder(
             @RequestBody PlaceOrderFromCartRequest orderRequest,
@@ -132,7 +132,7 @@ public class OrderController {
     }
 
     // ============== CONFIRM PAYMENT CASH =================
-    @PutMapping(ApiPath.ORDER_ORDER_ORDER_ID_CONFIRM_CASH_PAYMENT)
+    @PutMapping(ApiPathConstants.ORDER_ORDER_ORDER_ID_CONFIRM_CASH_PAYMENT)
     ResponseEntity<ApiResponse<OrderResponse>> confirmCashPayment(@PathVariable Long orderId,
                                                                   Principal principal
     ) {
@@ -141,7 +141,7 @@ public class OrderController {
     }
 
     // ============== CONFIRM PAYMENT CASH =================
-    @PutMapping(ApiPath.ORDER_ORDER_ORDER_ID_CONFIRM_VNPAY_PAYMENT)
+    @PutMapping(ApiPathConstants.ORDER_ORDER_ORDER_ID_CONFIRM_VNPAY_PAYMENT)
     ResponseEntity<ApiResponse<OrderResponse>> confirmVnpayPayment(@PathVariable Long orderId,
                                                                    Principal principal
     ) {
@@ -151,7 +151,7 @@ public class OrderController {
 
 
     // ============== UPDATE SHIPPING =================
-    @PutMapping(ApiPath.ORDER_ORDER_ORDER_ID_ADDRESS_ADDRESS_ID_UPDATE_ORDER_ADDRESS)
+    @PutMapping(ApiPathConstants.ORDER_ORDER_ORDER_ID_ADDRESS_ADDRESS_ID_UPDATE_ORDER_ADDRESS)
     ResponseEntity<ApiResponse<OrderResponse>> updateShipping(@PathVariable Long orderId,
                                                               @PathVariable Long addressId,
                                                               @RequestParam String orderNote
@@ -160,13 +160,13 @@ public class OrderController {
         return ResponseEntity.ok(new ApiResponse<>(200, "Cash payment confirm ", orderMapper.toResponse(order)));
     }
 
-    @PutMapping(ApiPath.ORDER_ORDER_ORDER_ID_CANCEL_ORDER)
+    @PutMapping(ApiPathConstants.ORDER_ORDER_ORDER_ID_CANCEL_ORDER)
     ResponseEntity<ApiResponse<?>> cancelOrder(@PathVariable Long orderId) {
         orderService.cancelOrder(orderId);
         return ResponseEntity.ok(new ApiResponse(200, "Cancel Order", null));
     }
 
-    @PutMapping(ApiPath.ORDER_ORDER_UPDATE_STATUS)
+    @PutMapping(ApiPathConstants.ORDER_ORDER_UPDATE_STATUS)
     ResponseEntity<ApiResponse<OrderResponse>> updateOrderStatus(@RequestParam("orderStatus") String orderStatus
             , @RequestParam("orderId") Long orderId
             , Principal principal
@@ -174,7 +174,7 @@ public class OrderController {
     ) {
         String email = principal.getName();
         UserAccount admin = userRepository.findByEmail(email)
-                .orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
+                .orElseThrow(() -> new AppException(CommonMessageConstants.USER_NOT_EXISTED));
 
         OrderResponse orderResponse = orderMapper.toResponse(orderService.updateOrderStatus(orderId, orderStatus, admin));
         return ResponseEntity.ok(
@@ -182,7 +182,7 @@ public class OrderController {
         );
     }
 
-    @DeleteMapping(ApiPath.ORDER_ORDER_ORDER_ID_DELETE)
+    @DeleteMapping(ApiPathConstants.ORDER_ORDER_ORDER_ID_DELETE)
     ResponseEntity<ApiResponse<?>> deleteOrder(@PathVariable Long orderId) {
         orderService.deleteOrder(orderId);
         return ResponseEntity.ok(new ApiResponse(200, "Delete Order Success", null));

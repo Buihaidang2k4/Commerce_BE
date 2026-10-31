@@ -1,6 +1,8 @@
 package com.example.MyShop_API.exception;
 
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.ErrorCatalogConstants;
+
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.dto.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -25,19 +27,19 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<?>> handleInvalidValue(IllegalArgumentException exception) {
-        return error(CommonMessageUtils.VALIDATION_ERROR);
+        return error(CommonMessageConstants.VALIDATION_ERROR);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleException(Exception exception) {
-        String message = MessageHandlerUtils.getMessage(CommonMessageUtils.UNCATEGORIZED_EXCEPTION);
+        String message = MessageHandlerUtils.getMessage(CommonMessageConstants.UNCATEGORIZED_EXCEPTION);
         log.error(message, exception);
-        return error(CommonMessageUtils.UNCATEGORIZED_EXCEPTION);
+        return error(CommonMessageConstants.UNCATEGORIZED_EXCEPTION);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<?>> handleAccessDeniedException(AccessDeniedException exception) {
-        return error(CommonMessageUtils.FORBIDDEN);
+        return error(CommonMessageConstants.FORBIDDEN);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -47,25 +49,25 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.joining("; "));
         log.warn(message);
         return ResponseEntity.badRequest().body(ApiResponse.error(
-                ErrorCatalog.get(CommonMessageUtils.VALIDATION_ERROR).code(), message));
+                ErrorCatalogConstants.get(CommonMessageConstants.VALIDATION_ERROR).code(), message));
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<?>> handleJsonParseError(HttpMessageNotReadableException exception) {
         return ResponseEntity.badRequest().body(ApiResponse.error(
-                ErrorCatalog.get(CommonMessageUtils.VALIDATION_ERROR).code(),
-                MessageHandlerUtils.getMessage(CommonMessageUtils.MALFORMED_JSON)));
+                ErrorCatalogConstants.get(CommonMessageConstants.VALIDATION_ERROR).code(),
+                MessageHandlerUtils.getMessage(CommonMessageConstants.MALFORMED_JSON)));
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiResponse<?>> handleMissingParam(MissingServletRequestParameterException exception) {
         return ResponseEntity.badRequest().body(ApiResponse.error(
-                ErrorCatalog.get(CommonMessageUtils.VALIDATION_ERROR).code(),
-                MessageHandlerUtils.getMessage(CommonMessageUtils.MISSING_PARAMETER, exception.getParameterName())));
+                ErrorCatalogConstants.get(CommonMessageConstants.VALIDATION_ERROR).code(),
+                MessageHandlerUtils.getMessage(CommonMessageConstants.MISSING_PARAMETER, exception.getParameterName())));
     }
 
     private ResponseEntity<ApiResponse<?>> error(String key) {
-        var definition = ErrorCatalog.get(key);
+        var definition = ErrorCatalogConstants.get(key);
         String message = MessageHandlerUtils.getMessage(key);
         log.warn(message);
         return ResponseEntity.status(definition.status()).body(ApiResponse.error(definition.code(), message));

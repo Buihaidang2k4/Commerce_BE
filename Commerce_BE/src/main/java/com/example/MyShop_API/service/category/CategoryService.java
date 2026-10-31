@@ -3,7 +3,7 @@ package com.example.MyShop_API.service.category;
 import com.example.MyShop_API.dto.response.CategoryResponse;
 import com.example.MyShop_API.entity.Category;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.mapper.CategoryMapper;
 import com.example.MyShop_API.repo.CategoryRepository;
 import lombok.AccessLevel;
@@ -39,7 +39,7 @@ public class CategoryService implements ICategoryService {
     @Transactional(readOnly = true)
     public Category getCategoryById(Long id) {
         return categoryRepository.findById(id).orElseThrow(() ->
-                new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED));
+                new AppException(CommonMessageConstants.CATEGORY_NOT_EXISTED));
     }
 
     @Override
@@ -50,7 +50,7 @@ public class CategoryService implements ICategoryService {
 
     public Category addCategory(Category category) {
         if (categoryRepository.existsByName(category.getName())) {
-            throw new AppException(CommonMessageUtils.CATEGORY_EXISTED);
+            throw new AppException(CommonMessageConstants.CATEGORY_EXISTED);
         }
         category.setUpdatedAt(java.time.Instant.now());
         return categoryRepository.save(category);
@@ -59,7 +59,7 @@ public class CategoryService implements ICategoryService {
     public Category updateCategory(Category category, Long id) {
         Category oldCategory = getCategoryById(id);
         if (oldCategory == null) {
-            throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
+            throw new AppException(CommonMessageConstants.CATEGORY_NOT_EXISTED);
         }
 
         oldCategory.setName(category.getName());
@@ -70,7 +70,7 @@ public class CategoryService implements ICategoryService {
 
     public void deleteCategoryById(Long id) {
         categoryRepository.findById(id).ifPresentOrElse(categoryRepository::delete, () -> {
-            throw new AppException(CommonMessageUtils.CATEGORY_NOT_EXISTED);
+            throw new AppException(CommonMessageConstants.CATEGORY_NOT_EXISTED);
         });
     }
 }

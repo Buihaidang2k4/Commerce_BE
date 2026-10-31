@@ -5,7 +5,7 @@ import lombok.NoArgsConstructor;
 import java.util.Set;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class OrderStatus {
+public final class OrderStatusConstants {
     public static final String CREATED = "CREATED";
     public static final String PENDING = "PENDING";
     public static final String SHIPPED = "SHIPPED";
@@ -15,7 +15,7 @@ public final class OrderStatus {
     public static final Set<String> VALUES = Set.of(CREATED, PENDING, SHIPPED, DELIVERED, CANCELLED, RETURNED);
 
     public static String valueOf(String value) {
-        if (!VALUES.contains(value)) throw new IllegalArgumentException("Invalid OrderStatus: " + value);
+        if (!VALUES.contains(value)) throw new IllegalArgumentException("Invalid OrderStatusConstants: " + value);
         return value;
     }
 }

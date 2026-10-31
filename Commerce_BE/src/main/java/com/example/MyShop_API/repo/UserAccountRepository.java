@@ -9,12 +9,18 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
+import jakarta.persistence.LockModeType;
 
 @Repository
 public interface UserAccountRepository extends JpaRepository<UserAccount, Long> {
 
     Optional<UserAccount> findByEmail(String email);
-    @Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    Optional<UserAccount> findByEmailIgnoreCase(String email);
+    boolean existsByEmailIgnoreCase(String email);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM UserAccount u WHERE u.email = :email")
+    Optional<UserAccount> findByEmailForUpdate(@Param("email") String email);
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT e FROM UserAccount e WHERE e.id = :id")
-    java.util.Optional<UserAccount> findByIdForUpdate(@Param("id") Long id);
+    Optional<UserAccount> findByIdForUpdate(@Param("id") Long id);
 }

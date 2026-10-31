@@ -1,16 +1,18 @@
 package com.example.MyShop_API.mapper;
 
+import com.example.MyShop_API.repo.CartItemRepository;
+import java.util.Optional;
+
 import com.example.MyShop_API.entity.*;
 import com.example.MyShop_API.dto.request.*;
 import com.example.MyShop_API.dto.response.*;
-import com.example.MyShop_API.service.model.ModelLookup;
 import org.mapstruct.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import java.util.List;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public abstract class ShoppingCartMapper {
-    @Autowired protected ModelLookup models;
+    @Autowired protected CartItemRepository cartItemRepository;
     @Autowired protected CartItemMapper items;
 
     public abstract ShoppingCart toEntity(CartRequest request);
@@ -26,6 +28,6 @@ public abstract class ShoppingCartMapper {
 
     @AfterMapping
     protected void fill(ShoppingCart cart, @MappingTarget CartResponse response) {
-        response.setItems(models.cartItems(cart.getId()).stream().map(items::toResponse).toList());
+        response.setItems(Optional.ofNullable(cart.getId()).map(cartItemRepository::findByCartId).orElseGet(List::of).stream().map(items::toResponse).toList());
     }
 }

@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 import com.example.MyShop_API.dto.response.ApiResponse;
 import com.example.MyShop_API.dto.request.CartRequest;
@@ -26,21 +26,21 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(ApiPath.BASE_CART)
+@RequestMapping(ApiPathConstants.BASE_CART)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ShoppingCartController {
     IShoppingCartService cartService;
     ShoppingCartMapper cartMapper;
 
-    @GetMapping(ApiPath.CART_ALL)
+    @GetMapping(ApiPathConstants.CART_ALL)
     ResponseEntity<ApiResponse> getCarts() {
         List<ShoppingCart> carts = cartService.getCarts();
 
         return ResponseEntity.ok(new ApiResponse<>(200, "success", cartMapper.toResponseList(carts)));
     }
 
-    @GetMapping(ApiPath.CART_PAGE)
+    @GetMapping(ApiPathConstants.CART_PAGE)
     ResponseEntity<ApiResponse> getCarts(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -62,29 +62,29 @@ public class ShoppingCartController {
         return ResponseEntity.ok(new ApiResponse(200, "success", res));
     }
 
-    @GetMapping(ApiPath.CART_CART_CARD_ID)
+    @GetMapping(ApiPathConstants.CART_CART_CARD_ID)
     ResponseEntity<ApiResponse<CartResponse>> getCart(@PathVariable Long cardId) {
         return ResponseEntity.ok(new ApiResponse<>(200, "success", cartMapper.toResponse(cartService.getCartById(cardId))));
     }
 
-    @GetMapping(ApiPath.CART_CART_USER_PROFILE_PROFILE_ID)
+    @GetMapping(ApiPathConstants.CART_CART_USER_PROFILE_PROFILE_ID)
     ResponseEntity<ApiResponse<CartResponse>> getCartByUserProfile(@PathVariable Long profileId) {
         CartResponse response = cartMapper.toResponse(cartService.getCartByUserProfileId(profileId));
         return ResponseEntity.ok(new ApiResponse<>(200, "success", response));
     }
 
-    @PostMapping(ApiPath.CART_USER_PROFILE_PROFILE_ID_CART_CART_ID_ADD_CART_TO_USER_PROFILE)
+    @PostMapping(ApiPathConstants.CART_USER_PROFILE_PROFILE_ID_CART_CART_ID_ADD_CART_TO_USER_PROFILE)
     ResponseEntity<ApiResponse> addCartToUserProfile(@PathVariable Long profileId, @PathVariable Long cartId) {
         return ResponseEntity.ok(new ApiResponse(200, "add cart to user-profile success", cartMapper.toResponse(cartService.addCartForUserProfile(profileId, cartId))));
     }
 
-    @DeleteMapping(ApiPath.CART_CART_CART_ID_CLEAR)
+    @DeleteMapping(ApiPathConstants.CART_CART_CART_ID_CLEAR)
     ResponseEntity<ApiResponse> clearCart(@PathVariable Long cartId) {
         cartService.clearCart(cartId);
         return ResponseEntity.ok(new ApiResponse(200, "Delete cart success ", null));
     }
 
-    @GetMapping(ApiPath.CART_CART_CART_ID_TOTAL_PRICE)
+    @GetMapping(ApiPathConstants.CART_CART_CART_ID_TOTAL_PRICE)
     ResponseEntity<ApiResponse> getTotalPrice(@PathVariable Long cartId) {
         BigDecimal totalPrice = cartService.getTotalPrice(cartId);
         return ResponseEntity.ok(new ApiResponse(200, "Total Price", totalPrice));

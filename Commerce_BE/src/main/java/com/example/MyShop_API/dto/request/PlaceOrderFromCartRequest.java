@@ -1,7 +1,7 @@
 package com.example.MyShop_API.dto.request;
 
 
-import com.example.MyShop_API.constants.PaymentMethod;
+import com.example.MyShop_API.constants.PaymentMethodConstants;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;

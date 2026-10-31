@@ -14,4 +14,5 @@ public class AuthenticationResponse {
     String accessToken;
     String refreshToken;
     Instant exp;
+    Instant refreshExp;
 }

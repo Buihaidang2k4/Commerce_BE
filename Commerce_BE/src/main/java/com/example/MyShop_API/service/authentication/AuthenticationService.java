@@ -1,339 +1,270 @@
 package com.example.MyShop_API.service.authentication;
 
+import com.example.MyShop_API.constants.AuthConstants;
+import com.example.MyShop_API.constants.CookieConstants;
+import com.example.MyShop_API.constants.CommonConstants;
+
+import com.example.MyShop_API.constants.CommonMessageConstants;
 import com.example.MyShop_API.dto.request.AuthenticationRequest;
 import com.example.MyShop_API.dto.request.IntrospectRequest;
-import com.example.MyShop_API.dto.request.UserCreationRequest;
 import com.example.MyShop_API.dto.response.AuthenticationResponse;
 import com.example.MyShop_API.dto.response.IntrospectResponse;
+import com.example.MyShop_API.entity.RefreshSession;
 import com.example.MyShop_API.entity.UserAccount;
 import com.example.MyShop_API.exception.AppException;
-import com.example.MyShop_API.constants.CommonMessageUtils;
-import com.example.MyShop_API.mapper.UserAccountMapper;
+import com.example.MyShop_API.repo.PermissionRepository;
+import com.example.MyShop_API.repo.RefreshSessionRepository;
+import com.example.MyShop_API.repo.RoleRepository;
 import com.example.MyShop_API.repo.UserAccountRepository;
-import com.example.MyShop_API.service.token_blacklist.TokenBlacklistService;
-import com.example.MyShop_API.service.user.UserAccountService;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
-import com.google.api.client.googleapis.auth.oauth2.GoogleIdTokenVerifier;
-import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.JOSEException;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.NonFinal;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
+import java.security.SecureRandom;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.TreeSet;
+import java.util.UUID;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
-@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationService implements IAuthenticationService {
-    private final com.example.MyShop_API.service.model.ModelLookup models;
-    private final static String REFRESH_COOKIES_NAME = "refresh_token";
+    private static final SecureRandom RANDOM = new SecureRandom();
+    private final UserAccountRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PermissionRepository permissionRepository;
+    private final RefreshSessionRepository sessionRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    UserAccountRepository userRepository;
-    UserAccountService userService;
-    UserAccountMapper userMapper;
-    PasswordEncoder passwordEncoder;
-    TokenBlacklistService blacklistService;
+    @Value("${jwt.secret}") private String tokenKey;
+    @Value("${jwt.expiration}") private long accessDuration;
+    @Value("${jwt.refreshable-duration}") private long refreshDuration;
+    @Value("${jwt.issuer:" + AuthConstants.DEFAULT_ISSUER + "}") private String issuer;
+    @Value("${jwt.audience:" + AuthConstants.DEFAULT_AUDIENCE + "}") private String audience;
+    @Value("${app.cookie.secure}") private boolean cookieSecure;
+    @Value("${app.cookie.same-site}") private String cookieSameSite;
+    private String dummyPasswordHash;
 
-    @NonFinal
-    @Value("${jwt.secret}")
-    protected String TOKEN_KEY;
-    @NonFinal
-    @Value("${jwt.expiration}")
-    protected Long ACCESS_TOKEN_DURATION;
-    @NonFinal
-    @Value("${jwt.refreshable-duration}")
-    protected Long REFRESH_TOKEN_DURATION;
-    @NonFinal
-    @Value("${spring.security.oauth2.client.registration.google.client-id}")
-    protected String GOOGLE_CLIENT_ID;
-
-    @NonFinal
-    @Value("${app.cookie.secure}")
-    private boolean cookieSecure;
-    @NonFinal
-    @Value("${app.cookie.same-site}")
-    private String cookieSameSite;
-
-    /**
-     * Login with jwt && redis
-     *
-     * @param request
-     * @return
-     */
-    public AuthenticationResponse authenticate(AuthenticationRequest request) throws ParseException {
-        log.info("======================= START LOGIN ======================");
-        UserAccount user = userRepository.findByEmail(request.getEmail()).orElseThrow(
-                () -> new AppException(CommonMessageUtils.INVALID_CREDENTIALS)
-        );
-
-
-        if (!user.isEnabled()) {
-            log.warn("Login attempt on locked account: {}", user.getEmail());
-            throw new AppException(CommonMessageUtils.USER_ALREADY_LOCKED);
-        }
-
-        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            throw new AppException(CommonMessageUtils.PASSWORD_NOT_MATCHES);
-        }
-        // Thu hồi toàn bộ token cũ trước khi sinh token mới
-        blacklistService.revokeAllTokensForUser(user.getId(), Duration.ofMillis(REFRESH_TOKEN_DURATION));
-
-        // Sinh token mới
-        String accessToken = generateAccessToken(user);
-        String refreshToken = generateRefreshToken(user);
-
-        // trả về thời gian hết hạn access token
-        JWTClaimsSet claimsSet = decodeToken(accessToken);
-        Date expiration = claimsSet.getExpirationTime();
-        Instant exp = expiration.toInstant();
-
-        // Lưu token mới vào Redis (không ghi DB)
-        blacklistService.storeRefreshToken(user.getId(), refreshToken);
-        log.info("======================= END LOGIN ======================");
-        return AuthenticationResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .exp(exp)
-                .build();
-    }
-
-    /**
-     * Login with google && jwt && redis
-     *
-     * @param request
-     * @return {@link AuthenticationResponse}
-     * @throws ParseException
-     * @throws JOSEException
-     */
-    public AuthenticationResponse authenticateGoogle(IntrospectRequest request) throws GeneralSecurityException, IOException, ParseException {
-        GoogleIdToken idToken = verifyIdToken(request.getToken());
-
-        String email = idToken.getPayload().getEmail();
-        log.info("Google user verified successfully: {}", email);
-
-        if (email == null || email.trim().isEmpty()) {
-            log.error("Email is null or empty from Google token");
-            throw new AppException(CommonMessageUtils.USER_INVALID);
-        }
-
-        UserAccount user = userRepository.findByEmail(email).orElseGet(() -> {
-            // Lấy name từ Google token trong lambda để tránh lỗi final
-            String userName = (String) idToken.getPayload().get("name");
-            if (userName == null || userName.trim().isEmpty()) {
-                userName = email.split("@")[0];
-            }
-            // neu chua co tao moi
-            UserCreationRequest userCreationRequest = UserCreationRequest.builder()
-                    .email(email)
-                    .password(passwordEncoder.encode(UUID.randomUUID().toString()))
-                    .build();
-            userService.createUser(userCreationRequest);
-            return userRepository.findByEmail(email).orElseThrow(() -> new AppException(CommonMessageUtils.USER_NOT_EXISTED));
-        });
-
-        blacklistService.revokeAllTokensForUser(user.getId(), Duration.ofMillis(REFRESH_TOKEN_DURATION));
-
-        String accessToken = generateAccessToken(user);
-        String refreshToken = generateRefreshToken(user);
-
-
-        // trả về thời gian hết hạn access token
-        JWTClaimsSet claimsSet = decodeToken(accessToken);
-        Date expiration = claimsSet.getExpirationTime();
-        Instant exp = expiration.toInstant();
-
-        log.info("Google ID token verification successfully: {}", accessToken);
-        log.info("Google ID token verification successfully: {}", refreshToken);
-
-        blacklistService.storeRefreshToken(user.getId(), refreshToken);
-
-        return new AuthenticationResponse(accessToken, refreshToken, exp);
-    }
-
-    public String refreshToken(String token) throws ParseException, JOSEException {
-        // check token revoked
-        blacklistService.validate(token);
-
-        SignedJWT signedJWT = verifyToken(token, true);
-
-        String email = signedJWT.getJWTClaimsSet().getSubject();
-
-        UserAccount user = userRepository.findByEmail(email).orElseThrow(() ->
-                new AppException(CommonMessageUtils.USER_NOT_EXISTED));
-
-        try {
-            return generateAccessToken(user);
-        } catch (Exception e) {
-            throw new RuntimeException("Cannot create access token from refresh token: " + e);
-        }
-    }
-
-    public IntrospectResponse introspect(IntrospectRequest request)
-            throws JOSEException, ParseException {
-        boolean isValid = true;
-        String token = request.getToken();
-
-        JWTClaimsSet claimsSet = decodeToken(token);
-        Date expiration = claimsSet.getExpirationTime();
-        Instant exp = expiration.toInstant();
-
-        try {
-            verifyToken(token, false);
-        } catch (AppException e) {
-            isValid = false;
-            log.warn("Token introspection failed: {}", e.getMessage());
-        }
-
-        return IntrospectResponse.builder()
-                .valid(isValid)
-                .exp(exp)
-                .build();
-    }
-
-    public void logout(String refreshToken) throws ParseException, JOSEException {
-        try {
-            // revoke then add blacklist
-            blacklistService.blacklist(refreshToken, Duration.ofMillis(REFRESH_TOKEN_DURATION));
-
-        } catch (AppException e) {
-            log.error("Logout failed for token [{}]: {}", refreshToken, e.getMessage());
-            throw new AppException(CommonMessageUtils.TOKEN_REVOKED);
-        }
-    }
-
-    private SignedJWT verifyToken(String token, boolean isRefresh) throws ParseException, JOSEException {
-        // Parse token thanh signedJWT
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        
-        // Veryfier chu ky voi key
-        JWSVerifier verifier = new MACVerifier(TOKEN_KEY.getBytes());
-        boolean verified = signedJWT.verify(verifier);
-        Date expiryTime = signedJWT.getJWTClaimsSet().getExpirationTime();
-        String type = signedJWT.getJWTClaimsSet().getClaim("type").toString();
-
-        // Neu chu ky khong dung && het han
-        if (!verified) throw new AppException(CommonMessageUtils.UNAUTHENTICATED);
-        if (expiryTime.before(new Date())) throw new AppException(CommonMessageUtils.TOKEN_EXPIRED);
-        if (isRefresh && !"refresh_token".equals(type)) throw new AppException(CommonMessageUtils.UNAUTHENTICATED);
-        if (!isRefresh && !"access_token".equals(type)) throw new AppException(CommonMessageUtils.UNAUTHENTICATED);
-
-        return signedJWT;
-    }
-
-    public GoogleIdToken verifyIdToken(String token) throws GeneralSecurityException, IOException {
-        GoogleIdTokenVerifier verifier = new GoogleIdTokenVerifier.Builder(
-                GoogleNetHttpTransport.newTrustedTransport(),
-                JacksonFactory.getDefaultInstance()
-        ).setAudience(Collections.singletonList(GOOGLE_CLIENT_ID)).build();
-
-        log.info("Google verifier built successfully");
-
-        GoogleIdToken idToken = verifier.verify(token);
-        if (idToken == null) {
-            log.error("Google ID token verification failed - token is null");
-            throw new AppException(CommonMessageUtils.UNAUTHENTICATED);
-        }
-
-        return idToken;
-    }
-
-    private String generateAccessToken(UserAccount user) {
-        return buildToken(user, Duration.ofMillis(ACCESS_TOKEN_DURATION), "access_token");
-    }
-
-    private String generateRefreshToken(UserAccount user) {
-        return buildToken(user, Duration.ofMillis(REFRESH_TOKEN_DURATION), "refresh_token");
-    }
-
-    private String buildToken(UserAccount user, Duration duration, String type) {
-        try {
-            JWTClaimsSet claimsSet = new JWTClaimsSet.Builder()
-                    .subject(user.getEmail())
-                    .issuer("ANH DANG")
-                    .issueTime(new Date())
-                    .expirationTime(new Date(Instant.now().plus(duration).toEpochMilli()))
-                    .jwtID(UUID.randomUUID().toString())
-                    .claim("scope", buildScope(user))
-                    .claim("type", type)
-                    .build();
-
-            SignedJWT signedJWT = new SignedJWT(new JWSHeader(JWSAlgorithm.HS256), claimsSet);
-
-            signedJWT.sign(new MACSigner(TOKEN_KEY.getBytes(StandardCharsets.UTF_8)));
-            return signedJWT.serialize();
-        } catch (JOSEException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-
-    private String buildScope(UserAccount user) {
-        // Phan cach nhau boi dau cach
-        StringJoiner stringJoiner = new StringJoiner(" ");
-
-        if (!CollectionUtils.isEmpty(models.roles(user.getId())))
-            models.roles(user.getId()).forEach(role -> stringJoiner.add("ROLE_" + role.getCode()));
-
-
-        return stringJoiner.toString();
-    }
-
-    public ResponseCookie clearCookie(String cookieName) {
-        return ResponseCookie.from(cookieName, "")
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite(cookieSameSite)
-                .path("/")
-                .maxAge(0)
-                .build();
-    }
-
-    public ResponseCookie buildCookie(String refreshToken, String cookieName) {
-        return ResponseCookie.from(cookieName, refreshToken)
-                .httpOnly(true)
-                .secure(cookieSecure)
-                .sameSite(cookieSameSite)
-                .maxAge(Duration.ofMillis("access_token".equals(cookieName) ? ACCESS_TOKEN_DURATION : REFRESH_TOKEN_DURATION))
-                .path("/")
-                .build();
-    }
-
-    public String getTokenFromCookie(HttpServletRequest request, String cookieName) {
-        return Arrays.stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
-                .filter(c -> cookieName.equals(c.getName()))
-                .map(Cookie::getValue)
-                .findFirst()
-                .orElse(null);
+    @PostConstruct
+    void validateConfiguration() {
+        if (tokenKey.getBytes(StandardCharsets.UTF_8).length < AuthConstants.MIN_SECRET_BYTES || accessDuration <= 0 || refreshDuration < accessDuration)
+            throw new IllegalStateException("Invalid JWT key or token durations");
+        if (!CookieConstants.SAME_SITE_VALUES.contains(cookieSameSite) || (CookieConstants.SAME_SITE_NONE.equals(cookieSameSite) && !cookieSecure))
+            throw new IllegalStateException("Invalid authentication cookie configuration");
+        dummyPasswordHash = passwordEncoder.encode(UUID.randomUUID().toString());
     }
 
     @Override
-    public JWTClaimsSet decodeToken(String token) throws ParseException {
-        SignedJWT signedJWT = SignedJWT.parse(token);
-        return signedJWT.getJWTClaimsSet();
+    @Transactional
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        UserAccount user = userRepository.findByEmailForUpdate(request.getEmail().trim().toLowerCase(Locale.ROOT))
+                .orElse(null);
+        if (user == null) {
+            passwordEncoder.matches(request.getPassword(), dummyPasswordHash);
+            throw new AppException(CommonMessageConstants.INVALID_CREDENTIALS);
+        }
+        if (user.getPasswordHash() == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash()))
+            throw new AppException(CommonMessageConstants.INVALID_CREDENTIALS);
+        requireActive(user);
+        // Preserve the existing single-login policy, now revoking access tokens as well.
+        sessionRepository.revokeAllByUserId(user.getId(), Instant.now());
+        return issueTokens(user, UUID.randomUUID().toString(), Instant.now().plusMillis(refreshDuration));
+    }
+
+    @Override
+    @Transactional(noRollbackFor = AppException.class)
+    public AuthenticationResponse refreshToken(String token) {
+        RefreshSessionRepository.SessionOwner candidate = findRefreshSession(token);
+        UserAccount user = userRepository.findByIdForUpdate(candidate.getUserId())
+                .orElseThrow(() -> new AppException(CommonMessageConstants.UNAUTHENTICATED));
+        requireActive(user);
+        RefreshSession current = sessionRepository.findByIdForUpdate(candidate.getId())
+                .orElseThrow(() -> new AppException(CommonMessageConstants.UNAUTHENTICATED));
+        if (current.getRevokedAt() != null) {
+            // Commit replay revocation even though the request returns 401.
+            sessionRepository.revokeFamily(user.getId(), current.getTokenFamilyId(), Instant.now());
+            throw new AppException(CommonMessageConstants.TOKEN_REVOKED);
+        }
+        if (current.getExpiresAt() == null || !current.getExpiresAt().isAfter(Instant.now()))
+            throw new AppException(CommonMessageConstants.TOKEN_EXPIRED);
+        AuthenticationResponse result = issueTokens(user, current.getTokenFamilyId(), current.getExpiresAt());
+        RefreshSession replacement = sessionRepository.findByTokenHash(DigestUtils.sha256Hex(result.getRefreshToken())).orElseThrow();
+        current.setRevokedAt(Instant.now());
+        current.setReplacedBySessionId(replacement.getId());
+        sessionRepository.save(current);
+        return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public IntrospectResponse introspect(IntrospectRequest request) {
+        try {
+            Jwt jwt = validateAccessToken(request.getToken());
+            return IntrospectResponse.builder().valid(true).exp(jwt.getExpiresAt()).build();
+        } catch (AppException ex) {
+            return IntrospectResponse.builder().valid(false).build();
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public Jwt validateAccessToken(String token) {
+        JWTClaimsSet claims = verifyAccessClaims(token, false);
+        try {
+            Long userId = claims.getLongClaim(AuthConstants.USER_ID_CLAIM);
+            Long sessionId = claims.getLongClaim(AuthConstants.SESSION_ID_CLAIM);
+            if (userId == null || sessionId == null) throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+            UserAccount user = userRepository.findById(userId)
+                    .orElseThrow(() -> new AppException(CommonMessageConstants.UNAUTHENTICATED));
+            requireActive(user);
+            RefreshSession session = sessionRepository.findById(sessionId)
+                    .orElseThrow(() -> new AppException(CommonMessageConstants.TOKEN_REVOKED));
+            if (!Objects.equals(session.getUserId(), userId) || session.getRevokedAt() != null || session.getExpiresAt() == null
+                    || !session.getExpiresAt().isAfter(Instant.now()) || !Objects.equals(user.getEmail(), claims.getSubject()))
+                throw new AppException(CommonMessageConstants.TOKEN_REVOKED);
+            // Read current grants: removing a role/permission takes effect on the next request.
+            return Jwt.withTokenValue(token).header(AuthConstants.AUTHORIZATION_ALGORITHM_HEADER, JWSAlgorithm.HS256.getName()).header(AuthConstants.AUTHORIZATION_TYPE_HEADER, JOSEObjectType.JWT.toString())
+                    .claims(values -> values.putAll(claims.getClaims()))
+                    .issuedAt(claims.getIssueTime().toInstant()).expiresAt(claims.getExpirationTime().toInstant())
+                    .claim(AuthConstants.SCOPE_CLAIM, buildScope(userId)).build();
+        } catch (ParseException ex) {
+            throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+        }
+    }
+
+    @Override
+    @Transactional
+    public void logout(String refreshToken, String accessToken) {
+        RefreshSession session = null;
+        if (refreshToken != null && !refreshToken.isBlank() && refreshToken.length() <= AuthConstants.MAX_LOGOUT_TOKEN_LENGTH)
+            session = sessionRepository.findByTokenHash(DigestUtils.sha256Hex(refreshToken)).orElse(null);
+        if (session == null && accessToken != null && !accessToken.isBlank()) {
+            try {
+                JWTClaimsSet claims = verifyAccessClaims(accessToken, true);
+                session = sessionRepository.findById(claims.getLongClaim(AuthConstants.SESSION_ID_CLAIM)).orElse(null);
+                if (session != null && !Objects.equals(session.getUserId(), claims.getLongClaim(AuthConstants.USER_ID_CLAIM))) session = null;
+            } catch (AppException | ParseException | IllegalArgumentException ignored) {
+                // Logout is idempotent for missing, expired or malformed credentials.
+            }
+        }
+        if (session != null && userRepository.findByIdForUpdate(session.getUserId()).isPresent())
+            sessionRepository.revokeFamily(session.getUserId(), session.getTokenFamilyId(), Instant.now());
+    }
+
+    private RefreshSessionRepository.SessionOwner findRefreshSession(String token) {
+        if (token == null || !token.matches(AuthConstants.REFRESH_TOKEN_PATTERN)) throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+        return sessionRepository.findOwnerByTokenHash(DigestUtils.sha256Hex(token))
+                .orElseThrow(() -> new AppException(CommonMessageConstants.UNAUTHENTICATED));
+    }
+
+    private AuthenticationResponse issueTokens(UserAccount user, String familyId, Instant refreshExpiresAt) {
+        byte[] random = new byte[AuthConstants.REFRESH_TOKEN_BYTES];
+        RANDOM.nextBytes(random);
+        String refresh = Base64.getUrlEncoder().withoutPadding().encodeToString(random);
+        RefreshSession session = sessionRepository.saveAndFlush(RefreshSession.builder().userId(user.getId())
+                .tokenHash(DigestUtils.sha256Hex(refresh)).tokenFamilyId(familyId).expiresAt(refreshExpiresAt).build());
+        Instant now = Instant.now();
+        Instant accessExpiresAt = now.plusMillis(accessDuration);
+        if (accessExpiresAt.isAfter(refreshExpiresAt)) accessExpiresAt = refreshExpiresAt;
+        try {
+            JWTClaimsSet claims = new JWTClaimsSet.Builder().subject(user.getEmail()).issuer(issuer).audience(audience)
+                    .issueTime(Date.from(now)).expirationTime(Date.from(accessExpiresAt)).jwtID(UUID.randomUUID().toString())
+                    .claim(AuthConstants.TOKEN_TYPE_CLAIM, AuthConstants.ACCESS_TOKEN_TYPE).claim(AuthConstants.USER_ID_CLAIM, user.getId()).claim(AuthConstants.SESSION_ID_CLAIM, session.getId())
+                    .claim(AuthConstants.SCOPE_CLAIM, buildScope(user.getId())).build();
+            SignedJWT jwt = new SignedJWT(new JWSHeader.Builder(JWSAlgorithm.HS256).type(JOSEObjectType.JWT).build(), claims);
+            jwt.sign(new MACSigner(tokenKey.getBytes(StandardCharsets.UTF_8)));
+            return AuthenticationResponse.builder().accessToken(jwt.serialize()).refreshToken(refresh)
+                    .exp(accessExpiresAt).refreshExp(refreshExpiresAt).build();
+        } catch (JOSEException ex) {
+            throw new IllegalStateException("Cannot sign access token", ex);
+        }
+    }
+
+    private JWTClaimsSet verifyAccessClaims(String token, boolean allowExpired) {
+        try {
+            if (token == null || token.length() > AuthConstants.MAX_ACCESS_TOKEN_LENGTH) throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+            SignedJWT jwt = SignedJWT.parse(token);
+            if (!JWSAlgorithm.HS256.equals(jwt.getHeader().getAlgorithm()) || !JOSEObjectType.JWT.equals(jwt.getHeader().getType())
+                    || !jwt.verify(new MACVerifier(tokenKey.getBytes(StandardCharsets.UTF_8))))
+                throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+            JWTClaimsSet claims = jwt.getJWTClaimsSet();
+            Instant now = Instant.now();
+            if (!issuer.equals(claims.getIssuer()) || claims.getAudience() == null || !claims.getAudience().contains(audience)
+                    || !AuthConstants.ACCESS_TOKEN_TYPE.equals(claims.getStringClaim(AuthConstants.TOKEN_TYPE_CLAIM)) || claims.getExpirationTime() == null
+                    || claims.getIssueTime() == null || claims.getSubject() == null || claims.getJWTID() == null
+                    || claims.getIssueTime().toInstant().isAfter(now.plusSeconds(AuthConstants.CLOCK_SKEW_SECONDS)))
+                throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+            if (!allowExpired && !claims.getExpirationTime().toInstant().isAfter(now))
+                throw new AppException(CommonMessageConstants.TOKEN_EXPIRED);
+            return claims;
+        } catch (ParseException | JOSEException | IllegalArgumentException ex) {
+            throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+        }
+    }
+
+    private void requireActive(UserAccount user) {
+        if (!user.isEnabled()) throw new AppException(CommonMessageConstants.UNAUTHENTICATED);
+    }
+
+    private String buildScope(Long userId) {
+        TreeSet<String> authorities = new TreeSet<>();
+        roleRepository.findAllByUserId(userId).forEach(role -> {
+            if (role.getCode() != null && role.getCode().matches(AuthConstants.ROLE_CODE_PATTERN) && !role.getCode().startsWith(AuthConstants.ROLE_PREFIX))
+                authorities.add(AuthConstants.ROLE_PREFIX + role.getCode());
+        });
+        permissionRepository.findAllByUserId(userId).forEach(permission -> {
+            String code = permission.getCode();
+            if (code != null && !code.startsWith(AuthConstants.ROLE_PREFIX) && code.matches(AuthConstants.PERMISSION_CODE_PATTERN)) authorities.add(code);
+        });
+        return String.join(" ", authorities);
+    }
+
+    @Scheduled(cron = AuthConstants.SESSION_CLEANUP_CRON, zone = CommonConstants.TIME_ZONE_UTC)
+    @Transactional
+    public void cleanupExpiredSessions() {
+        // Keep expired chains for seven days; never delete a still-valid replay marker.
+        sessionRepository.deleteExpiredBefore(Instant.now().minus(Duration.ofDays(AuthConstants.SESSION_RETENTION_DAYS)));
+    }
+
+    @Override
+    public ResponseCookie clearCookie(String cookieName) {
+        return ResponseCookie.from(cookieName, "").httpOnly(true).secure(cookieSecure).sameSite(cookieSameSite).path(CookieConstants.PATH).maxAge(0).build();
+    }
+
+    @Override
+    public ResponseCookie buildCookie(String token, String cookieName, Instant expiresAt) {
+        Duration remaining = Duration.between(Instant.now(), expiresAt);
+        return ResponseCookie.from(cookieName, token).httpOnly(true).secure(cookieSecure).sameSite(cookieSameSite)
+                .path("/").maxAge(remaining.isNegative() ? Duration.ZERO : remaining).build();
+    }
+
+    @Override
+    public String getTokenFromCookie(HttpServletRequest request, String cookieName) {
+        return Arrays.stream(Optional.ofNullable(request.getCookies()).orElse(new Cookie[0]))
+                .filter(cookie -> cookieName.equals(cookie.getName())).map(Cookie::getValue).findFirst().orElse(null);
     }
 }
-
-
-

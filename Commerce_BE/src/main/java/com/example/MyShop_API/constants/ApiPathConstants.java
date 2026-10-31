@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class ApiPath {
+public final class ApiPathConstants {
     public static final String HEALTH = "/actuator/health";
     public static final String HEALTH_ALL = "/actuator/health/**";
     public static final String PREFIX = "${api.prefix}";
@@ -18,10 +18,12 @@ public final class ApiPath {
     public static final String ADDRESS_UPDATE = "/update";
     public static final String ADDRESS_DELETE = "/delete";
 
+    public static final String BASE_PERMISSION = PREFIX + "/permissions";
+    public static final String PERMISSION_ID = "/{id}";
+
     // ===== AUTH =====
     public static final String BASE_AUTH = PREFIX + "/auth";
     public static final String AUTH_LOGIN = "/login";
-    public static final String AUTH_GOOGLE = "/google";
     public static final String AUTH_REFRESH = "/refresh";
     public static final String AUTH_INTROSPECT = "/introspect";
     public static final String AUTH_LOGOUT = "/logout";
@@ -183,8 +185,6 @@ public final class ApiPath {
     public static final String USER_PROFILE_USER_USER_ID_CREATE_OR_UPDATE_PROFILE = "/user/{userId}/createOrUpdateProfile";
 
     // ===== SECURITY MATCHERS =====
-    public static final String PUBLIC_AUTH_ALL = BASE_AUTH + "/**";
-    public static final String PUBLIC_AUTH_GOOGLE = BASE_AUTH + AUTH_GOOGLE;
     public static final String PUBLIC_USERS_REGISTRATION = BASE_USER + USER_REGISTRATION;
     public static final String PUBLIC_AUTH_FORGOT_PASSWORD = BASE_AUTH + AUTH_FORGOT_PASSWORD;
     public static final String PUBLIC_AUTH_RESET_PASSWORD = BASE_AUTH + AUTH_RESET_PASSWORD;
@@ -198,8 +198,6 @@ public final class ApiPath {
     public static final String PUBLIC_PAYMENT_VN_PAY_CALLBACK = BASE_PAYMENT + PAYMENT_VN_PAY_CALLBACK;
     public static final String PUBLIC_IMAGES_ALL = BASE_IMAGE + "/**";
     public static final String PUBLIC_REVIEWS_PRODUCT_PRODUCT_ID = BASE_REVIEW + REVIEW_PRODUCT_PRODUCT_ID;
-    public static final String PUBLIC_OAUTH2_ALL = "/oauth2/**";
-    public static final String PUBLIC_LOGIN_OAUTH2_ALL = "/login/oauth2/**";
     public static final String PUBLIC_SWAGGER_UI_ALL = "/swagger-ui/**";
     public static final String PUBLIC_V3_API_DOCS_ALL = "/v3/api-docs/**";
     public static final String PUBLIC_SWAGGER_RESOURCES_ALL = "/swagger-resources/**";

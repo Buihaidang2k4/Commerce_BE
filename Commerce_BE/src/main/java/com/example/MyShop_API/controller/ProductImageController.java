@@ -1,6 +1,6 @@
 package com.example.MyShop_API.controller;
 
-import com.example.MyShop_API.constants.ApiPath;
+import com.example.MyShop_API.constants.ApiPathConstants;
 
 
 import com.example.MyShop_API.dto.request.ImageDTO;
@@ -32,14 +32,14 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@RequestMapping(ApiPath.BASE_IMAGE)
+@RequestMapping(ApiPathConstants.BASE_IMAGE)
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ProductImageController {
     IProductImageService imageService;
     MinioService minioService;
 
-    @PostMapping(ApiPath.IMAGE_UPLOAD_PRODUCT_PRODUCT_ID)
+    @PostMapping(ApiPathConstants.IMAGE_UPLOAD_PRODUCT_PRODUCT_ID)
     ResponseEntity<ApiResponse> saveImages(@RequestPart("files") List<MultipartFile> files, @PathVariable("productId") Long productId) {
         try {
             List<ImageDTO> imageDTOs = imageService.addImages(productId, files);
@@ -52,7 +52,7 @@ public class ProductImageController {
     }
 
     // Lưu nhiều URL ảnh cho product
-    @PostMapping(ApiPath.IMAGE_PRODUCT_ID_IMAGES_URL)
+    @PostMapping(ApiPathConstants.IMAGE_PRODUCT_ID_IMAGES_URL)
     public ResponseEntity<ApiResponse<List<String>>> addImageUrls(
             @PathVariable("productId") Long productId,
             @RequestBody List<String> urls
@@ -62,7 +62,7 @@ public class ProductImageController {
     }
 
 
-    @GetMapping(ApiPath.IMAGE_IMAGE_DOWNLOAD_IMAGE_ID)
+    @GetMapping(ApiPathConstants.IMAGE_IMAGE_DOWNLOAD_IMAGE_ID)
     ResponseEntity<Resource> downloadImage(@PathVariable Long imageId) throws SQLException {
         ProductImage image = imageService.getImageById(imageId);
         if (image == null || image.getDownloadUrl().isEmpty()) return ResponseEntity.notFound().build();
@@ -73,7 +73,7 @@ public class ProductImageController {
                 .body(resource);
     }
 
-    @GetMapping(ApiPath.IMAGE_PRODUCT_PRODUCT_ID_IMAGES)
+    @GetMapping(ApiPathConstants.IMAGE_PRODUCT_PRODUCT_ID_IMAGES)
     ResponseEntity<ApiResponse> getImagesByProductId(@PathVariable Long productId) {
         List<ImageDTO> ds = imageService.getImageByProductId(productId);
         if (ds.isEmpty()) {
@@ -83,7 +83,7 @@ public class ProductImageController {
         return ResponseEntity.ok(new ApiResponse(200, "Get success!", ds));
     }
 
-    @PutMapping(ApiPath.IMAGE_IMAGE_IMAGE_ID_UPDATE)
+    @PutMapping(ApiPathConstants.IMAGE_IMAGE_IMAGE_ID_UPDATE)
     ResponseEntity<ApiResponse> updateImage(@PathVariable Long imageId, @RequestPart("file") MultipartFile file) throws SQLException, IOException {
         try {
             ProductImage image = imageService.getImageById(imageId);
@@ -94,10 +94,10 @@ public class ProductImageController {
         } catch (AppException e) {
             throw e;
         }
-        throw new AppException(com.example.MyShop_API.constants.CommonMessageUtils.IMAGE_NOT_FOUND);
+        throw new AppException(com.example.MyShop_API.constants.CommonMessageConstants.IMAGE_NOT_FOUND);
     }
 
-    @DeleteMapping(ApiPath.IMAGE_IMAGE_IMAGE_ID_DELETE)
+    @DeleteMapping(ApiPathConstants.IMAGE_IMAGE_IMAGE_ID_DELETE)
     ResponseEntity<ApiResponse> deleteImage(@PathVariable Long imageId) {
         try {
             ProductImage image = imageService.getImageById(imageId);
@@ -108,10 +108,10 @@ public class ProductImageController {
         } catch (AppException e) {
             throw e;
         }
-        throw new AppException(com.example.MyShop_API.constants.CommonMessageUtils.IMAGE_NOT_FOUND);
+        throw new AppException(com.example.MyShop_API.constants.CommonMessageConstants.IMAGE_NOT_FOUND);
     }
 
-    @PostMapping(ApiPath.IMAGE_PUT_OBJECT_IMAGE)
+    @PostMapping(ApiPathConstants.IMAGE_PUT_OBJECT_IMAGE)
     ResponseEntity<ApiResponse<String>> saveImages(@RequestPart("file") MultipartFile file) {
         try {
             return ResponseEntity.ok(new ApiResponse(200, "Upload success!", minioService.putObject(file)));
@@ -123,7 +123,7 @@ public class ProductImageController {
         }
     }
 
-    @DeleteMapping(ApiPath.IMAGE_DELETE_OBJECT_IMAGE)
+    @DeleteMapping(ApiPathConstants.IMAGE_DELETE_OBJECT_IMAGE)
     ResponseEntity<ApiResponse<Void>> deleteImage(@RequestParam("objectName") String objectName) {
         try {
             minioService.removeObject(objectName);
@@ -137,7 +137,7 @@ public class ProductImageController {
     }
 
 
-    @GetMapping(ApiPath.IMAGE_GET_OBJECT_IMAGE)
+    @GetMapping(ApiPathConstants.IMAGE_GET_OBJECT_IMAGE)
     ResponseEntity<ApiResponse<String>> downloadImage(@RequestParam("objectName") String objectName) throws SQLException {
         try {
             return ResponseEntity.ok(new ApiResponse<>(200, "success", minioService.presignedUrl(objectName)));
